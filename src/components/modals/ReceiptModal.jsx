@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Download } from "lucide-react";
 import html2pdf from "html2pdf.js";
 import Swal from "sweetalert2";
-import { Cedis } from "../utils/currency";
+import { Cedis } from "../../utils/currency";
 
 const resolveItemImage = (item, products = []) => {
   if (item?.image && !String(item.image).startsWith("blob:")) return item.image;
