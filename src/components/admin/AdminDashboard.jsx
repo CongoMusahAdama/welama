@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useLocation, Routes, Route } from "react-router-dom";
 import {
   X,
@@ -52,29 +52,31 @@ const AdminDashboard = ({
   const logoUrl = settings?.logoUrl || "/welamalogo.png";
   const siteName = settings?.siteName || "WELAMA";
 
+  const closeMobileNav = () => setIsMobileOpen(false);
+
+  useEffect(() => {
+    closeMobileNav();
+  }, [location.pathname]);
+
   return (
     <div className={`dashboard-layout ${isMinimized ? "minimized" : ""}`}>
-      {/* Mobile Sidebar Overlay */}
-      {isMobileOpen && (
-        <div 
-          className="admin-sidebar-overlay" 
-          onClick={() => setIsMobileOpen(false)}
-        ></div>
-      )}
+      <div
+        className={`admin-sidebar-overlay ${isMobileOpen ? "is-visible" : ""}`}
+        onClick={closeMobileNav}
+      />
 
       {/* Sidebar */}
       <aside
         className={`admin-sidebar ${isMobileOpen ? "mobile-open" : ""} ${isMinimized ? "minimized" : ""}`}
       >
-        {/* Mobile Close Button */}
-        <div className="mobile-only" style={{ position: 'absolute', right: '1rem', top: '1rem', zIndex: 1001 }}>
-          <button 
-            onClick={() => setIsMobileOpen(false)}
-            style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', padding: '0.5rem', borderRadius: '50%' }}
-          >
-            <X size={20} />
-          </button>
-        </div>
+        <button
+          type="button"
+          className="admin-sidebar-close mobile-only"
+          onClick={closeMobileNav}
+          aria-label="Close menu"
+        >
+          <X size={18} strokeWidth={2.2} />
+        </button>
 
         <div className="sidebar-header">
           {!isMinimized && (
@@ -119,7 +121,7 @@ const AdminDashboard = ({
           </button>
         </div>
 
-        <nav className="sidebar-nav">
+        <nav className="sidebar-nav" onClick={closeMobileNav}>
           <Link
             to="/admin"
             className={`sidebar-link ${location.pathname === "/admin" ? "active" : ""}`}
@@ -209,14 +211,16 @@ const AdminDashboard = ({
 
       {/* Main Content */}
       <main className="admin-main">
-        <button
-          type="button"
-          className="admin-mobile-menu-btn"
-          onClick={() => setIsMobileOpen(!isMobileOpen)}
-          aria-label="Open menu"
-        >
-          <Menu size={20} strokeWidth={2.2} />
-        </button>
+        <header className="admin-mobile-topbar">
+          <button
+            type="button"
+            className="admin-mobile-menu-btn"
+            onClick={() => setIsMobileOpen((open) => !open)}
+            aria-label={isMobileOpen ? "Close menu" : "Open menu"}
+          >
+            {isMobileOpen ? <X size={20} strokeWidth={2.2} /> : <Menu size={20} strokeWidth={2.2} />}
+          </button>
+        </header>
 
         <Routes>
           <Route

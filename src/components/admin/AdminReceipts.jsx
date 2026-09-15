@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Receipt, CheckCircle } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 import ReceiptModal from "../modals/ReceiptModal";
+import ReceiptCedi from "../ui/ReceiptCedi";
 import { Cedis } from "../../utils/currency";
 
 const AdminReceipts = ({ orders, updateOrder, settings, products = [] }) => {
@@ -102,7 +103,7 @@ const AdminReceipts = ({ orders, updateOrder, settings, products = [] }) => {
                           width: "max-content",
                         }}
                       >
-                        <Receipt size={14} />
+                        <ReceiptCedi size={14} />
                         Receipt
                       </button>
 

@@ -10,11 +10,11 @@ const ReceiptCedi = ({ size = 24, color = "currentColor" }) => (
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
+    aria-hidden="true"
   >
     <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z" />
-    <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
-    <path d="M12 17.5V18.5" />
-    <path d="M12 5.5V6.5" />
+    <path d="M16 8.25c-.85-1-2.15-1.6-3.65-1.6-2.55 0-4.35 1.85-4.35 5.35s1.8 5.35 4.35 5.35c1.5 0 2.8-.6 3.65-1.6" />
+    <path d="M11.2 5.7v12.6" />
   </svg>
 );
 
