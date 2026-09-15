@@ -12,7 +12,7 @@ import {
   CheckCircle
 } from "lucide-react";
 import Swal from "sweetalert2";
-import { apiRequest } from "../../utils/api";
+import { apiRequest, API_URL } from "../../utils/api";
 
 const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
   const [formData, setFormData] = useState({
@@ -88,7 +88,7 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
 
     try {
       const token = localStorage.getItem("welama_auth_token");
-      const res = await fetch("http://localhost:5000/api/upload/logo", {
+      const res = await fetch(`${API_URL}/upload/logo`, {
         method: "POST",
         headers: {
           Authorization: token ? `Bearer ${token}` : "",
@@ -131,7 +131,7 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
 
     try {
       const token = localStorage.getItem("welama_auth_token");
-      const res = await fetch("http://localhost:5000/api/upload/hero", {
+      const res = await fetch(`${API_URL}/upload/hero`, {
         method: "POST",
         headers: {
           Authorization: token ? `Bearer ${token}` : "",

@@ -88,12 +88,6 @@ body {
   overflow-x: hidden;
 }
 
-@media (min-width: 768px) {
-  html {
-    zoom: 0.8;
-  }
-}
-
 h1,
 h2,
 h3,

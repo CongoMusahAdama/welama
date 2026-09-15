@@ -850,13 +850,10 @@ span.nav-cart-text {
   .hero-split {
     --hero-nav-offset: 0px;
     padding-top: 0;
-    min-height: 100vh;
-    min-height: calc(100svh / 0.8);
   }
 
   .hero-split-inner {
     min-height: 100svh;
-    min-height: calc(100svh / 0.8);
     align-items: flex-start;
     padding-top: clamp(14.5rem, 20vh, 17.25rem);
     padding-bottom: 4.5rem;
