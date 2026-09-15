@@ -2,7 +2,7 @@ const Setting = require('../models/Setting');
 
 /**
  * Normalizes phone numbers for mNotify SMS sending.
- * e.g., 0551082163 -> 233551082163, +233551082163 -> 233551082163
+ * e.g., 0244374433 -> 233244374433, +233244374433 -> 233244374433
  */
 const normalizePhone = (phone) => {
     if (!phone) return '';

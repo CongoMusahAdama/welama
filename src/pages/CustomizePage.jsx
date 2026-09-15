@@ -161,7 +161,7 @@ const CustomizePage = ({ addOrder }) => {
               <div className="flex gap-4" style={{ display: "flex", gap: "1rem" }}>
                 <div className="review-form-group" style={{ flex: 1 }}>
                   <label>Phone Number</label>
-                  <input type="tel" required value={form.phone} onChange={handleChange("phone")} placeholder="e.g. 0551082163" />
+                  <input type="tel" required value={form.phone} onChange={handleChange("phone")} placeholder="e.g. 0244374433" />
                 </div>
                 <div className="review-form-group" style={{ flex: 1 }}>
                   <label>Location</label>

@@ -28,7 +28,7 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
     tagline: "The Essence of Luxury",
     logoUrl: "/welamalogo.png",
     heroImageUrl: "/shophero.png",
-    contactPhone: "+233 24 437 4433",
+    contactPhone: "0244374433",
     contactEmail: "info@welama.com",
     address: "Accra, Ghana",
     // mNotify SMS
@@ -569,7 +569,7 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
                   type="text"
                   value={formData.contactPhone}
                   onChange={handleChange("contactPhone")}
-                  placeholder="+233 55 108 2163"
+                  placeholder="0244374433"
                   style={{
                     width: "100%",
                     padding: "0.7rem 1rem",
@@ -684,7 +684,7 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
                     type="text"
                     value={testPhone}
                     onChange={(e) => setTestPhone(e.target.value)}
-                    placeholder="e.g. 0551082163"
+                    placeholder="e.g. 0244374433"
                     style={{
                       flex: 1,
                       padding: "0.65rem 1rem",

@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Phone, MessageCircle, Mail, Instagram, Facebook, Ghost, ArrowRight } from "lucide-react";
+import { STORE_PHONE, displayStorePhone, waLink } from "../../utils/whatsapp";
 
 const Footer = ({ settings }) => {
   const location = useLocation();
@@ -8,6 +9,7 @@ const Footer = ({ settings }) => {
     return null;
 
   const logoUrl = settings?.logoUrl || "/welamalogo.png";
+  const storePhone = displayStorePhone(settings?.contactPhone);
 
   return (
     <footer className="footer">
@@ -28,11 +30,11 @@ const Footer = ({ settings }) => {
             <div className="flex flex-col gap-3" style={{ marginTop: "1rem" }}>
               <div className="flex items-center gap-3 footer-desc">
                 <Phone size={16} className="text-teal" />
-                <span>{settings?.contactPhone || "+233 24 437 4433"}</span>
+                <span>{storePhone}</span>
               </div>
               <div className="flex items-center gap-3 footer-desc">
                 <MessageCircle size={16} className="text-teal" />
-                <span>{settings?.contactPhone || "+233 24 437 4433"} (WhatsApp/Call)</span>
+                <span>{storePhone} (WhatsApp/Call)</span>
               </div>
               <div className="flex items-center gap-3 footer-desc">
                 <Mail size={16} className="text-teal" />
@@ -81,13 +83,13 @@ const Footer = ({ settings }) => {
                 </a>
               </li>
               <li>
-                <a href="https://wa.me/233244374433" target="_blank" rel="noreferrer" className="flex items-center gap-2">
-                  <MessageCircle size={16} /> +233 24 437 4433
+                <a href={waLink()} target="_blank" rel="noreferrer" className="flex items-center gap-2">
+                  <MessageCircle size={16} /> {STORE_PHONE}
                 </a>
               </li>
               <li>
-                <a href="tel:+233244374433" className="flex items-center gap-2">
-                  <Phone size={16} /> 0244374433
+                <a href={`tel:${STORE_PHONE}`} className="flex items-center gap-2">
+                  <Phone size={16} /> {STORE_PHONE}
                 </a>
               </li>
             </ul>

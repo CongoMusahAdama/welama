@@ -160,6 +160,9 @@ const seedAdmin = async () => {
         if (!adminExists) {
             await Admin.create(adminData);
             console.log('--- Default Admin Seeded Successfully ---');
+        } else if (adminExists.phone !== adminPhone) {
+            adminExists.phone = adminPhone;
+            await adminExists.save();
         }
     } catch (error) {
         console.error('Seeding error:', error.message);

@@ -348,7 +348,7 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
                       required
                       value={orderForm.phone}
                       onChange={(e) => setOrderForm({ ...orderForm, phone: e.target.value })}
-                      placeholder="e.g. 0551082163"
+                      placeholder="e.g. 0244374433"
                     />
                   </div>
                 </div>

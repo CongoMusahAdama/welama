@@ -118,7 +118,7 @@ const TrackingPage = () => {
               <input
                 type="text"
                 required
-                placeholder="+233 55 555 5555"
+                placeholder="0244374433"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 style={{

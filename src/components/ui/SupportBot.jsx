@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Headset, X, Phone, MessageCircle, ArrowRight } from "lucide-react";
+import { STORE_PHONE, waLink } from "../../utils/whatsapp";
 
 const SupportBot = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -49,19 +50,19 @@ const SupportBot = () => {
             </div>
 
             <div className="support-action-grid">
-              <a href="tel:+233244374433" className="support-action-card">
+              <a href={`tel:${STORE_PHONE}`} className="support-action-card">
                 <div className="action-icon-circle tel-bg">
                   <Phone size={18} />
                 </div>
                 <div className="action-details">
                   <span>Call Us Direct</span>
-                  <strong>+233 24 437 4433</strong>
+                  <strong>{STORE_PHONE}</strong>
                 </div>
                 <ArrowRight size={14} className="action-arrow" />
               </a>
 
               <a
-                href="https://wa.me/233244374433"
+                href={waLink()}
                 target="_blank"
                 rel="noreferrer"
                 className="support-action-card"
@@ -71,7 +72,7 @@ const SupportBot = () => {
                 </div>
                 <div className="action-details">
                   <span>WhatsApp / Chat</span>
-                  <strong>+233 24 437 4433</strong>
+                  <strong>{STORE_PHONE}</strong>
                 </div>
                 <ArrowRight size={14} className="action-arrow" />
               </a>
@@ -80,7 +81,7 @@ const SupportBot = () => {
 
           <div className="support-footer-premium">
             <a
-              href="https://wa.me/233244374433"
+              href={waLink()}
               target="_blank"
               rel="noreferrer"
               className="whatsapp-sticky-btn"

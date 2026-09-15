@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { Shield, Globe, Award, Phone, MessageCircle, Mail, Instagram, Facebook, Ghost } from "lucide-react";
+import { STORE_PHONE, waLink } from "../utils/whatsapp";
 
 const AboutPage = () => {
   useEffect(() => {
@@ -263,7 +264,7 @@ const AboutPage = () => {
                   </div>
                   <div className="text-wrap">
                     <label>Call & Direct Inquiries</label>
-                    <a href="tel:+233244374433">+233 24 437 4433 (Customer Care)</a>
+                    <a href={`tel:${STORE_PHONE}`}>{STORE_PHONE} (Customer Care)</a>
                   </div>
                 </div>
 
@@ -276,7 +277,7 @@ const AboutPage = () => {
                   </div>
                   <div className="text-wrap">
                     <label>WhatsApp / Call</label>
-                    <a href="https://wa.me/233244374433">+233 24 437 4433</a>
+                    <a href={waLink()}>{STORE_PHONE}</a>
                   </div>
                 </div>
 
@@ -309,7 +310,7 @@ const AboutPage = () => {
                   <span style={{ fontWeight: 800 }}>T</span>
                   <span>@shop.welama</span>
                 </a>
-                <a href="https://wa.me/233244374433" target="_blank" rel="noreferrer" className="social-pill">
+                <a href={waLink()} target="_blank" rel="noreferrer" className="social-pill">
                   <MessageCircle size={18} />
                   <span>WhatsApp</span>
                 </a>

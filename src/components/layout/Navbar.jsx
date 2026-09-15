@@ -4,6 +4,7 @@ import { Search, Heart, Menu, X, ArrowRight, LayoutGrid, ChevronDown, ShoppingBa
 import { useCart } from "../../context/CartContext";
 import RecentlyViewedDropdown from "./RecentlyViewedDropdown";
 import { Cedis } from "../../utils/currency";
+import { displayStorePhone, waLink } from "../../utils/whatsapp";
 
 const NavCartButton = () => {
   const { cartCount, cartTotal, setIsCartOpen, cartPulse } = useCart();
@@ -220,6 +221,7 @@ const SearchOverlay = ({ isOpen, onClose }) => {
 
 const Navbar = ({ user, categories = [], settings }) => {
   const logoUrl = settings?.logoUrl || "/welamalogo.png";
+  const storePhone = displayStorePhone(settings?.contactPhone);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -368,8 +370,8 @@ const Navbar = ({ user, categories = [], settings }) => {
             </Link>
 
             <div className="nav-contact-line desktop-only">
-              <a href="tel:+233244374433">
-                <Phone size={13} /> +233 24 437 4433
+              <a href={`tel:${storePhone}`}>
+                <Phone size={13} /> {storePhone}
               </a>
               <a href="mailto:info@welama.com">
                 <Mail size={13} /> info@welama.com
@@ -508,7 +510,7 @@ const Navbar = ({ user, categories = [], settings }) => {
         </nav>
         <div className="mobile-nav-footer">
           <a
-            href="https://wa.me/233244374433"
+            href={waLink()}
             target="_blank"
             rel="noreferrer"
             className="mobile-nav-cta mobile-nav-cta-dark"

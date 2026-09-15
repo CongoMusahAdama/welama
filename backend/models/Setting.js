@@ -19,7 +19,7 @@ const SettingSchema = new mongoose.Schema({
     },
     contactPhone: {
         type: String,
-        default: '+233 24 437 4433'
+        default: '0244374433'
     },
     contactEmail: {
         type: String,
