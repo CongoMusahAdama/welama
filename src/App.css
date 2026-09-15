@@ -1119,6 +1119,59 @@ span.nav-cart-text {
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
+.brands-page {
+  padding-top: var(--site-header-offset, 88px);
+  background: #fff;
+  min-height: 70vh;
+}
+
+.brands-page-header {
+  margin-bottom: 2.5rem;
+}
+
+.brands-page-header h1 {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  color: #0A0A0A;
+  margin-bottom: 0.5rem;
+}
+
+.brands-page-header p {
+  color: #666;
+  font-size: 1.05rem;
+  max-width: 36rem;
+}
+
+.brands-page-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1.25rem;
+}
+
+.brand-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  min-height: 160px;
+  padding: 1.5rem 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fff;
+}
+
+.brand-tile img {
+  height: 56px;
+  max-width: 140px;
+  object-fit: contain;
+}
+
+.brand-tile span {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #0A0A0A;
+  text-align: center;
+}
+
 .trust-carousel-icon {
   color: var(--yellow-accent);
   flex-shrink: 0;

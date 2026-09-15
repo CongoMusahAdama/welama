@@ -4,6 +4,8 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const Admin = require('./models/Admin');
+const Brand = require('./models/Brand');
+const defaultBrands = require('./data/defaultBrands');
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -111,6 +113,7 @@ app.use((req, res, next) => {
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/products', require('./routes/productRoutes'));
 app.use('/api/categories', require('./routes/categoryRoutes'));
+app.use('/api/brands', require('./routes/brandRoutes'));
 app.use('/api/orders', require('./routes/orderRoutes'));
 app.use('/api/upload', require('./routes/uploadRoutes'));
 app.use('/api/reviews', require('./routes/reviewRoutes'));
@@ -169,11 +172,23 @@ const seedAdmin = async () => {
     }
 };
 
+const seedBrands = async () => {
+    try {
+        const count = await Brand.countDocuments();
+        if (count > 0) return;
+        await Brand.insertMany(defaultBrands);
+        console.log('--- Default brands seeded ---');
+    } catch (error) {
+        console.error('Brand seeding error:', error.message);
+    }
+};
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, async () => {
     console.log(`Server running on port ${PORT}`);
     await seedAdmin();
+    await seedBrands();
 });
 
 // Global Error Handler (Hides stack traces in production)

@@ -12,6 +12,7 @@ import {
   Globe,
   ShoppingBag,
   Images,
+  Award,
   LogOut,
   Settings as SettingsIcon,
   Plus,
@@ -24,6 +25,7 @@ import AdminReceipts from "./AdminReceipts";
 import AdminCategories from "./AdminCategories";
 import AdminSettings from "./AdminSettings";
 import AdminGallery from "./AdminGallery";
+import AdminBrands from "./AdminBrands";
 
 const AdminDashboard = ({
   products,
@@ -161,6 +163,13 @@ const AdminDashboard = ({
             <span className="sidebar-text">Gallery</span>
           </Link>
           <Link
+            to="/admin/brands"
+            className={`sidebar-link ${location.pathname.startsWith("/admin/brands") ? "active" : ""}`}
+          >
+            <Award size={18} />
+            <span className="sidebar-text">Brands</span>
+          </Link>
+          <Link
             to="/admin/settings"
             className={`sidebar-link ${location.pathname.startsWith("/admin/settings") ? "active" : ""}`}
           >
@@ -270,6 +279,10 @@ const AdminDashboard = ({
           <Route
             path="/gallery"
             element={<AdminGallery />}
+          />
+          <Route
+            path="/brands"
+            element={<AdminBrands />}
           />
           <Route
             path="/settings"

@@ -32,6 +32,7 @@ import ReviewsPage from "./pages/ReviewsPage";
 import CustomizePage from "./pages/CustomizePage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import GalleryPage from "./pages/GalleryPage";
+import BrandsPage from "./pages/BrandsPage";
 
 // --- ADMIN ---
 import AdminDashboard from "./components/admin/AdminDashboard";
@@ -409,6 +410,7 @@ const App = () => {
                   element={<CustomizePage addOrder={addOrder} />}
                 />
                 <Route path="/gallery" element={<GalleryPage />} />
+                <Route path="/brands" element={<BrandsPage />} />
                 <Route
                   path="/auth"
                   element={<AuthPage onLogin={handleLogin} />}

@@ -1,39 +1,47 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
-
-const BRANDS = [
-  { name: "Calvin Klein", src: "/calvinklein.png" },
-  { name: "Chanel", src: "/channel.png" },
-  { name: "Coach", src: "/coach.png" },
-  { name: "Gucci", src: "/gucci.png" },
-  { name: "H&M", src: "/handm.png" },
-  { name: "Kate Spade", src: "/katespade.png" },
-  { name: "Louis Vuitton", src: "/luisvuiton.png" },
-  { name: "Michael Kors", src: "/micheal kors.png" },
-  { name: "Zara", src: "/zara.png" },
-];
+import { apiRequest } from "../../utils/api";
+import { DEFAULT_BRANDS } from "../../data/defaultBrands";
 
 const TrustCarousel = () => {
-  const track = [...BRANDS, ...BRANDS, ...BRANDS, ...BRANDS];
+  const [brands, setBrands] = useState(DEFAULT_BRANDS);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      const data = await apiRequest("/brands", "GET", null, 8000);
+      if (!cancelled && data?.success && Array.isArray(data.data)) {
+        setBrands(data.data);
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!brands.length) return null;
+
+  const track = [...brands, ...brands, ...brands, ...brands];
   return (
     <section id="premium-brands" className="brands-carousel-section">
-      <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
+      <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "2.5rem" }}>
         <div>
-          <h2 style={{ fontSize: '2.2rem', fontWeight: 800, color: '#0A0A0A', marginBottom: '0.2rem' }}>Premium Brands</h2>
-          <p style={{ color: '#666', fontSize: '0.95rem' }}>Unveil the finest selection of high-end clothing and bags</p>
+          <h2 style={{ fontSize: "2.2rem", fontWeight: 800, color: "#0A0A0A", marginBottom: "0.2rem" }}>Premium Brands</h2>
+          <p style={{ color: "#666", fontSize: "0.95rem" }}>Unveil the finest selection of high-end clothing and bags</p>
         </div>
-        <Link to="/brands" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', fontWeight: 700, color: '#0A0A0A', textDecoration: 'none' }}>
+        <Link to="/brands" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", fontSize: "0.85rem", fontWeight: 700, color: "#0A0A0A", textDecoration: "none" }}>
           Show All Brands <ArrowRight size={14} />
         </Link>
       </div>
 
       <div className="trust-carousel">
-        <div className="trust-carousel-track" style={{ padding: '1rem 0' }}>
+        <div className="trust-carousel-track" style={{ padding: "1rem 0" }}>
           {track.map((brand, i) => (
-            <span className="trust-carousel-item" key={i} style={{ display: 'flex', alignItems: 'center', padding: '0 3.5rem', borderRight: 'none' }}>
+            <span className="trust-carousel-item" key={`${brand._id || brand.name}-${i}`} style={{ display: "flex", alignItems: "center", padding: "0 3.5rem", borderRight: "none" }}>
               <img
-                src={brand.src}
+                src={brand.logoUrl || brand.src}
                 alt={brand.name}
                 style={{
                   height: "58px",

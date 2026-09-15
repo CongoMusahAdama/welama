@@ -1,5 +1,6 @@
 const Admin = require('../models/Admin');
 const jwt = require('jsonwebtoken');
+const { ghanaLocalPhone, phoneLookupValues, phonesMatch } = require('../utils/phone');
 
 // Generate Token and set cookie
 const sendTokenResponse = (admin, statusCode, res) => {
@@ -33,15 +34,22 @@ const sendTokenResponse = (admin, statusCode, res) => {
 // @access  Public
 exports.login = async (req, res) => {
     try {
-        const { identifier, password } = req.body;
+        const identifier = String(req.body.identifier || '').trim();
+        const { password } = req.body;
+        const email = identifier.toLowerCase();
+        const phones = phoneLookupValues(identifier);
 
-        // Find admin by email OR phone
-        const admin = await Admin.findOne({
+        let admin = await Admin.findOne({
             $or: [
-                { email: identifier?.toLowerCase() },
-                { phone: identifier }
+                { email },
+                { phone: { $in: phones } }
             ]
         }).select('+password');
+
+        if (!admin && ghanaLocalPhone(identifier)) {
+            const candidates = await Admin.find().select('+password').limit(20);
+            admin = candidates.find((row) => phonesMatch(row.phone, identifier)) || null;
+        }
 
         if (!admin) {
             return res.status(401).json({ success: false, message: 'Invalid credentials' });

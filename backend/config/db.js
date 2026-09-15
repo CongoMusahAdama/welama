@@ -18,7 +18,8 @@ const connectDB = async () => {
                 require('../models/Category'),
                 require('../models/Review'),
                 require('../models/GalleryItem'),
-                require('../models/Setting')
+                require('../models/Setting'),
+                require('../models/Brand')
             ];
             await Promise.all(models.map((model) => model.createIndexes()));
             console.log('MongoDB indexes ensured');
