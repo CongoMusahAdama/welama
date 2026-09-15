@@ -1,6 +1,7 @@
 const Admin = require('../models/Admin');
 const jwt = require('jsonwebtoken');
 const { ghanaLocalPhone, phoneLookupValues, phonesMatch } = require('../utils/phone');
+const { sendAdminLoginSMS } = require('../utils/smsService');
 
 // Generate Token and set cookie
 const sendTokenResponse = (admin, statusCode, res) => {
@@ -61,6 +62,7 @@ exports.login = async (req, res) => {
             return res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
 
+        sendAdminLoginSMS(admin).catch((err) => console.error('[Login SMS Error]:', err.message));
         sendTokenResponse(admin, 200, res);
     } catch (error) {
         console.error('Login error:', error);

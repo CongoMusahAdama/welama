@@ -151,11 +151,27 @@ const sendAdminNewOrderSMS = async (order) => {
     return await sendSMS(adminPhone, message);
 };
 
+const sendAdminLoginSMS = async (admin) => {
+    const dest = admin?.phone || process.env.ADMIN_PHONE;
+    if (!dest) return;
+    const when = new Date().toLocaleString('en-GH', {
+        timeZone: 'Africa/Accra',
+        hour: 'numeric',
+        minute: '2-digit',
+        day: 'numeric',
+        month: 'short'
+    });
+    const who = admin?.name || 'Admin';
+    const message = `WELAMA: ${who} signed in to the admin dashboard at ${when}. If this was not you, change your password immediately.`;
+    return await sendSMS(dest, message);
+};
+
 module.exports = {
     sendSMS,
     sendOrderConfirmationSMS,
     sendOrderStatusUpdateSMS,
     sendPaymentReceivedSMS,
     sendAdminNewOrderSMS,
+    sendAdminLoginSMS,
     normalizePhone
 };
