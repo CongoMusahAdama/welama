@@ -21,14 +21,14 @@ const welcomeFirstName = (user) => {
 };
 
 const KPI_TONES = {
-  sky: { bg: "#ffffff", ink: "#0A0A0A" },
-  mint: { bg: "#ffffff", ink: "#0A0A0A" },
-  lemon: { bg: "#ffffff", ink: "#0A0A0A" },
-  peach: { bg: "#ffffff", ink: "#0A0A0A" },
-  rose: { bg: "#ffffff", ink: "#0A0A0A" },
-  lilac: { bg: "#ffffff", ink: "#0A0A0A" },
-  aqua: { bg: "#ffffff", ink: "#0A0A0A" },
-  slate: { bg: "#ffffff", ink: "#0A0A0A" },
+  sky: { bg: "#e0f2fe", ink: "#0369a1", icon: "#bae6fd" },
+  mint: { bg: "#dcfce7", ink: "#166534", icon: "#bbf7d0" },
+  lemon: { bg: "#fef9c3", ink: "#854d0e", icon: "#fde68a" },
+  peach: { bg: "#ffedd5", ink: "#9a3412", icon: "#fed7aa" },
+  lilac: { bg: "#ede9fe", ink: "#6d28d9", icon: "#ddd6fe" },
+  aqua: { bg: "#ccfbf1", ink: "#0f766e", icon: "#99f6e4" },
+  rose: { bg: "#fee2e2", ink: "#991b1b", icon: "#fecaca" },
+  slate: { bg: "#f1f5f9", ink: "#334155", icon: "#e2e8f0" },
 };
 
 const parseOrderDate = (order) => {
@@ -343,13 +343,13 @@ const DashboardOverview = ({ products = [], orders = [], user, settings }) => {
               key={kpi.label}
               type="button"
               className="dash-kpi"
-              style={{ background: tone.bg }}
+              style={{ background: tone.bg, borderColor: tone.icon }}
               onClick={() => navigate(kpi.to)}
             >
-              <span className="dash-kpi-icon" style={{ color: tone.ink }}>
+              <span className="dash-kpi-icon" style={{ color: tone.ink, background: tone.icon }}>
                 <Icon size={14} />
               </span>
-              <span className="dash-kpi-value" style={{ color: "#0f172a" }}>
+              <span className="dash-kpi-value" style={{ color: tone.ink }}>
                 {kpi.value}
               </span>
               <span className="dash-kpi-label">{kpi.label}</span>

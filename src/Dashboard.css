@@ -321,7 +321,7 @@
 }
 
 .dash-kpi {
-    border: 1px solid #e5e7eb;
+    border: 1px solid transparent;
     background: #ffffff;
     border-radius: 14px;
     padding: 0.9rem 1rem 0.85rem;

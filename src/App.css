@@ -851,13 +851,6 @@ span.nav-cart-text {
     --hero-nav-offset: 0px;
     padding-top: 0;
   }
-
-  .hero-split-inner {
-    min-height: 100svh;
-    align-items: flex-start;
-    padding-top: clamp(14.5rem, 20vh, 17.25rem);
-    padding-bottom: 4.5rem;
-  }
 }
 
 .hero-split-bg {
@@ -906,6 +899,15 @@ span.nav-cart-text {
   width: 100%;
   min-height: calc(100svh - var(--hero-nav-offset));
   padding: clamp(2.5rem, 6vh, 4.5rem) 0 clamp(3rem, 7vh, 5rem);
+}
+
+@media (min-width: 768px) {
+  .hero-split-inner {
+    align-items: flex-start;
+    min-height: 100svh;
+    padding-top: calc(var(--site-header-offset) + 1.25rem);
+    padding-bottom: 4.5rem;
+  }
 }
 
 .hero-split-text {
