@@ -14,6 +14,14 @@ import {
 import Swal from "sweetalert2";
 import { apiRequest, API_URL } from "../../utils/api";
 
+const SETTINGS_TABS = [
+  { id: "brand", label: "Brand", icon: ImageIcon },
+  { id: "contact", label: "Contact", icon: Building },
+  { id: "sms", label: "mNotify SMS", icon: Smartphone },
+  { id: "paystack", label: "Paystack", icon: CreditCard },
+  { id: "account", label: "Account", icon: Lock },
+];
+
 const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
   const [formData, setFormData] = useState({
     siteName: "WELAMA",
@@ -38,6 +46,7 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [testPhone, setTestPhone] = useState("");
   const [isSendingTest, setIsSendingTest] = useState(false);
+  const [settingsTab, setSettingsTab] = useState("brand");
 
   // Password Change State
   const [pwdData, setPwdData] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
@@ -260,10 +269,11 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
     <div className="dashboard-view fade-in">
       <header className="admin-header">
         <div className="page-title">
-          <h1 className="serif">Store, mNotify & Paystack Settings</h1>
-          <p>Manage brand logo, mNotify SMS gateway, and Paystack payment processing.</p>
+          <h1 className="serif">Settings</h1>
+          <p>Brand, contact, SMS, payments, and your account — switch tabs instead of scrolling.</p>
         </div>
         <div className="header-actions">
+          {settingsTab !== "account" && (
           <button
             onClick={handleSave}
             disabled={isSaving}
@@ -279,13 +289,32 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
           >
             <Save size={18} /> {isSaving ? "Saving..." : "Save Changes"}
           </button>
+          )}
         </div>
       </header>
 
+      <div className="settings-tabs" role="tablist" aria-label="Settings sections">
+        {SETTINGS_TABS.map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={settingsTab === tab.id}
+              className={`settings-tab ${settingsTab === tab.id ? "is-on" : ""}`}
+              onClick={() => setSettingsTab(tab.id)}
+            >
+              <Icon size={15} />
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+
       <form onSubmit={handleSave}>
-        <div className="admin-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem" }}>
-          
-          {/* Brand Logo & Appearance */}
+        {settingsTab === "brand" && (
+          <div className="settings-tab-panel">
           <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
             <div className="admin-card">
               <div className="card-header" style={{ marginBottom: "1.5rem" }}>
@@ -459,6 +488,25 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
                 </label>
                 <input
                   type="text"
+                  value={formData.heroImageUrl}
+                  onChange={handleChange("heroImageUrl")}
+                  placeholder="https://... or /shophero.png"
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem 1rem",
+                    borderRadius: "10px",
+                    border: "1px solid #e2e8f0",
+                    fontSize: "0.85rem",
+                  }}
+                />
+              </div>
+
+              <div className="form-group" style={{ marginBottom: "1.25rem" }}>
+                <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#334155", display: "block", marginBottom: "0.4rem" }}>
+                  Site name
+                </label>
+                <input
+                  type="text"
                   value={formData.siteName}
                   onChange={handleChange("siteName")}
                   placeholder="WELAMA"
@@ -491,7 +539,12 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
                 />
               </div>
             </div>
+          </div>
+          </div>
+        )}
 
+        {settingsTab === "contact" && (
+          <div className="settings-tab-panel">
             {/* Business Contact Info */}
             <div className="admin-card">
               <div className="card-header" style={{ marginBottom: "1.5rem" }}>
@@ -566,10 +619,10 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
               </div>
             </div>
           </div>
+        )}
 
-          {/* mNotify SMS & Paystack Payment Integration */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
-            
+        {settingsTab === "sms" && (
+          <div className="settings-tab-panel">
             {/* mNotify Ghana SMS Settings */}
             <div className="admin-card">
               <div className="card-header" style={{ marginBottom: "1.5rem" }}>
@@ -660,7 +713,11 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
                 </div>
               </div>
             </div>
+          </div>
+        )}
 
+        {settingsTab === "paystack" && (
+          <div className="settings-tab-panel">
             {/* Paystack Online Payment Settings */}
             <div className="admin-card">
               <div className="card-header" style={{ marginBottom: "1.5rem" }}>
@@ -692,13 +749,12 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
 
 
             </div>
-
           </div>
-        </div>
+        )}
       </form>
 
-      {/* Admin Account & Security Section */}
-      <div className="admin-grid" style={{ marginTop: "2rem" }}>
+      {settingsTab === "account" && (
+      <div className="settings-tab-panel">
         <div className="admin-card">
           <div className="card-header" style={{ marginBottom: "1.5rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
@@ -841,6 +897,7 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
           </form>
         </div>
       </div>
+      )}
     </div>
   );
 };
