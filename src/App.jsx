@@ -17,6 +17,7 @@ import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import SupportBot from "./components/ui/SupportBot";
 import Preloader from "./components/ui/Preloader";
+import PageRouteLoader from "./components/ui/PageRouteLoader";
 import HeadingAnimator from "./components/ui/HeadingAnimator";
 
 // --- PAGES ---
@@ -88,13 +89,21 @@ const App = () => {
   useEffect(() => {
     let cancelled = false;
 
+    const splashStarted = Date.now();
+    const SPLASH_MS = 2600;
+    const revealApp = () => {
+      const wait = Math.max(0, SPLASH_MS - (Date.now() - splashStarted));
+      window.setTimeout(() => {
+        if (!cancelled) setLoading(false);
+      }, wait);
+    };
+
     try {
       const cached = sessionStorage.getItem("welama_products");
       if (cached) {
         const parsed = JSON.parse(cached);
         if (Array.isArray(parsed) && parsed.length) {
           setProducts(parsed);
-          setLoading(false);
         }
       }
     } catch {
@@ -103,7 +112,7 @@ const App = () => {
 
     const splashCap = setTimeout(() => {
       if (!cancelled) setLoading(false);
-    }, 500);
+    }, 7000);
 
     const applyCatalog = (catRes, prodRes, setRes) => {
       if (cancelled) return;
@@ -139,7 +148,7 @@ const App = () => {
         setProducts((prev) => (prev.length ? prev : SAMPLE_PRODUCTS));
       }
 
-      setLoading(false);
+      revealApp();
     };
 
     const initApp = async () => {
@@ -366,13 +375,14 @@ const App = () => {
   return (
     <AnimatePresence mode="wait">
       {loading ? (
-        <Preloader key="preloader" />
+        <Preloader key="preloader" products={products} />
       ) : (
         <Router key="app">
         <CartProvider>
           <ModalProvider products={products}>
             <div className="app">
               <HeadingAnimator />
+              <PageRouteLoader />
               <Navbar user={user} categories={categories} settings={settings} />
               <Routes>
                 <Route

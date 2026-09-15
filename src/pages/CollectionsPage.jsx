@@ -51,7 +51,7 @@ const CollectionsPage = ({ settings }) => {
           style={{ marginBottom: "4rem" }}
         >
           <div style={{ maxWidth: "600px" }}>
-            <h2 className="serif" style={{ fontSize: "3.5rem" }}>
+            <h2 className="serif" style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)" }}>
               The Art of Dressing Well
             </h2>
             <p
@@ -80,7 +80,7 @@ const CollectionsPage = ({ settings }) => {
             ></div>
             <div className="collection-overlay-content">
               <span className="collection-type">New Season</span>
-              <h3 className="serif" style={{ fontSize: "3rem" }}>
+              <h3 className="serif" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)" }}>
                 Dresses
               </h3>
               <p style={{ margin: "1rem 0 2rem", opacity: 0.8 }}>
@@ -107,7 +107,7 @@ const CollectionsPage = ({ settings }) => {
             ></div>
             <div className="collection-overlay-content">
               <span className="collection-type">Everyday Luxury</span>
-              <h3 className="serif" style={{ fontSize: "3rem" }}>
+              <h3 className="serif" style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)" }}>
                 Bags
               </h3>
               <p style={{ margin: "1rem 0 2rem", opacity: 0.8 }}>
@@ -141,7 +141,7 @@ const CollectionsPage = ({ settings }) => {
               style={{ maxWidth: "600px" }}
             >
               <span className="collection-type">Signature Selection</span>
-              <h3 className="serif" style={{ fontSize: "3.5rem" }}>
+              <h3 className="serif" style={{ fontSize: "clamp(2rem, 4.5vw, 3.5rem)" }}>
                 WELAMA's Choice
               </h3>
               <p style={{ margin: "1rem 0 2rem", opacity: 0.8 }}>

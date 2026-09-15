@@ -169,32 +169,34 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
 
   return (
     <div className="product-detail-page section-padding container">
-      <button className="product-detail-back" onClick={() => navigate(-1)}>
-        <ChevronLeft size={16} /> Back
-      </button>
-
       <div className="product-detail-layout">
-        <div className="product-detail-gallery">
-          <div className="product-detail-heading">
-            <h1 className="serif product-detail-title">{name}</h1>
-            {sku && <p className="product-detail-sku">{sku}</p>}
+        <div className="product-detail-pin">
+          <button className="product-detail-back" onClick={() => navigate(-1)}>
+            <ChevronLeft size={16} /> Back
+          </button>
 
-            <p className="product-detail-price">
-              {discountPrice && <span className="product-price-was"><Cedis value={price} /></span>}
-              <span className={discountPrice ? "product-price-sale" : "product-price-current"}>
-                <Cedis value={currentPrice} />
-              </span>
-            </p>
-          </div>
+          <div className="product-detail-gallery">
+            <div className="product-detail-heading">
+              <h1 className="serif product-detail-title">{name}</h1>
+              {sku && <p className="product-detail-sku">{sku}</p>}
 
-          <div className="product-detail-main-image">
-            <img src={resolvedImage} alt={name} />
-            {badge && !isSoldOut && <div className="product-detail-badge">{badge}</div>}
-            {isSoldOut && (
-              <div className="product-detail-badge" style={{ background: "#ef4444", color: "white" }}>
-                SOLD OUT
-              </div>
-            )}
+              <p className="product-detail-price">
+                {discountPrice && <span className="product-price-was"><Cedis value={price} /></span>}
+                <span className={discountPrice ? "product-price-sale" : "product-price-current"}>
+                  <Cedis value={currentPrice} />
+                </span>
+              </p>
+            </div>
+
+            <div className="product-detail-main-image">
+              <img src={resolvedImage} alt={name} />
+              {badge && !isSoldOut && <div className="product-detail-badge">{badge}</div>}
+              {isSoldOut && (
+                <div className="product-detail-badge" style={{ background: "#ef4444", color: "white" }}>
+                  SOLD OUT
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

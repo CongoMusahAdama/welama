@@ -88,6 +88,12 @@ body {
   overflow-x: hidden;
 }
 
+@media (min-width: 768px) {
+  html {
+    zoom: 0.8;
+  }
+}
+
 h1,
 h2,
 h3,
@@ -221,6 +227,50 @@ img {
   }
 }
 
+.page-route-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 90000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.78);
+  pointer-events: all;
+}
+
+.page-route-spinner {
+  position: relative;
+  width: 64px;
+  height: 64px;
+}
+
+.page-route-spinner-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2.5px solid rgba(10, 10, 10, 0.08);
+  border-top-color: #C9A227;
+  border-right-color: #0A0A0A;
+  animation: spin 0.72s linear infinite;
+}
+
+.page-route-spinner-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  background: #C9A227;
+  animation: pageLoaderPulse 0.9s ease-in-out infinite;
+}
+
+@keyframes pageLoaderPulse {
+  0%, 100% { transform: scale(0.85); opacity: 0.7; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+
 /* Full-page branded preloader */
 .app-preloader {
   position: fixed;
@@ -278,7 +328,11 @@ img {
 
   .anim-heading,
   .loader-premium,
-  .trust-carousel-track {
+  .trust-carousel-track,
+  .page-route-spinner-ring,
+  .page-route-spinner-dot,
+  .logo-img-enter,
+  .hero-split-photo {
     animation: none;
     transition: none;
     opacity: 1;

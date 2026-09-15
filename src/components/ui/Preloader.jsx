@@ -1,14 +1,44 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 
-const COLLAGE = [
+const FALLBACK_COLLAGE = [
   { src: "/heroframe.png", alt: "WELAMA styled bags", rotate: -6 },
   { src: "/heroframe1.png", alt: "WELAMA bag collection", rotate: 5 },
   { src: "/heroframe3.png", alt: "WELAMA tailored fashion", rotate: 4 },
   { src: "/heroframe2.png", alt: "WELAMA everyday style", rotate: -4 },
 ];
 
-const Preloader = () => {
+const usableImage = (url) =>
+  typeof url === "string" && url.trim() && !url.startsWith("blob:");
+
+const isSampleProduct = (product) => {
+  const id = String(product?._id || product?.id || "");
+  return id.startsWith("sample-");
+};
+
+const collageFromProducts = (products = []) => {
+  const latest = [...products]
+    .filter((product) => !isSampleProduct(product) && usableImage(product.image))
+    .sort((a, b) => {
+      const dateA = new Date(a.createdAt || a.updatedAt || 0).getTime();
+      const dateB = new Date(b.createdAt || b.updatedAt || 0).getTime();
+      return dateB - dateA;
+    })
+    .slice(0, 4);
+
+  return FALLBACK_COLLAGE.map((frame, index) => {
+    const product = latest[index];
+    return {
+      src: product?.image || frame.src,
+      alt: product?.name || frame.alt,
+      rotate: frame.rotate,
+    };
+  });
+};
+
+const Preloader = ({ products = [] }) => {
+  const collage = useMemo(() => collageFromProducts(products), [products]);
+
   return (
     <motion.div
       className="app-preloader"
@@ -17,15 +47,24 @@ const Preloader = () => {
       transition={{ duration: 0.18, ease: "easeOut" }}
     >
       <div className="preloader-collage">
-        {COLLAGE.map((item, i) => (
+        {collage.map((item, i) => (
           <motion.div
-            key={item.src}
+            key={`${item.src}-${i}`}
             className="preloader-collage-frame"
             initial={{ opacity: 0, y: 12, scale: 0.96, rotate: 0 }}
             animate={{ opacity: 1, y: 0, scale: 1, rotate: item.rotate }}
             transition={{ duration: 0.28, delay: i * 0.04, ease: [0.2, 0.8, 0.2, 1] }}
           >
-            <img src={item.src} alt={item.alt} fetchPriority={i < 2 ? "high" : "low"} />
+            <img
+              src={item.src}
+              alt={item.alt}
+              fetchPriority={i < 2 ? "high" : "low"}
+              onError={(event) => {
+                if (event.currentTarget.dataset.fallback === "1") return;
+                event.currentTarget.dataset.fallback = "1";
+                event.currentTarget.src = FALLBACK_COLLAGE[i].src;
+              }}
+            />
           </motion.div>
         ))}
       </div>

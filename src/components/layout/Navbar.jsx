@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Search, Heart, Menu, X, ArrowRight, LayoutGrid, ChevronDown, ShoppingBag, Phone, Mail, PackageSearch } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import RecentlyViewedDropdown from "./RecentlyViewedDropdown";
@@ -227,6 +227,9 @@ const Navbar = ({ user, categories = [], settings }) => {
   const [inlineCategory, setInlineCategory] = useState("");
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const prevPath = useRef(location.pathname);
+  const [logoAnimKey, setLogoAnimKey] = useState(1);
   const isShopPage = location.pathname.startsWith("/shop");
   const isHomePage = location.pathname === "/";
   const isAuthPage =
@@ -245,11 +248,32 @@ const Navbar = ({ user, categories = [], settings }) => {
   }, [location]);
 
   useEffect(() => {
-    document.body.style.overflow = isMobileMenuOpen ? "hidden" : "";
+    const html = document.documentElement;
+    if (isMobileMenuOpen) {
+      const y = window.scrollY;
+      html.classList.add("nav-menu-open");
+      document.body.style.top = `-${y}px`;
+      document.body.dataset.scrollLockY = String(y);
+    } else {
+      const y = Number(document.body.dataset.scrollLockY || 0);
+      html.classList.remove("nav-menu-open");
+      document.body.style.top = "";
+      delete document.body.dataset.scrollLockY;
+      if (y) window.scrollTo(0, y);
+    }
     return () => {
-      document.body.style.overflow = "";
+      html.classList.remove("nav-menu-open");
+      document.body.style.top = "";
+      delete document.body.dataset.scrollLockY;
     };
   }, [isMobileMenuOpen]);
+
+  useEffect(() => {
+    if (location.pathname === "/" && prevPath.current !== "/") {
+      setLogoAnimKey((key) => key + 1);
+    }
+    prevPath.current = location.pathname;
+  }, [location.pathname]);
 
   useEffect(() => {
     if (location.hash) {
@@ -297,12 +321,33 @@ const Navbar = ({ user, categories = [], settings }) => {
     { to: "/gallery?category=Bags", label: "Bags" },
   ];
 
+  useEffect(() => {
+    if (!isShopPage) return;
+    const q = searchParams.get("q") || "";
+    setInlineQuery((prev) => (prev === q ? prev : q));
+  }, [isShopPage, searchParams]);
+
+  useEffect(() => {
+    if (!isShopPage) return undefined;
+    const timer = window.setTimeout(() => {
+      const params = new URLSearchParams(location.search);
+      const current = params.get("q") || "";
+      const next = inlineQuery.trim();
+      if (next === current) return;
+      if (next) params.set("q", next);
+      else params.delete("q");
+      const qs = params.toString();
+      navigate(qs ? `/shop?${qs}` : "/shop", { replace: true });
+    }, 160);
+    return () => window.clearTimeout(timer);
+  }, [inlineQuery, isShopPage, location.search, navigate]);
+
   const handleInlineSearch = (e) => {
     e.preventDefault();
     const params = new URLSearchParams();
     if (inlineQuery.trim()) params.set("q", inlineQuery.trim());
     if (inlineCategory) params.set("category", inlineCategory);
-    if (params.toString()) navigate(`/shop?${params.toString()}`);
+    navigate(params.toString() ? `/shop?${params.toString()}` : "/shop");
   };
 
   if (isAuthPage) return null;
@@ -315,9 +360,10 @@ const Navbar = ({ user, categories = [], settings }) => {
           <div className="container main-nav-row-inner">
             <Link to="/" className="logo logo-lockup">
               <img
+                key={logoAnimKey}
                 src={logoUrl}
                 alt={settings?.siteName || "WELAMA"}
-                className="logo-img"
+                className="logo-img logo-img-enter"
               />
             </Link>
 

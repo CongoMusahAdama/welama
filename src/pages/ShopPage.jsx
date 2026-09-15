@@ -13,10 +13,7 @@ const ShopPage = ({ products = [], categories = [] }) => {
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    const q = searchParams.get("q");
-    if (q) {
-      setSearchQuery(q);
-    }
+    setSearchQuery(searchParams.get("q") || "");
     const cat = searchParams.get("category");
     if (cat) {
       setActiveCategory(cat.toLowerCase());
@@ -67,6 +64,8 @@ const ShopPage = ({ products = [], categories = [] }) => {
     return () => observer.disconnect();
   }, [activeCategory, searchQuery, sortBy, maxPrice]);
 
+  const isSearching = Boolean(searchQuery.trim());
+
   const categoryTabs = [
     { id: "all", label: "All Collections" },
     ...categories.map((c) =>
@@ -75,14 +74,15 @@ const ShopPage = ({ products = [], categories = [] }) => {
   ];
 
   return (
-    <div className="shop-page-wrapper">
-      {/* Shop Sub-hero - Hidden on Mobile via CSS */}
-      <section className="shop-hero">
-        <div className="center-text reveal">
-          <span className="shop-hero-brand">WELAMA</span>
-          <h1 className="serif shop-hero-title">Elegance, Curated</h1>
-        </div>
-      </section>
+    <div className={`shop-page-wrapper${isSearching ? " is-searching" : ""}`}>
+      {!isSearching && (
+        <section className="shop-hero">
+          <div className="center-text reveal">
+            <span className="shop-hero-brand">WELAMA</span>
+            <h1 className="serif shop-hero-title">Elegance, Curated</h1>
+          </div>
+        </section>
+      )}
 
       <section className="shop-section">
         <div className="container">

@@ -90,7 +90,15 @@ const HomePage = ({ products = [], categories = [] }) => {
                 {categoryTabs.map((cat) => (
                   <button
                     key={cat.id}
-                    onClick={() => setActiveCategory(cat.id)}
+                    type="button"
+                    onClick={(e) => {
+                      setActiveCategory(cat.id);
+                      e.currentTarget.scrollIntoView({
+                        behavior: "smooth",
+                        inline: "center",
+                        block: "nearest",
+                      });
+                    }}
                     className={`category-pill-btn ${activeCategory === cat.id ? "active" : ""}`}
                   >
                     {cat.label}
@@ -187,7 +195,7 @@ const HomePage = ({ products = [], categories = [] }) => {
             <div className="testimonial-cards-container">
               {/* Card 1 — Ama Serwaa */}
               <div className="testimonial-card-new pos-1 shadow-light">
-                <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=150&h=150&fit=crop&crop=face" alt="Ama Serwaa" className="avatar-img" />
+                <img src="/WELAMA.png" alt="Ama Serwaa" className="avatar-img" />
                 <div className="card-content">
                   <div className="card-header">
                     <h4>Ama Serwaa</h4>
@@ -199,7 +207,7 @@ const HomePage = ({ products = [], categories = [] }) => {
 
               {/* Card 2 — Abena Osei */}
               <div className="testimonial-card-new pos-2 shadow-light border-left-accent">
-                <img src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=150&h=150&fit=crop&crop=face" alt="Abena Osei" className="avatar-img" />
+                <img src="/WELAMA1.png" alt="Abena Osei" className="avatar-img" />
                 <div className="card-content">
                   <div className="card-header">
                     <h4>Abena Osei</h4>
@@ -211,7 +219,7 @@ const HomePage = ({ products = [], categories = [] }) => {
 
               {/* Card 3 — Efua Mensah */}
               <div className="testimonial-card-new pos-3 shadow-light">
-                <img src="https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=150&h=150&fit=crop&crop=face" alt="Efua Mensah" className="avatar-img" />
+                <img src="/WALAMA2.png" alt="Efua Mensah" className="avatar-img" />
                 <div className="card-content">
                   <div className="card-header">
                     <h4>Efua Mensah</h4>
@@ -293,6 +301,9 @@ const HomePage = ({ products = [], categories = [] }) => {
           height: 60px;
           border-radius: 50%;
           object-fit: cover;
+          object-position: center 18%;
+          background: #f3f3f3;
+          flex-shrink: 0;
         }
 
         .card-content {

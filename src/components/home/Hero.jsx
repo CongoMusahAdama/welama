@@ -63,12 +63,13 @@ const Hero = () => {
 
   return (
     <section className="hero-split" aria-label="WELAMA hero">
-      <div
-        className="hero-split-bg"
-        style={{ backgroundImage: "url('/hero.png')" }}
-        role="img"
-        aria-label="Woman carrying a collection of WELAMA handbags"
-      />
+      <div className="hero-split-bg">
+        <img
+          className="hero-split-photo"
+          src="/hero.png"
+          alt="Woman carrying a collection of WELAMA handbags"
+        />
+      </div>
       <div className="hero-split-overlay" />
 
       <div className="container hero-split-inner">
