@@ -3537,8 +3537,7 @@
 
   .hero-split {
     --hero-nav-offset: 0px !important;
-    min-height: 100svh !important;
-    min-height: 100dvh !important;
+    min-height: 0 !important;
     padding-top: 0 !important;
   }
 
@@ -3559,8 +3558,7 @@
   .hero-split-inner {
     align-items: flex-end !important;
     padding: 0 0 calc(env(safe-area-inset-bottom, 0px) + 1.5rem) !important;
-    min-height: 100svh !important;
-    min-height: 100dvh !important;
+    min-height: min(72svh, 560px) !important;
   }
 
   .hero-split-text {

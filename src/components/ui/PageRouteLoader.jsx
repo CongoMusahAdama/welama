@@ -17,7 +17,7 @@ const PageRouteLoader = () => {
     setVisible(true);
     const hide = window.setTimeout(() => setVisible(false), 520);
     return () => window.clearTimeout(hide);
-  }, [location.pathname, location.search]);
+  }, [location.pathname]);
 
   if (!visible) return null;
 
