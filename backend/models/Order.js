@@ -29,7 +29,7 @@ const OrderSchema = new mongoose.Schema({
     },
     items: [
         {
-            productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', default: null },
+            productId: { type: mongoose.Schema.Types.Mixed, default: null },
             name: { type: String, required: true },
             image: { type: String, default: '' },
             category: { type: String, default: 'Luxury' },

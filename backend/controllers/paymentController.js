@@ -4,8 +4,13 @@ const Setting = require('../models/Setting');
 const { sendPaymentReceivedSMS } = require('../utils/smsService');
 const { markOrderPaid } = require('./orderController');
 
-const getPaystackSecret = (setting) =>
-    (setting?.paystackSecretKey || process.env.PAYSTACK_SECRET_KEY || '').trim();
+const getPaystackSecret = (setting) => {
+    const fromDb = String(setting?.paystackSecretKey || '').trim();
+    const fromEnv = String(process.env.PAYSTACK_SECRET_KEY || '').trim();
+    if (fromDb.startsWith('sk_')) return fromDb;
+    if (fromEnv.startsWith('sk_')) return fromEnv;
+    return fromDb || fromEnv;
+};
 
 // @desc    Initialize Paystack Transaction
 // @route   POST /api/payment/paystack/initialize
@@ -35,21 +40,16 @@ exports.initializePaystack = async (req, res) => {
         ).split(',')[0].trim().replace(/\/$/, '');
 
         const amountInPesewas = Math.round(Number(order.total) * 100);
+        if (!Number.isFinite(amountInPesewas) || amountInPesewas < 100) {
+            return res.status(400).json({ success: false, message: 'Order total is too low to charge with Paystack.' });
+        }
         const email = customerEmail || `${(customerPhone || order.phone || 'customer').replace(/[^0-9]/g, '')}@welama.com`;
         const callbackUrl = `${clientUrl}/checkout?paystack_ref=${encodeURIComponent(orderId)}`;
 
-        // If Paystack Secret Key is not configured yet, provide simulated/demo checkout response
         if (!secretKey) {
-            console.log(`[Paystack Warning] PAYSTACK_SECRET_KEY not set in .env or Settings. Providing fallback for testing.`);
-            return res.status(200).json({
-                success: true,
-                isMock: true,
-                message: 'Paystack keys not added yet. Simulating transaction.',
-                data: {
-                    authorization_url: `${clientUrl}/checkout?paystack_mock=true&orderId=${encodeURIComponent(orderId)}`,
-                    access_code: `mock_code_${Date.now()}`,
-                    reference: `REF_${orderId}_${Date.now()}`
-                }
+            return res.status(400).json({
+                success: false,
+                message: 'Paystack is not configured yet. Add the secret key in Admin Settings or Render, then try again.'
             });
         }
 
@@ -57,7 +57,7 @@ exports.initializePaystack = async (req, res) => {
             email,
             amount: amountInPesewas,
             currency: 'GHS',
-            reference: `WELAMA_${orderId}_${Date.now()}`,
+            reference: `WELAMA${Date.now()}`,
             callback_url: callbackUrl,
             metadata: {
                 orderId,
@@ -83,6 +83,10 @@ exports.initializePaystack = async (req, res) => {
         const data = await response.json();
 
         if (data.status) {
+            if (data.data?.reference) {
+                order.paystackReference = data.data.reference;
+                await order.save();
+            }
             return res.status(200).json({
                 success: true,
                 data: data.data

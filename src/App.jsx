@@ -145,7 +145,7 @@ const App = () => {
           );
           return [...new Set(normalized)];
         });
-      } else if (!cancelled) {
+      } else if (!cancelled && !import.meta.env.PROD) {
         setProducts((prev) => (prev.length ? prev : SAMPLE_PRODUCTS));
       }
 
@@ -154,9 +154,9 @@ const App = () => {
 
     const initApp = async () => {
       const [catRes, prodRes, setRes] = await Promise.all([
-        apiRequest("/categories", "GET", null, 2500),
-        apiRequest("/products", "GET", null, 2500),
-        apiRequest("/settings", "GET", null, 2500),
+        apiRequest("/categories", "GET", null, 12000),
+        apiRequest("/products", "GET", null, 12000),
+        apiRequest("/settings", "GET", null, 12000),
       ]);
       applyCatalog(catRes, prodRes, setRes);
 
