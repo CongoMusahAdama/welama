@@ -5,6 +5,8 @@ const { sendOrderConfirmationSMS, sendOrderStatusUpdateSMS, sendPaymentReceivedS
 const { withTransaction, isDuplicateKey } = require('../utils/withTransaction');
 const { decrementStock, restoreStock } = require('../utils/inventory');
 
+const isMongoId = (value) => /^[a-fA-F0-9]{24}$/.test(String(value || ''));
+
 const generateOrderId = () => {
     const stamp = Date.now().toString(36).toUpperCase();
     const rand = crypto.randomBytes(3).toString('hex').toUpperCase();
@@ -57,6 +59,12 @@ exports.createOrder = async (req, res) => {
                 paystackReference: undefined
             };
             delete payload.paystackReference;
+            if (Array.isArray(payload.items)) {
+                payload.items = payload.items.map((item) => ({
+                    ...item,
+                    productId: isMongoId(item.productId) ? item.productId : null
+                }));
+            }
             if (!['Pending', 'Processing'].includes(payload.status)) {
                 payload.status = 'Pending';
             }

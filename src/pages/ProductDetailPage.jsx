@@ -6,6 +6,7 @@ import { useCart } from "../context/CartContext";
 import ProductCard from "../components/products/ProductCard";
 import { apiRequest } from "../utils/api";
 import { waLink } from "../utils/whatsapp";
+import { catalogProductId } from "../utils/productId";
 import { Cedis, formatCedis } from "../utils/currency";
 
 const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
@@ -81,7 +82,7 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
       phone: orderForm.phone,
       smsPhone: orderForm.smsPhone,
       location: [orderForm.street, orderForm.city, orderForm.region, orderForm.country || "Ghana"].filter(Boolean).join(", "),
-      items: [{ productId: product._id || product.id || null, name: itemName, image: resolvedImage, category, qty, size: size || "Standard", color: color || "" }],
+      items: [{ productId: catalogProductId(product._id || product.id), name: itemName, image: resolvedImage, category, qty, size: size || "Standard", color: color || "" }],
       total,
       paymentMethod: "Direct WhatsApp Order",
       status: "Pending",
@@ -131,7 +132,7 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
       phone: orderForm.phone,
       smsPhone: orderForm.smsPhone,
       location: [orderForm.street, orderForm.city, orderForm.region, orderForm.country || "Ghana"].filter(Boolean).join(", "),
-      items: [{ productId: product._id || product.id || null, name: itemName, image: resolvedImage, category, qty, size: size || "Standard", color: color || "" }],
+      items: [{ productId: catalogProductId(product._id || product.id), name: itemName, image: resolvedImage, category, qty, size: size || "Standard", color: color || "" }],
       total,
       paymentMethod: "Paystack (Online)",
       payment: "Unpaid",
@@ -151,7 +152,7 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
       customerEmail: orderForm.email,
       customerName: orderForm.customer,
       customerPhone: orderForm.phone,
-    });
+    }, 28000);
 
     if (paystackRes.success && paystackRes.data?.authorization_url) {
       window.location.href = paystackRes.data.authorization_url;

@@ -28,7 +28,11 @@ exports.initializePaystack = async (req, res) => {
 
         const setting = await Setting.findOne();
         const secretKey = getPaystackSecret(setting);
-        const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+        const clientUrl = (
+            process.env.CLIENT_URL ||
+            process.env.FRONTEND_URL ||
+            (process.env.NODE_ENV === 'production' ? 'https://welama.vercel.app' : 'http://localhost:5173')
+        ).split(',')[0].trim().replace(/\/$/, '');
 
         const amountInPesewas = Math.round(Number(order.total) * 100);
         const email = customerEmail || `${(customerPhone || order.phone || 'customer').replace(/[^0-9]/g, '')}@welama.com`;

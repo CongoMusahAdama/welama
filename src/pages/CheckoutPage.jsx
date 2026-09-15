@@ -6,6 +6,7 @@ import confetti from "canvas-confetti";
 import { useCart } from "../context/CartContext";
 import { apiRequest } from "../utils/api";
 import { waLink } from "../utils/whatsapp";
+import { catalogProductId } from "../utils/productId";
 import { Cedis, formatCedis } from "../utils/currency";
 
 const CheckoutPage = ({ addOrder }) => {
@@ -22,7 +23,10 @@ const CheckoutPage = ({ addOrder }) => {
     phone: "",
     smsPhone: "",
     email: "",
-    location: "",
+    street: "",
+    city: "",
+    region: "",
+    deliveryMethod: "Home Delivery",
   });
 
   // Check for Paystack redirect callback on page load
@@ -39,7 +43,7 @@ const CheckoutPage = ({ addOrder }) => {
         setIsSubmitting(true);
         try {
           const refToVerify = reference || `MOCK_${mockOrderId}`;
-          const res = await apiRequest(`/payment/paystack/verify/${encodeURIComponent(refToVerify)}?orderId=${encodeURIComponent(mockOrderId || '')}&mock=${isMock || ''}`);
+          const res = await apiRequest(`/payment/paystack/verify/${encodeURIComponent(refToVerify)}?orderId=${encodeURIComponent(mockOrderId || '')}&mock=${isMock || ''}`, "GET", null, 28000);
           if (res.success) {
             clearCart();
             confetti({
@@ -90,8 +94,15 @@ const CheckoutPage = ({ addOrder }) => {
 
   const handleOrderSubmission = async (e) => {
     e?.preventDefault?.();
-    if (!formData.customer || !formData.phone || !formData.location) {
-      Swal.fire("Missing details", "Please fill in your name, WhatsApp number, and delivery address.", "warning");
+    const deliveryLocation = formData.deliveryMethod === "Pickup"
+      ? "Pickup"
+      : [formData.street, formData.city, formData.region].filter(Boolean).join(", ");
+    if (!formData.customer.trim() || !formData.phone.trim()) {
+      Swal.fire("Missing details", "Please fill in your name and WhatsApp number.", "warning");
+      return;
+    }
+    if (formData.deliveryMethod !== "Pickup" && (!formData.street.trim() || !formData.city.trim())) {
+      Swal.fire("Missing details", "Please add your street and city so we know where to deliver.", "warning");
       return;
     }
     if (paymentMethod === "paystack" && !formData.email) {
@@ -105,9 +116,9 @@ const CheckoutPage = ({ addOrder }) => {
       phone: formData.phone,
       smsPhone: formData.smsPhone || formData.phone,
       email: formData.email,
-      location: formData.location,
+      location: deliveryLocation,
       items: cartItems.map((i) => ({
-        productId: i._id || i.id || null,
+        productId: catalogProductId(i._id || i.id),
         name: i.name,
         image: i.image && !String(i.image).startsWith("blob:") ? i.image : "",
         category: i.category || "Luxury",
@@ -135,7 +146,7 @@ const CheckoutPage = ({ addOrder }) => {
           })
           .join("\n");
         const whatsappMessage =
-          `Hi WELAMA! I'd like to order:\n\n${itemsList}\n\n💰 Total: ${formatCedis(totalWithDelivery, 2)}\n\n*Order ID:* ${order.orderId}\n👤 Name: ${formData.customer}\n📞 WhatsApp: ${formData.phone}\n📍 ${formData.location}\n\nPlease confirm availability. Thank you! 🙏`;
+          `Hi WELAMA! I'd like to order:\n\n${itemsList}\n\n💰 Total: ${formatCedis(totalWithDelivery, 2)}\n\n*Order ID:* ${order.orderId}\n👤 Name: ${formData.customer}\n📞 WhatsApp: ${formData.phone}\n📍 ${deliveryLocation}\n\nPlease confirm availability. Thank you! 🙏`;
         window.open(waLink(whatsappMessage), "_blank");
         clearCart();
         Swal.fire({
@@ -167,7 +178,7 @@ const CheckoutPage = ({ addOrder }) => {
           customerEmail: formData.email,
           customerName: formData.customer,
           customerPhone: formData.phone,
-        });
+        }, 28000);
 
         if (paystackRes.success && paystackRes.data?.authorization_url) {
           // Redirect to Paystack Checkout URL
@@ -188,93 +199,133 @@ const CheckoutPage = ({ addOrder }) => {
     <div className="checkout-page section-padding container" style={{ minHeight: "80vh" }}>
       <div className="checkout-grid">
         <div className="checkout-main-content">
-          <form className="form-section glass shadowed" onSubmit={handleOrderSubmission}>
-            <h3 className="serif" style={{ fontSize: "1.65rem", marginBottom: "0.5rem" }}>Where should we deliver?</h3>
-            <p style={{ color: "#64748b", fontSize: "0.9rem", marginBottom: "1.25rem" }}>
+          <form className="form-section glass shadowed checkout-deliver-form" onSubmit={handleOrderSubmission}>
+            <h3 className="serif checkout-deliver-title">Where should we deliver?</h3>
+            <p className="checkout-deliver-copy">
               Fill in your details below and choose how you would like to pay.
             </p>
 
-            <div style={{ display: "flex", borderRadius: "8px", overflow: "hidden", border: "2px solid #e2e8f0", marginBottom: "1.5rem" }}>
+            <div className="checkout-pay-toggle">
               <button
                 type="button"
                 onClick={() => setPaymentMethod("whatsapp")}
-                style={{
-                  flex: 1, padding: "0.85rem 1rem", fontWeight: 700, fontSize: "0.75rem",
-                  textTransform: "uppercase", letterSpacing: "0.05em", border: "none", cursor: "pointer",
-                  background: paymentMethod === "whatsapp" ? "#25D366" : "#f8fafc",
-                  color: paymentMethod === "whatsapp" ? "white" : "#666",
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem"
-                }}
+                className={`checkout-pay-btn ${paymentMethod === "whatsapp" ? "is-whatsapp" : ""}`}
               >
                 <MessageCircle size={16} /> WhatsApp Order
               </button>
               <button
                 type="button"
                 onClick={() => setPaymentMethod("paystack")}
-                style={{
-                  flex: 1, padding: "0.85rem 1rem", fontWeight: 700, fontSize: "0.75rem",
-                  textTransform: "uppercase", letterSpacing: "0.05em", border: "none", cursor: "pointer",
-                  background: paymentMethod === "paystack" ? "#0BA4DB" : "#f8fafc",
-                  color: paymentMethod === "paystack" ? "white" : "#666",
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem"
-                }}
+                className={`checkout-pay-btn ${paymentMethod === "paystack" ? "is-paystack" : ""}`}
               >
                 <CreditCard size={16} /> Pay with Paystack
               </button>
             </div>
 
             <div className="checkout-form-grid">
-              <div className="form-group-premium">
-                <label style={{ display: "block", marginBottom: "0.4rem", fontWeight: 700 }}>Full Name</label>
+              <div className="form-group-premium checkout-field-full">
+                <label>Full Name</label>
                 <input
                   type="text"
                   required
+                  autoComplete="name"
                   placeholder="Ama Serwaa"
                   value={formData.customer}
                   onChange={(e) => setFormData({ ...formData, customer: e.target.value })}
                 />
               </div>
               <div className="form-group-premium">
-                <label style={{ display: "block", marginBottom: "0.4rem", fontWeight: 700 }}>WhatsApp / Phone Number</label>
+                <label>WhatsApp number</label>
                 <input
                   type="tel"
                   required
-                  placeholder="055 108 2163"
+                  autoComplete="tel"
+                  inputMode="tel"
+                  placeholder="0244374433"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 />
               </div>
               <div className="form-group-premium">
-                <label style={{ display: "block", marginBottom: "0.4rem", fontWeight: 700 }}>SMS Number</label>
+                <label>SMS number</label>
                 <input
                   type="tel"
+                  autoComplete="tel"
+                  inputMode="tel"
                   placeholder="Same as WhatsApp if empty"
                   value={formData.smsPhone}
                   onChange={(e) => setFormData({ ...formData, smsPhone: e.target.value })}
                 />
               </div>
               {paymentMethod === "paystack" && (
-                <div className="form-group-premium">
-                  <label style={{ display: "block", marginBottom: "0.4rem", fontWeight: 700 }}>Email Address</label>
+                <div className="form-group-premium checkout-field-full">
+                  <label>Email address</label>
                   <input
                     type="email"
                     required
-                    placeholder="customer@example.com"
+                    autoComplete="email"
+                    inputMode="email"
+                    placeholder="ama@gmail.com"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   />
                 </div>
               )}
-              <div className="form-group-premium" style={paymentMethod === "paystack" ? undefined : { gridColumn: "1 / -1" }}>
-                <label style={{ display: "block", marginBottom: "0.4rem", fontWeight: 700 }}>Delivery Address / Landmark</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Accra, East Legon / Near Total Station"
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                />
+              <div className="form-group-premium checkout-field-full">
+                <label>How should we send it?</label>
+                <div className="checkout-deliver-toggle">
+                  <button
+                    type="button"
+                    className={!formData.deliveryMethod || formData.deliveryMethod === "Home Delivery" ? "is-active" : ""}
+                    onClick={() => setFormData({ ...formData, deliveryMethod: "Home Delivery" })}
+                  >
+                    Home delivery
+                  </button>
+                  <button
+                    type="button"
+                    className={formData.deliveryMethod === "Pickup" ? "is-active" : ""}
+                    onClick={() => setFormData({ ...formData, deliveryMethod: "Pickup" })}
+                  >
+                    Pickup
+                  </button>
+                </div>
               </div>
+              {formData.deliveryMethod !== "Pickup" && (
+                <>
+                  <div className="form-group-premium checkout-field-full">
+                    <label>Street / area</label>
+                    <input
+                      type="text"
+                      required
+                      autoComplete="street-address"
+                      placeholder="5 Adenta Road, near Total"
+                      value={formData.street}
+                      onChange={(e) => setFormData({ ...formData, street: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group-premium">
+                    <label>City</label>
+                    <input
+                      type="text"
+                      required
+                      autoComplete="address-level2"
+                      placeholder="Accra"
+                      value={formData.city}
+                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group-premium">
+                    <label>Region</label>
+                    <input
+                      type="text"
+                      autoComplete="address-level1"
+                      placeholder="Greater Accra"
+                      value={formData.region}
+                      onChange={(e) => setFormData({ ...formData, region: e.target.value })}
+                    />
+                  </div>
+                </>
+              )}
             </div>
 
             {paymentMethod === "whatsapp" ? (

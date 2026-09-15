@@ -35,7 +35,7 @@ const sendTokenResponse = (admin, statusCode, res) => {
 exports.login = async (req, res) => {
     try {
         const identifier = String(req.body.identifier || '').trim();
-        const { password } = req.body;
+        const password = String(req.body.password || '').trim();
         const email = identifier.toLowerCase();
         const phones = phoneLookupValues(identifier);
 

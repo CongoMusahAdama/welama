@@ -1,55 +1,58 @@
 require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 const Admin = require('../models/Admin');
-
-const PHONE = '0244374433';
-const PASSWORD = 'Peggy12345';
-const NAME = 'Peggy Admin';
+const { ghanaLocalPhone, phoneLookupValues } = require('../utils/phone');
 
 async function seedAdmin() {
     try {
-        await mongoose.connect(process.env.MONGO_URI);
-        console.log('✅ Connected to MongoDB');
+        const email = String(process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+        const phone = ghanaLocalPhone(process.env.ADMIN_PHONE) || String(process.env.ADMIN_PHONE || '').trim();
+        const password = String(process.env.ADMIN_PASSWORD || '').trim();
+        const name = process.env.ADMIN_NAME || 'WELAMA Admin';
 
-        // Check if an admin already exists with this phone
-        let admin = await Admin.findOne({ phone: PHONE });
-
-        if (admin) {
-            // Update password
-            const salt = await bcrypt.genSalt(10);
-            admin.password = await bcrypt.hash(PASSWORD, salt);
-            admin.name = NAME;
-            admin.needsPasswordChange = false;
-            // Use updateOne to avoid triggering pre-save hash again
-            await Admin.updateOne({ _id: admin._id }, {
-                name: NAME,
-                phone: PHONE,
-                password: await bcrypt.hash(PASSWORD, salt),
-                needsPasswordChange: false
-            });
-            console.log(`✅ Admin updated — Phone: ${PHONE}`);
-        } else {
-            // Create new admin (pre-save hook will hash password)
-            const newAdmin = await Admin.create({
-                name: NAME,
-                phone: PHONE,
-                password: PASSWORD,
-                role: 'admin',
-                needsPasswordChange: false
-            });
-            console.log(`✅ Admin created — Phone: ${PHONE} | ID: ${newAdmin._id}`);
+        if (!email || !phone || !password) {
+            throw new Error('Set ADMIN_EMAIL, ADMIN_PHONE, and ADMIN_PASSWORD in .env');
         }
 
-        console.log('\n🔑 Login Credentials:');
-        console.log(`   Phone:    ${PHONE}`);
-        console.log(`   Password: ${PASSWORD}`);
-        console.log('\n🌐 Login at: http://localhost:5173/auth');
+        await mongoose.connect(process.env.MONGO_URI);
+        const phones = phoneLookupValues(phone);
+        const matches = await Admin.find({
+            $or: [{ email }, { phone: { $in: phones } }]
+        }).select('+password');
 
+        let admin = matches.find((row) => row.email === email) || matches[0] || null;
+        if (matches.length > 1 && admin) {
+            await Admin.deleteMany({
+                _id: { $ne: admin._id },
+                $or: [{ email }, { phone: { $in: phones } }]
+            });
+        }
+
+        if (!admin) {
+            admin = await Admin.create({
+                name,
+                email,
+                phone,
+                password,
+                role: 'super-admin',
+                needsPasswordChange: false
+            });
+            console.log('Admin created');
+        } else {
+            admin.name = name;
+            admin.email = email;
+            admin.phone = phone;
+            admin.password = password;
+            admin.needsPasswordChange = false;
+            await admin.save();
+            console.log('Admin updated from environment');
+        }
+
+        console.log(`Login phone: ${phone}`);
         await mongoose.disconnect();
         process.exit(0);
     } catch (err) {
-        console.error('❌ Error:', err.message);
+        console.error('Error:', err.message);
         process.exit(1);
     }
 }

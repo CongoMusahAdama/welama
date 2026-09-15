@@ -295,7 +295,7 @@ const App = () => {
   };
 
   const addOrder = async (newOrder) => {
-    const res = await apiRequest("/orders", "POST", newOrder);
+    const res = await apiRequest("/orders", "POST", newOrder, 20000);
     if (res.success) {
       if (user) {
         setOrders((prev) => [res.data, ...prev]);

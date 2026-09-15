@@ -17,6 +17,7 @@ import { useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 import ReceiptModal from "../modals/ReceiptModal";
 import { Cedis } from "../../utils/currency";
+import { catalogProductId } from "../../utils/productId";
 
 const AdminOrders = ({ 
   orders, 
@@ -71,7 +72,7 @@ const AdminOrders = ({
       items: [{
         name: newOrder.productName,
         qty: parseInt(newOrder.qty),
-        productId: prod._id || prod.id || null,
+        productId: catalogProductId(prod._id || prod.id),
         image: prod.image || "",
       }],
       total: prod.price * newOrder.qty,

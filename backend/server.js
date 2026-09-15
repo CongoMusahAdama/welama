@@ -3,18 +3,17 @@ const path = require('path');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
+const mongoose = require('mongoose');
 const Admin = require('./models/Admin');
 const Brand = require('./models/Brand');
 const defaultBrands = require('./data/defaultBrands');
+const { ghanaLocalPhone, phoneLookupValues } = require('./utils/phone');
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 
 // Load environment variables
 dotenv.config();
-
-// Connect to MongoDB
-connectDB();
 
 const app = express();
 
@@ -34,6 +33,7 @@ const allowedOrigins = [
     'http://localhost:5173',
     'http://localhost:3000',
     'http://127.0.0.1:5173',
+    'https://welama.vercel.app',
     ...extraOrigins
 ];
 
@@ -56,6 +56,8 @@ app.use(cors({
         if (!origin) return callback(null, true);
 
         if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else if (/^https:\/\/welama[a-z0-9-]*\.vercel\.app$/.test(origin)) {
             callback(null, true);
         } else if (process.env.NODE_ENV !== 'production') {
             callback(null, true);
@@ -135,38 +137,69 @@ if (process.env.NODE_ENV === 'production') {
     });
 }
 
-// Seed Admin if not exists
+const waitForDb = async () => {
+    if (mongoose.connection.readyState === 1) return;
+    await mongoose.connection.asPromise();
+};
+
 const seedAdmin = async () => {
     try {
-        const adminEmail = process.env.ADMIN_EMAIL;
-        const adminPhone = process.env.ADMIN_PHONE;
-        const adminPassword = process.env.ADMIN_PASSWORD;
+        await waitForDb();
+        const adminEmail = String(process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+        const adminPhone = ghanaLocalPhone(process.env.ADMIN_PHONE) || String(process.env.ADMIN_PHONE || '').trim();
+        const adminPassword = String(process.env.ADMIN_PASSWORD || '').trim();
+        const adminName = process.env.ADMIN_NAME || 'WELAMA Admin';
 
         if (!adminEmail || !adminPhone || !adminPassword) {
             console.log("No ADMIN_ credentials found in .env, skipping seed.");
             return;
         }
 
-        const adminData = {
-            name: process.env.ADMIN_NAME || 'WELAMA Admin',
-            email: adminEmail,
-            phone: adminPhone,
-            password: adminPassword,
-            role: 'super-admin',
-            needsPasswordChange: false
-        };
+        const phones = phoneLookupValues(adminPhone);
+        const matches = await Admin.find({
+            $or: [{ email: adminEmail }, { phone: { $in: phones } }]
+        }).select('+password');
 
-        const adminExists = await Admin.findOne({
-            $or: [{ email: adminEmail }, { phone: adminPhone }]
-        });
+        let admin = matches.find((row) => row.email === adminEmail) || matches[0] || null;
 
-        if (!adminExists) {
-            await Admin.create(adminData);
-            console.log('--- Default Admin Seeded Successfully ---');
-        } else if (adminExists.phone !== adminPhone) {
-            adminExists.phone = adminPhone;
-            await adminExists.save();
+        if (matches.length > 1 && admin) {
+            const keepId = String(admin._id);
+            await Admin.deleteMany({
+                _id: { $ne: keepId },
+                $or: [{ email: adminEmail }, { phone: { $in: phones } }]
+            });
         }
+
+        if (!admin) {
+            const count = await Admin.countDocuments();
+            if (count === 1) {
+                admin = await Admin.findOne().select('+password');
+            }
+        }
+
+        if (!admin) {
+            await Admin.create({
+                name: adminName,
+                email: adminEmail,
+                phone: adminPhone,
+                password: adminPassword,
+                role: 'super-admin',
+                needsPasswordChange: false
+            });
+            console.log('--- Default Admin Seeded Successfully ---');
+            return;
+        }
+
+        admin.name = admin.name || adminName;
+        admin.email = adminEmail;
+        admin.phone = adminPhone;
+        admin.role = admin.role || 'super-admin';
+        const passwordOk = await admin.matchPassword(adminPassword);
+        if (!passwordOk) {
+            admin.password = adminPassword;
+        }
+        await admin.save();
+        console.log('--- Admin credentials synced from environment ---');
     } catch (error) {
         console.error('Seeding error:', error.message);
     }
@@ -174,6 +207,7 @@ const seedAdmin = async () => {
 
 const seedBrands = async () => {
     try {
+        await waitForDb();
         const count = await Brand.countDocuments();
         if (count > 0) return;
         await Brand.insertMany(defaultBrands);
@@ -185,11 +219,16 @@ const seedBrands = async () => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, async () => {
-    console.log(`Server running on port ${PORT}`);
-    await seedAdmin();
-    await seedBrands();
-});
+const start = async () => {
+    await connectDB();
+    app.listen(PORT, async () => {
+        console.log(`Server running on port ${PORT}`);
+        await seedAdmin();
+        await seedBrands();
+    });
+};
+
+start();
 
 // Global Error Handler (Hides stack traces in production)
 app.use((err, req, res, next) => {

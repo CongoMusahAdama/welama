@@ -1,8 +1,10 @@
 const Product = require('../models/Product');
 
+const isMongoId = (value) => /^[a-fA-F0-9]{24}$/.test(String(value || ''));
+
 const decrementStock = async (items = [], session) => {
     for (const item of items) {
-        if (!item?.productId || item.qty <= 0) continue;
+        if (!item?.productId || !isMongoId(item.productId) || item.qty <= 0) continue;
 
         const updated = await Product.findOneAndUpdate(
             { _id: item.productId, stock: { $gte: item.qty } },
@@ -26,7 +28,7 @@ const decrementStock = async (items = [], session) => {
 
 const restoreStock = async (items = [], session) => {
     for (const item of items) {
-        if (!item?.productId || item.qty <= 0) continue;
+        if (!item?.productId || !isMongoId(item.productId) || item.qty <= 0) continue;
 
         const updated = await Product.findByIdAndUpdate(
             item.productId,
