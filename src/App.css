@@ -123,7 +123,7 @@
   justify-content: center;
   width: 100%;
   background: #ffffff;
-  color: #0A0A0A;
+  color: var(--brand-color, #0A0A0A);
   font-size: 0.92rem;
   font-weight: 700;
   letter-spacing: 0.03em;
@@ -148,7 +148,7 @@
   gap: 0.4rem;
   font-size: 0.92rem;
   font-weight: 700;
-  color: #0A0A0A;
+  color: var(--brand-color, #0A0A0A);
   justify-self: start;
   white-space: nowrap;
 }
@@ -158,7 +158,7 @@
 }
 
 .nav-top-contact:hover {
-  color: #0A0A0A;
+  color: var(--brand-color, #0A0A0A);
 }
 
 .header.header-home:not(.scrolled) .nav-announcement-ticker {
@@ -295,12 +295,12 @@ form.nav-search-bar {
   gap: 0.4rem;
   font-size: 0.92rem;
   font-weight: 700;
-  color: #0A0A0A;
+  color: var(--brand-color, #0A0A0A);
   transition: var(--transition-smooth);
 }
 
 .nav-contact-line a:hover {
-  color: #0A0A0A;
+  color: var(--brand-color, #0A0A0A);
 }
 
 /* Cart button with total */
@@ -321,7 +321,7 @@ span.nav-cart-text {
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: #0A0A0A;
+  color: var(--brand-color, #0A0A0A);
   opacity: 1;
   font-weight: 800;
 }
@@ -329,7 +329,7 @@ span.nav-cart-text {
 .nav-cart-text strong {
   font-size: 0.95rem;
   font-weight: 800;
-  color: #0A0A0A;
+  color: var(--brand-color, #0A0A0A);
 }
 
 @media (max-width: 900px) {
@@ -1131,7 +1131,7 @@ span.nav-cart-text {
 
 .brands-page-header h1 {
   font-size: clamp(2rem, 4vw, 3.2rem);
-  color: #0A0A0A;
+  color: var(--brand-color, #0A0A0A);
   margin-bottom: 0.5rem;
 }
 
@@ -1168,7 +1168,7 @@ span.nav-cart-text {
 .brand-tile span {
   font-size: 0.8rem;
   font-weight: 700;
-  color: #0A0A0A;
+  color: var(--brand-color, #0A0A0A);
   text-align: center;
 }
 
@@ -2334,7 +2334,7 @@ body {
 .modal-add-btn {
   width: 100%;
   min-height: 50px;
-  background: #0A0A0A;
+  background: var(--brand-color, #0A0A0A);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -2367,7 +2367,7 @@ body {
   border: 1px solid rgba(0, 0, 0, 0.12);
   font-size: 0.8rem;
   font-weight: 700;
-  color: #0A0A0A;
+  color: var(--brand-color, #0A0A0A);
   text-decoration: none;
 }
 
@@ -2849,7 +2849,7 @@ body {
   justify-content: center;
   gap: 0.75rem;
   width: 100%;
-  background: #0A0A0A;
+  background: var(--brand-color, #0A0A0A);
   color: white;
   padding: 1rem;
   border-radius: 12px;
@@ -3224,7 +3224,7 @@ body {
 
 .collection-overlay-content .cta-button,
 .collection-overlay-content .cta-button-premium {
-  background: #0A0A0A;
+  background: var(--brand-color, #0A0A0A);
   color: #fff;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
@@ -3467,9 +3467,9 @@ section h2,
 }
 
 .direct-wa-button:hover {
-  background: #0A0A0A;
+  background: var(--brand-color, #0A0A0A);
   color: white;
-  border-color: #0A0A0A;
+  border-color: var(--brand-color, #0A0A0A);
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
 }
@@ -3940,11 +3940,11 @@ section h2,
 }
 
 .checkout-whatsapp {
-  background: #0A0A0A;
+  background: var(--brand-color, #0A0A0A);
 }
 
 .checkout-facebook {
-  background: #0A0A0A;
+  background: var(--brand-color, #0A0A0A);
 }
 
 .checkout-instagram {
@@ -4221,7 +4221,7 @@ section h2,
 
 .contact-premium-item:hover .icon-wrap {
   background: #C9A227;
-  color: #0A0A0A;
+  color: var(--brand-color, #0A0A0A);
   transform: scale(1.1) rotate(-5deg);
 }
 
@@ -4248,7 +4248,7 @@ section h2,
 
 .social-community-card {
   background: #C9A227;
-  color: #0A0A0A;
+  color: var(--brand-color, #0A0A0A);
   padding: 4rem;
   border-radius: 30px;
   display: flex;
@@ -4277,7 +4277,7 @@ section h2,
 }
 
 .social-luxury-pill:hover {
-  background: #0A0A0A;
+  background: var(--brand-color, #0A0A0A);
   color: white;
   transform: translateY(-5px);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
@@ -4502,13 +4502,13 @@ body:has(.header-shop .nav-search-bar input:not(:placeholder-shown)) .shop-hero 
 }
 
 .gallery-filter-pill:hover {
-  border-color: #0A0A0A;
-  color: #0A0A0A;
+  border-color: var(--brand-color, #0A0A0A);
+  color: var(--brand-color, #0A0A0A);
 }
 
 .gallery-filter-pill.active {
-  background: #0A0A0A;
-  border-color: #0A0A0A;
+  background: var(--brand-color, #0A0A0A);
+  border-color: var(--brand-color, #0A0A0A);
   color: #fff;
 }
 
@@ -4567,7 +4567,7 @@ body:has(.header-shop .nav-search-bar input:not(:placeholder-shown)) .shop-hero 
 .gallery-item-copy h3 {
   font-size: 1rem;
   margin: 0 0 0.35rem;
-  color: #0A0A0A;
+  color: var(--brand-color, #0A0A0A);
 }
 
 .gallery-item-copy p {
@@ -4616,7 +4616,7 @@ body:has(.header-shop .nav-search-bar input:not(:placeholder-shown)) .shop-hero 
   width: 100%;
   max-height: 64vh;
   object-fit: contain;
-  background: #0A0A0A;
+  background: var(--brand-color, #0A0A0A);
   display: block;
 }
 
@@ -5094,7 +5094,7 @@ div.shop-toolbar {
 }
 
 .auth-title-white {
-  color: #0A0A0A;
+  color: var(--brand-color, #0A0A0A);
   font-size: 1.95rem;
   font-weight: 800;
   margin: 0 0 0.5rem 0;
@@ -5171,7 +5171,7 @@ div.shop-toolbar {
   border: 1px solid #cbd5e1 !important;
   border-radius: 14px;
   padding: 0.95rem 2.8rem 0.95rem 2.75rem;
-  color: #0A0A0A !important;
+  color: var(--brand-color, #0A0A0A) !important;
   font-size: 0.92rem;
   outline: none;
   transition: all 0.2s ease;
@@ -5182,14 +5182,14 @@ div.shop-toolbar {
 }
 
 .auth-input-container-white input:focus {
-  border-color: #0A0A0A !important;
+  border-color: var(--brand-color, #0A0A0A) !important;
   background: #ffffff !important;
   box-shadow: 0 0 0 3px rgba(10, 10, 10, 0.08) !important;
 }
 
 .auth-input-container-white input:focus ~ .auth-field-icon-white,
 .auth-input-container-white:focus-within .auth-field-icon-white {
-  color: #0A0A0A;
+  color: var(--brand-color, #0A0A0A);
 }
 
 /* Fix browser autofill light mode */
@@ -5197,10 +5197,10 @@ div.shop-toolbar {
 .auth-input-container-white input:-webkit-autofill:hover, 
 .auth-input-container-white input:-webkit-autofill:focus,
 .auth-input-container-white input:-webkit-autofill:active {
-  -webkit-text-fill-color: #0A0A0A !important;
+  -webkit-text-fill-color: var(--brand-color, #0A0A0A) !important;
   -webkit-box-shadow: 0 0 0px 1000px #f8fafc inset !important;
   box-shadow: 0 0 0px 1000px #f8fafc inset !important;
-  caret-color: #0A0A0A !important;
+  caret-color: var(--brand-color, #0A0A0A) !important;
   transition: background-color 5000s ease-in-out 0s;
   border-color: #cbd5e1 !important;
 }
@@ -5221,13 +5221,13 @@ div.shop-toolbar {
 }
 
 .auth-pwd-toggle-white:hover {
-  color: #0A0A0A;
+  color: var(--brand-color, #0A0A0A);
 }
 
 /* Primary Sign In Button */
 .auth-btn-primary-white {
   margin-top: 0.75rem;
-  background: #0A0A0A;
+  background: var(--brand-color, #0A0A0A);
   color: #ffffff;
   border: none;
   border-radius: 14px;
@@ -5285,7 +5285,7 @@ div.shop-toolbar {
 }
 
 .auth-back-link-white:hover {
-  color: #0A0A0A;
+  color: var(--brand-color, #0A0A0A);
 }
 
 .auth-security-note-white {
@@ -5409,7 +5409,7 @@ div.shop-toolbar {
 }
 
 .checkout-deliver-toggle button.is-active {
-  background: #0A0A0A;
+  background: var(--brand-color, #0A0A0A);
   color: #fff;
 }
 
@@ -5488,7 +5488,7 @@ div.shop-toolbar {
   padding: 1.2rem;
   border-radius: 16px;
   font-size: 1.1rem;
-  background: #0A0A0A !important;
+  background: var(--brand-color, #0A0A0A) !important;
 }
 
 .order-summary-card {
@@ -5860,15 +5860,15 @@ div.shop-toolbar {
 }
 
 .category-pill-btn:hover {
-  border-color: #0A0A0A;
-  color: #0A0A0A;
+  border-color: var(--brand-color, #0A0A0A);
+  color: var(--brand-color, #0A0A0A);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .category-pill-btn.active {
-  background: #0A0A0A;
-  border-color: #0A0A0A;
+  background: var(--brand-color, #0A0A0A);
+  border-color: var(--brand-color, #0A0A0A);
   color: white;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
@@ -5922,7 +5922,7 @@ div.shop-toolbar {
   border-radius: 8px;
   background: #fff;
   border: 1px solid rgba(0, 0, 0, 0.14);
-  color: #0A0A0A;
+  color: var(--brand-color, #0A0A0A);
   font-size: 0.85rem;
   font-weight: 700;
   transition: all 0.2s ease;
@@ -5934,12 +5934,12 @@ div.shop-toolbar {
 }
 
 .size-chip-premium:hover {
-  border-color: #0A0A0A;
+  border-color: var(--brand-color, #0A0A0A);
 }
 
 .size-chip-premium.active {
-  background: #0A0A0A;
-  border-color: #0A0A0A;
+  background: var(--brand-color, #0A0A0A);
+  border-color: var(--brand-color, #0A0A0A);
   color: #fff;
 }
 
@@ -5948,7 +5948,7 @@ div.shop-toolbar {
   background: rgba(0, 0, 0, 0.05);
   padding: 2px 8px;
   border-radius: 4px;
-  color: #0A0A0A;
+  color: var(--brand-color, #0A0A0A);
   font-weight: 600;
   margin: 2px;
   display: inline-block;

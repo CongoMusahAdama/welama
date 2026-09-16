@@ -17,6 +17,26 @@ const SettingSchema = new mongoose.Schema({
         type: String,
         default: '/shophero.png'
     },
+    heroTitle1: {
+        type: String,
+        default: 'Elegant.'
+    },
+    heroTitle2: {
+        type: String,
+        default: 'Effortless.'
+    },
+    heroTitle3: {
+        type: String,
+        default: 'Empowered.'
+    },
+    heroSubtitle: {
+        type: String,
+        default: 'Curated corporate wears & bags for the modern woman'
+    },
+    brandColor: {
+        type: String,
+        default: '#0A0A0A'
+    },
     contactPhone: {
         type: String,
         default: '0244374433'

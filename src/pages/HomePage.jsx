@@ -4,7 +4,7 @@ import { Quote } from "lucide-react";
 import Hero from "../components/home/Hero";
 import ProductCard from "../components/products/ProductCard";
 
-const HomePage = ({ products = [], categories = [] }) => {
+const HomePage = ({ products = [], categories = [], settings }) => {
   const [activeCategory, setActiveCategory] = useState("all");
 
   const categoryTabs = [
@@ -66,7 +66,7 @@ const HomePage = ({ products = [], categories = [] }) => {
 
   return (
     <>
-      <Hero />
+      <Hero settings={settings} />
 
       <section
         id="featured-pieces"

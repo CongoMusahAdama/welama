@@ -199,7 +199,7 @@
 
   .nav-cart-badge {
     background: var(--yellow-accent) !important;
-    color: #0A0A0A !important;
+    color: var(--brand-color, #0A0A0A) !important;
     top: -6px !important;
     right: -7px !important;
     width: 16px !important;
@@ -363,13 +363,13 @@
   }
 
   .mobile-nav-cta-dark {
-    background: #0A0A0A;
+    background: var(--brand-color, #0A0A0A);
     color: #fff;
   }
 
   .mobile-nav-cta-gold {
     background: var(--yellow-accent);
-    color: #0A0A0A;
+    color: var(--brand-color, #0A0A0A);
   }
 }
 
@@ -435,7 +435,7 @@
     bottom: 15vh !important;
     left: -18vw !important;
     opacity: 0.18 !important;
-    background: #0A0A0A !important;
+    background: var(--brand-color, #0A0A0A) !important;
     animation: mobilePulse2 10s ease-in-out infinite alternate-reverse !important;
   }
 
@@ -594,7 +594,7 @@
     display: block;
     width: 48px;
     height: 2px;
-    background: #0A0A0A;
+    background: var(--brand-color, #0A0A0A);
     border-radius: 2px;
     margin: 1.25rem 0;
     opacity: 0.9;
@@ -621,7 +621,7 @@
     font-size: 0.77rem !important;
     letter-spacing: 0.18em !important;
     min-height: 52px !important;
-    background: #0A0A0A !important;
+    background: var(--brand-color, #0A0A0A) !important;
     border: none !important;
     box-shadow:
       0 6px 24px rgba(201, 162, 39, 0.45),
@@ -883,7 +883,7 @@
     font-weight: 800 !important;
     letter-spacing: 0.1em !important;
     padding: 0.6rem 1.25rem !important;
-    background: #0A0A0A !important;
+    background: var(--brand-color, #0A0A0A) !important;
     /* Dark teal from screenshot */
     color: white !important;
     border-radius: 0 0 0 0 !important;
@@ -1200,7 +1200,7 @@
   }
 
   .modal-social-btn.wa svg {
-    color: #0A0A0A !important;
+    color: var(--brand-color, #0A0A0A) !important;
   }
 
   .modal-social-btn.ig svg {
@@ -1656,7 +1656,7 @@
     font-family: var(--font-sans);
     font-weight: 800;
     font-size: 2.2rem;
-    color: #0A0A0A;
+    color: var(--brand-color, #0A0A0A);
     letter-spacing: -0.02em;
     margin-bottom: 0.25rem;
     text-align: left;
@@ -1752,8 +1752,8 @@
   }
 
   .mobile-view-btn.active {
-    background: #0A0A0A;
-    border-color: #0A0A0A;
+    background: var(--brand-color, #0A0A0A);
+    border-color: var(--brand-color, #0A0A0A);
     color: white;
     box-shadow: 0 4px 12px rgba(201, 162, 39, 0.2);
   }
@@ -1807,8 +1807,8 @@
   }
 
   .mobile-cat-pill.active {
-    background: #0A0A0A;
-    border-color: #0A0A0A;
+    background: var(--brand-color, #0A0A0A);
+    border-color: var(--brand-color, #0A0A0A);
     color: #fff;
     margin-right: 0;
   }
@@ -1883,7 +1883,7 @@
     left: 0;
     right: 0;
     height: 60%;
-    background: #0A0A0A;
+    background: var(--brand-color, #0A0A0A);
     border-radius: 0 0 10px 10px;
     z-index: 0;
   }
@@ -1981,14 +1981,14 @@
   .mobile-price {
     font-size: 1.1rem !important;
     font-weight: 800 !important;
-    color: #0A0A0A !important;
+    color: var(--brand-color, #0A0A0A) !important;
   }
 
   .mobile-add-btn {
     width: 38px !important;
     height: 38px !important;
     border-radius: 50% !important;
-    background: #0A0A0A !important;
+    background: var(--brand-color, #0A0A0A) !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -2205,7 +2205,7 @@
   .collection-overlay-content .cta-button-premium {
     margin-top: auto !important;
     padding: 0.8rem 1.5rem !important;
-    background: #0A0A0A !important;
+    background: var(--brand-color, #0A0A0A) !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     color: white !important;
@@ -2993,7 +2993,7 @@
     left: 0.65rem !important;
     right: auto !important;
     width: auto !important;
-    background: #0A0A0A !important;
+    background: var(--brand-color, #0A0A0A) !important;
     color: #fff !important;
     font-size: 0.58rem !important;
     font-weight: 700 !important;

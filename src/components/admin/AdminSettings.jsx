@@ -28,6 +28,11 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
     tagline: "The Essence of Luxury",
     logoUrl: "/welamalogo.png",
     heroImageUrl: "/shophero.png",
+    heroTitle1: "Elegant.",
+    heroTitle2: "Effortless.",
+    heroTitle3: "Empowered.",
+    heroSubtitle: "Curated corporate wears & bags for the modern woman",
+    brandColor: "#0A0A0A",
     contactPhone: "0244374433",
     contactEmail: "info@welama.com",
     address: "Accra, Ghana",
@@ -499,6 +504,113 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
                     fontSize: "0.85rem",
                   }}
                 />
+              </div>
+
+              <div className="form-group" style={{ marginBottom: "1.25rem" }}>
+                <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#334155", display: "block", marginBottom: "0.4rem" }}>
+                  Hero Text - Line 1
+                </label>
+                <input
+                  type="text"
+                  value={formData.heroTitle1}
+                  onChange={handleChange("heroTitle1")}
+                  placeholder="Elegant."
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem 1rem",
+                    borderRadius: "10px",
+                    border: "1px solid #e2e8f0",
+                    fontSize: "0.85rem",
+                  }}
+                />
+              </div>
+              <div className="form-group" style={{ marginBottom: "1.25rem" }}>
+                <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#334155", display: "block", marginBottom: "0.4rem" }}>
+                  Hero Text - Line 2
+                </label>
+                <input
+                  type="text"
+                  value={formData.heroTitle2}
+                  onChange={handleChange("heroTitle2")}
+                  placeholder="Effortless."
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem 1rem",
+                    borderRadius: "10px",
+                    border: "1px solid #e2e8f0",
+                    fontSize: "0.85rem",
+                  }}
+                />
+              </div>
+              <div className="form-group" style={{ marginBottom: "1.25rem" }}>
+                <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#334155", display: "block", marginBottom: "0.4rem" }}>
+                  Hero Text - Line 3 (Italicized)
+                </label>
+                <input
+                  type="text"
+                  value={formData.heroTitle3}
+                  onChange={handleChange("heroTitle3")}
+                  placeholder="Empowered."
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem 1rem",
+                    borderRadius: "10px",
+                    border: "1px solid #e2e8f0",
+                    fontSize: "0.85rem",
+                  }}
+                />
+              </div>
+              <div className="form-group" style={{ marginBottom: "1.25rem" }}>
+                <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#334155", display: "block", marginBottom: "0.4rem" }}>
+                  Hero Subtitle
+                </label>
+                <input
+                  type="text"
+                  value={formData.heroSubtitle}
+                  onChange={handleChange("heroSubtitle")}
+                  placeholder="Curated corporate wears & bags for the modern woman"
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem 1rem",
+                    borderRadius: "10px",
+                    border: "1px solid #e2e8f0",
+                    fontSize: "0.85rem",
+                  }}
+                />
+              </div>
+
+              <div className="form-group" style={{ marginBottom: "1.25rem" }}>
+                <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#334155", display: "block", marginBottom: "0.4rem" }}>
+                  Brand Color (Hex code)
+                </label>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <input
+                    type="color"
+                    value={formData.brandColor}
+                    onChange={handleChange("brandColor")}
+                    style={{
+                      width: "40px",
+                      height: "40px",
+                      padding: "0",
+                      border: "none",
+                      borderRadius: "8px",
+                      cursor: "pointer"
+                    }}
+                  />
+                  <input
+                    type="text"
+                    value={formData.brandColor}
+                    onChange={handleChange("brandColor")}
+                    placeholder="#0A0A0A"
+                    style={{
+                      flex: 1,
+                      padding: "0.75rem 1rem",
+                      borderRadius: "10px",
+                      border: "1px solid #e2e8f0",
+                      fontSize: "0.85rem",
+                    }}
+                  />
+                </div>
               </div>
 
               <div className="form-group" style={{ marginBottom: "1.25rem" }}>

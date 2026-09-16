@@ -12,7 +12,12 @@ const PUBLIC_FIELDS = [
     'paystackPublicKey',
     'paystackEnabled',
     'smsEnabled',
-    'mnotifySenderId'
+    'mnotifySenderId',
+    'heroTitle1',
+    'heroTitle2',
+    'heroTitle3',
+    'heroSubtitle',
+    'brandColor'
 ];
 
 const toPublicSettings = (setting) => {

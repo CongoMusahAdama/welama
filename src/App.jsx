@@ -49,12 +49,7 @@ const ProtectedRoute = ({ user, authChecked, children }) => {
 const App = () => {
   // --- STATE ---
   const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([
-    "Shirts",
-    "Dresses",
-    "Two-piece",
-    "Bags",
-  ]);
+  const [categories, setCategories] = useState([]);
   const [orders, setOrders] = useState([]);
   const [settings, setSettings] = useState({
     siteName: "WELAMA",
@@ -68,7 +63,7 @@ const App = () => {
     smsEnabled: true,
   });
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
 
   const fetchOrders = async () => {
@@ -88,15 +83,6 @@ const App = () => {
   useEffect(() => {
     let cancelled = false;
 
-    const splashStarted = Date.now();
-    const SPLASH_MS = 2600;
-    const revealApp = () => {
-      const wait = Math.max(0, SPLASH_MS - (Date.now() - splashStarted));
-      window.setTimeout(() => {
-        if (!cancelled) setLoading(false);
-      }, wait);
-    };
-
     try {
       const cached = sessionStorage.getItem("welama_products");
       if (cached) {
@@ -108,10 +94,6 @@ const App = () => {
     } catch {
       /* ignore bad cache */
     }
-
-    const splashCap = setTimeout(() => {
-      if (!cancelled) setLoading(false);
-    }, 7000);
 
     const applyCatalog = (catRes, prodRes, setRes) => {
       if (cancelled) return;
@@ -146,8 +128,6 @@ const App = () => {
       } else if (!cancelled && !import.meta.env.PROD) {
         setProducts((prev) => (prev.length ? prev : SAMPLE_PRODUCTS));
       }
-
-      revealApp();
     };
 
     const initApp = async () => {
@@ -171,7 +151,6 @@ const App = () => {
     initApp();
     return () => {
       cancelled = true;
-      clearTimeout(splashCap);
     };
   }, []);
 
@@ -371,12 +350,12 @@ const App = () => {
     }
   };
 
+  const brandColor = settings?.brandColor || "#0A0A0A";
+
   return (
     <AnimatePresence mode="wait">
-      {loading ? (
-        <Preloader key="preloader" products={products} />
-      ) : (
         <Router key="app">
+        <style>{`:root { --brand-color: ${brandColor}; }`}</style>
         <CartProvider>
           <ModalProvider products={products}>
             <div className="app">
@@ -448,7 +427,6 @@ const App = () => {
           </ModalProvider>
         </CartProvider>
         </Router>
-      )}
     </AnimatePresence>
   );
 };
