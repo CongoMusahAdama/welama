@@ -40,8 +40,11 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
     mnotifyApiKey: "",
     mnotifySenderId: "Welama",
     smsTemplateOrderConfirmation: "Hello {customer}, thank you for ordering from {siteName}. Order #{orderId}, GHS {total}. Track here: {trackingLink}",
+    smsTemplateOrderProcessing: "Hello {customer}, your {siteName} order #{orderId} is now PROCESSING. Track here: {trackingLink}",
     smsTemplateOrderShipped: "Hello {customer}, your {siteName} order #{orderId} has been SHIPPED. Track: {trackingLink}",
     smsTemplateOrderDelivered: "Hello {customer}, your {siteName} order #{orderId} has been DELIVERED. Thank you. Details: {trackingLink}",
+    smsTemplateOrderCancelled: "Hello {customer}, your {siteName} order #{orderId} was CANCELLED. Contact us if you need help.",
+    smsTemplateOrderStatusUpdate: "Hello {customer}, your {siteName} order #{orderId} status is now {status}. Track here: {trackingLink}",
     smsEnabled: true,
     // Paystack
     paystackPublicKey: "",
@@ -79,8 +82,11 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
           mnotifyApiKey: source.mnotifyApiKey || source.smsApiKey || "",
           mnotifySenderId: source.mnotifySenderId || source.smsSenderId || "Welama",
           smsTemplateOrderConfirmation: source.smsTemplateOrderConfirmation || "Hello {customer}, thank you for ordering from {siteName}. Order #{orderId}, GHS {total}. Track here: {trackingLink}",
+          smsTemplateOrderProcessing: source.smsTemplateOrderProcessing || "Hello {customer}, your {siteName} order #{orderId} is now PROCESSING. Track here: {trackingLink}",
           smsTemplateOrderShipped: source.smsTemplateOrderShipped || "Hello {customer}, your {siteName} order #{orderId} has been SHIPPED. Track: {trackingLink}",
           smsTemplateOrderDelivered: source.smsTemplateOrderDelivered || "Hello {customer}, your {siteName} order #{orderId} has been DELIVERED. Thank you. Details: {trackingLink}",
+          smsTemplateOrderCancelled: source.smsTemplateOrderCancelled || "Hello {customer}, your {siteName} order #{orderId} was CANCELLED. Contact us if you need help.",
+          smsTemplateOrderStatusUpdate: source.smsTemplateOrderStatusUpdate || "Hello {customer}, your {siteName} order #{orderId} status is now {status}. Track here: {trackingLink}",
         }));
       }
     };
@@ -808,7 +814,26 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
                   <textarea
                     value={formData.smsTemplateOrderConfirmation}
                     onChange={handleChange("smsTemplateOrderConfirmation")}
-                    rows={3}
+                    rows={2}
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem 1rem",
+                      borderRadius: "10px",
+                      border: "1px solid #e2e8f0",
+                      fontSize: "0.85rem",
+                      resize: "vertical"
+                    }}
+                  />
+                </div>
+
+                <div className="form-group" style={{ marginBottom: "1.25rem" }}>
+                  <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#334155", display: "block", marginBottom: "0.4rem" }}>
+                    Order Processing SMS
+                  </label>
+                  <textarea
+                    value={formData.smsTemplateOrderProcessing}
+                    onChange={handleChange("smsTemplateOrderProcessing")}
+                    rows={2}
                     style={{
                       width: "100%",
                       padding: "0.75rem 1rem",
@@ -827,7 +852,7 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
                   <textarea
                     value={formData.smsTemplateOrderShipped}
                     onChange={handleChange("smsTemplateOrderShipped")}
-                    rows={3}
+                    rows={2}
                     style={{
                       width: "100%",
                       padding: "0.75rem 1rem",
@@ -846,7 +871,45 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
                   <textarea
                     value={formData.smsTemplateOrderDelivered}
                     onChange={handleChange("smsTemplateOrderDelivered")}
-                    rows={3}
+                    rows={2}
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem 1rem",
+                      borderRadius: "10px",
+                      border: "1px solid #e2e8f0",
+                      fontSize: "0.85rem",
+                      resize: "vertical"
+                    }}
+                  />
+                </div>
+
+                <div className="form-group" style={{ marginBottom: "1.25rem" }}>
+                  <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#334155", display: "block", marginBottom: "0.4rem" }}>
+                    Order Cancelled SMS
+                  </label>
+                  <textarea
+                    value={formData.smsTemplateOrderCancelled}
+                    onChange={handleChange("smsTemplateOrderCancelled")}
+                    rows={2}
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem 1rem",
+                      borderRadius: "10px",
+                      border: "1px solid #e2e8f0",
+                      fontSize: "0.85rem",
+                      resize: "vertical"
+                    }}
+                  />
+                </div>
+
+                <div className="form-group" style={{ marginBottom: "1.25rem" }}>
+                  <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#334155", display: "block", marginBottom: "0.4rem" }}>
+                    General Order Status Update SMS (Fallback)
+                  </label>
+                  <textarea
+                    value={formData.smsTemplateOrderStatusUpdate}
+                    onChange={handleChange("smsTemplateOrderStatusUpdate")}
+                    rows={2}
                     style={{
                       width: "100%",
                       padding: "0.75rem 1rem",

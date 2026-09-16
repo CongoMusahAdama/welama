@@ -5,7 +5,7 @@ import Swal from "sweetalert2";
 import confetti from "canvas-confetti";
 import { useCart } from "../context/CartContext";
 import { apiRequest } from "../utils/api";
-import { waLink } from "../utils/whatsapp";
+import { waLink, getFullImageUrl } from "../utils/whatsapp";
 import { catalogProductId } from "../utils/productId";
 import { Cedis, formatCedis } from "../utils/currency";
 
@@ -142,19 +142,45 @@ const CheckoutPage = ({ addOrder }) => {
         const itemsList = cartItems
           .map((i) => {
             const spec = [i.selectedSize && `Size: ${i.selectedSize}`, i.selectedColor && `Color: ${i.selectedColor}`].filter(Boolean).join(", ");
-            return `• ${i.name}${spec ? ` (${spec})` : ""} x${i.qty}`;
+            const imgUrl = getFullImageUrl(i.image);
+            return `• *${i.name}*${spec ? ` (${spec})` : ""} x${i.qty}\n  🖼️ Image: ${imgUrl}`;
           })
-          .join("\n");
+          .join("\n\n");
         const whatsappMessage =
           `Hi WELAMA! I'd like to order:\n\n${itemsList}\n\n💰 Total: ${formatCedis(totalWithDelivery, 2)}\n\n*Order ID:* ${order.orderId}\n👤 Name: ${formData.customer}\n📞 WhatsApp: ${formData.phone}\n📍 ${deliveryLocation}\n\nPlease confirm availability. Thank you! 🙏`;
         window.open(waLink(whatsappMessage), "_blank");
         clearCart();
+        const trackingUrl = `/track?orderId=${encodeURIComponent(order.orderId)}&phone=${encodeURIComponent(formData.smsPhone || formData.phone)}`;
+
         Swal.fire({
-          title: "Order Sent! 🎉",
-          html: `Your order <strong>${order.orderId}</strong> was created.<br/><br/>We'll confirm on WhatsApp shortly, and you'll get SMS updates on <strong>${formData.smsPhone || formData.phone}</strong>.`,
+          title: "Order Placed Successfully! 🎉",
+          html: `
+            <div style="font-family: inherit; padding: 0.5rem 0;">
+              <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 1rem;">
+                Thank you, <strong>${formData.customer}</strong>! We've received your order.
+              </p>
+              <div style="background: #f8fafc; border: 2px dashed #0A0A0A; border-radius: 14px; padding: 1rem; margin-bottom: 1.25rem;">
+                <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #64748b; font-weight: 700;">Your Order ID</div>
+                <div style="font-size: 1.6rem; font-weight: 900; color: #0A0A0A; letter-spacing: 1px; margin-top: 4px;">${order.orderId}</div>
+              </div>
+              <p style="font-size: 0.85rem; color: #475569; margin-bottom: 0.5rem;">
+                📱 We sent an <strong>SMS with your Order ID & tracking link</strong> to <strong>${formData.smsPhone || formData.phone}</strong>.
+              </p>
+            </div>
+          `,
           icon: "success",
           confirmButtonColor: "#0A0A0A",
-        }).then(() => navigate("/"));
+          confirmButtonText: "Track My Order 🚀",
+          showCancelButton: true,
+          cancelButtonText: "Return Home",
+          cancelButtonColor: "#64748b",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            navigate(trackingUrl);
+          } else {
+            navigate("/");
+          }
+        });
       } else {
         Swal.fire("Error", res.message || "Could not place order", "error");
       }

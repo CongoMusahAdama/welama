@@ -65,7 +65,7 @@ const HomePage = ({ products = [], categories = [], settings }) => {
     .slice(0, 16);
 
   return (
-    <>
+    <div className="home-page">
       <Hero settings={settings} />
 
       <section
@@ -360,7 +360,7 @@ const HomePage = ({ products = [], categories = [], settings }) => {
           }
         }
       `}</style>
-    </>
+    </div>
   );
 };
 

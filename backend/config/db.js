@@ -11,9 +11,13 @@ const connectDB = async () => {
         console.log(`MongoDB Connected: ${conn.connection.host} (majority write concern)`);
 
         try {
+            const Order = require('../models/Order');
+            await Order.collection.dropIndex('paystackReference_1').catch(() => {});
+            await Order.updateMany({ paystackReference: null }, { $unset: { paystackReference: 1 } }).catch(() => {});
+
             const models = [
                 require('../models/Product'),
-                require('../models/Order'),
+                Order,
                 require('../models/Admin'),
                 require('../models/Category'),
                 require('../models/Review'),

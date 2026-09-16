@@ -101,14 +101,12 @@ const GalleryPage = () => {
   return (
     <div className="gallery-page">
       <div className="container">
-        <div className="center-text" style={{ textAlign: "center", marginBottom: "2.5rem" }}>
-          <span style={{ textTransform: "uppercase", letterSpacing: "0.3em", fontSize: "0.8rem", color: "#C9A227" }}>
-            Visuals
-          </span>
-          <h1 className="serif page-hero-heading" style={{ marginTop: "0.5rem" }}>
+        <div className="gallery-intro center-text">
+          <span className="gallery-kicker">Visuals</span>
+          <h1 className="serif page-hero-heading">
             Our Gallery
           </h1>
-          <p style={{ color: "#666", maxWidth: "600px", margin: "1rem auto 0" }}>
+          <p>
             Explore our curated collection of styles and inspirations.
           </p>
         </div>
@@ -128,7 +126,7 @@ const GalleryPage = () => {
           </div>
         )}
 
-        {loading && (
+        {loading && items.length === 0 && (
           <p style={{ textAlign: "center", color: "#666" }}>Loading gallery...</p>
         )}
 

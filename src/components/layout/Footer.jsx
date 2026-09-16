@@ -8,11 +8,13 @@ const Footer = ({ settings }) => {
   if (location.pathname === "/auth" || location.pathname.startsWith("/admin"))
     return null;
 
+  const isHome = location.pathname === "/home";
+
   const logoUrl = settings?.logoUrl || "/welamalogo.png";
   const storePhone = displayStorePhone(settings?.contactPhone);
 
   return (
-    <footer className="footer">
+    <footer className={`footer${isHome ? "" : " footer-mobile-hidden"}`}>
       <div className="container">
         <div className="footer-grid">
           <div>

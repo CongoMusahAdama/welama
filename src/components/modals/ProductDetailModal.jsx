@@ -3,7 +3,7 @@ import { X, Minus, Plus, ShoppingBag, MessageCircle, Instagram, CheckCircle } fr
 import { useModal } from "../../context/ModalContext";
 import { useCart } from "../../context/CartContext";
 import ProductCard from "../products/ProductCard";
-import { waLink } from "../../utils/whatsapp";
+import { waLink, getFullImageUrl } from "../../utils/whatsapp";
 import { Cedis, formatCedis } from "../../utils/currency";
 
 const ProductDetailModal = () => {
@@ -237,7 +237,7 @@ const ProductDetailModal = () => {
 📏 *Size:* ${size || 'Standard'}
 🔢 *Quantity:* ${qty}
 💰 *Price:* ${formatCedis(finalDiscountPrice || price)} each
-🖼️ *Image:* ${window.location.origin}${image}
+🖼️ *Image:* ${getFullImageUrl(image)}
 
 Can you help me?`)}
                     target="_blank"

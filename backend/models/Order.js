@@ -69,9 +69,7 @@ const OrderSchema = new mongoose.Schema({
     },
     paystackReference: {
         type: String,
-        default: null,
-        unique: true,
-        sparse: true
+        default: undefined
     },
     status: {
         type: String,

@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { Minus, Plus, ShoppingBag, MessageCircle, CheckCircle, ChevronLeft } from "lucide-react";
+import { Minus, Plus, ShoppingBag, MessageCircle, CheckCircle, ChevronLeft, ShoppingCart, PackageSearch } from "lucide-react";
 import Swal from "sweetalert2";
 import { useCart } from "../context/CartContext";
 import ProductCard from "../components/products/ProductCard";
 import { apiRequest } from "../utils/api";
-import { waLink } from "../utils/whatsapp";
+import { waLink, getFullImageUrl, displayStorePhone } from "../utils/whatsapp";
 import { catalogProductId } from "../utils/productId";
 import { Cedis, formatCedis } from "../utils/currency";
 
 const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { addToCart } = useCart();
+  const { addToCart, cartCount, setIsCartOpen, cartPulse } = useCart();
 
   const product = products.find((p) => (p._id || p.id) === id);
 
@@ -54,13 +54,13 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
     );
   }
 
-  const { name, price, discountPrice, badge, image, sizes, colors, stock, sku, category } = product;
+  const { name, price, discountPrice, badge, image, sizes, colors, stock, sku, category, description } = product;
   const isSoldOut = product.status === "Sold Out" || stock === 0 || !!product.soldOutAt;
   const currentPrice = discountPrice || price;
   const resolvedImage = image && !image.startsWith("blob:") ? image : "/welamalogo.png";
 
   const handleAddToCart = () => {
-    addToCart(product, size, color);
+    addToCart(product, size, color, qty);
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 1500);
   };
@@ -96,16 +96,40 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
       const deliveryLine = orderForm.deliveryMethod === "Pickup"
         ? "🏪 Pickup"
         : `🏠 Home Delivery\n📍 ${[orderForm.street, orderForm.city, orderForm.region, orderForm.country || "Ghana"].filter(Boolean).join(", ")}`;
-      const whatsappMessage = `Hi WELAMA! I'd like to order:\n\n🛍️ *${name}*${sku ? ` (SKU: ${sku})` : ""}${color ? `\n🎨 Color: ${color}` : ""}\n📏 Size: ${size || "Standard"}\n🔢 Quantity: ${qty}\n💰 Total: ${formatCedis(total)}\n🖼️ Image: ${window.location.origin}${resolvedImage}\n\n*Order ID:* ${order.orderId}\n👤 Name: ${orderForm.customer}\n📞 WhatsApp: ${orderForm.phone}\n📱 SMS Number: ${orderForm.smsPhone}\n${deliveryLine}\n\nPlease confirm availability. Thank you! 🙏`;
+      const imgUrl = getFullImageUrl(resolvedImage);
+      const whatsappMessage = `Hi WELAMA! I'd like to order:\n\n🛍️ *${name}*${sku ? ` (SKU: ${sku})` : ""}${color ? `\n🎨 Color: ${color}` : ""}\n📏 Size: ${size || "Standard"}\n🔢 Quantity: ${qty}\n💰 Total: ${formatCedis(total)}\n🖼️ Image: ${imgUrl}\n\n*Order ID:* ${order.orderId}\n👤 Name: ${orderForm.customer}\n📞 WhatsApp: ${orderForm.phone}\n📱 SMS Number: ${orderForm.smsPhone}\n${deliveryLine}\n\nPlease confirm availability. Thank you! 🙏`;
 
       window.open(waLink(whatsappMessage), "_blank");
       setOrderForm({ customer: "", phone: "", smsPhone: "", location: "", country: "Ghana", deliveryMethod: "Home Delivery", street: "", city: "", region: "" });
 
+      const trackingUrl = `/track?orderId=${encodeURIComponent(order.orderId)}&phone=${encodeURIComponent(orderForm.smsPhone || orderForm.phone)}`;
+
       Swal.fire({
-        title: "Order Sent! 🎉",
-        html: `Your order <strong>${order.orderId}</strong> was created.<br/><br/>You'll receive an <strong>SMS update</strong> on <strong>${orderForm.smsPhone}</strong> with a tracking link once your order is confirmed.`,
+        title: "Order Placed Successfully! 🎉",
+        html: `
+          <div style="font-family: inherit; padding: 0.5rem 0;">
+            <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 1rem;">
+              Thank you, <strong>${orderForm.customer}</strong>! Your order has been registered.
+            </p>
+            <div style="background: #f8fafc; border: 2px dashed #0A0A0A; border-radius: 14px; padding: 1rem; margin-bottom: 1.25rem;">
+              <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #64748b; font-weight: 700;">Your Order ID</div>
+              <div style="font-size: 1.6rem; font-weight: 900; color: #0A0A0A; letter-spacing: 1px; margin-top: 4px;">${order.orderId}</div>
+            </div>
+            <p style="font-size: 0.85rem; color: #475569; margin-bottom: 0.5rem;">
+              📱 We sent an <strong>SMS with your Order ID & tracking link</strong> to <strong>${orderForm.smsPhone}</strong>.
+            </p>
+          </div>
+        `,
         icon: "success",
         confirmButtonColor: "#0A0A0A",
+        confirmButtonText: "Track My Order 🚀",
+        showCancelButton: true,
+        cancelButtonText: "Close",
+        cancelButtonColor: "#64748b",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate(trackingUrl);
+        }
       });
     } else {
       Swal.fire("Error", res?.message || "Could not submit your order. Please try again.", "error");
@@ -170,6 +194,28 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
 
   return (
     <div className="product-detail-page section-padding container">
+      <div className="app-pdp-topbar mobile-only">
+        <button type="button" className="app-pdp-icon-btn" onClick={() => navigate(-1)} aria-label="Back">
+          <ChevronLeft size={22} />
+        </button>
+        <h2>Details</h2>
+        <div className="app-pdp-top-actions">
+          <button type="button" className="app-pdp-icon-btn" onClick={() => navigate("/track")} aria-label="Track order">
+            <PackageSearch size={18} />
+          </button>
+          <button
+            type="button"
+            className={`app-pdp-icon-btn ${cartPulse ? "cart-pulse" : ""}`}
+            data-cart-fly-target
+            onClick={() => setIsCartOpen(true)}
+            aria-label="Open cart"
+          >
+            <ShoppingCart size={18} />
+            {cartCount > 0 && <span className="app-pdp-cart-count">{cartCount}</span>}
+          </button>
+        </div>
+      </div>
+
       <div className="product-detail-layout">
         <div className="product-detail-pin">
           <button className="product-detail-back" onClick={() => navigate(-1)}>
@@ -202,6 +248,25 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
         </div>
 
         <div className="product-detail-info">
+          <div className="app-pdp-meta mobile-only">
+            <p className="app-pdp-category">{category || "WELAMA"}</p>
+            <h1 className="app-pdp-title">{name}</h1>
+            <div className="app-pdp-store">
+              <img src={settings?.logoUrl || "/welamalogo.png"} alt="WELAMA" />
+              <div>
+                <strong>WELAMA</strong>
+                <span>Official store · Concierge</span>
+              </div>
+              <a className="app-pdp-contact" href={`tel:${displayStorePhone(settings?.contactPhone)}`}>Call</a>
+            </div>
+            {description && (
+              <div className="app-pdp-desc">
+                <h3>Description</h3>
+                <p>{description}</p>
+              </div>
+            )}
+          </div>
+
           {colors && colors.length > 0 && (
             <div className="product-detail-option-group">
               <span className="product-detail-option-label">
@@ -270,7 +335,7 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
           </div>
 
           <button
-            className="cta-button-premium"
+            className="cta-button-premium desktop-add-to-cart"
             disabled={isSoldOut}
             onClick={handleAddToCart}
             style={{ width: "60%", minWidth: "220px", justifyContent: "center", opacity: isSoldOut ? 0.5 : 1, cursor: isSoldOut ? "not-allowed" : "pointer", marginBottom: "1.75rem" }}
@@ -526,6 +591,21 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
             </div>
           )}
         </div>
+      </div>
+
+      <div className="app-pdp-bar mobile-only">
+        <div className="app-pdp-bar-price">
+          <span>Total price</span>
+          <strong><Cedis value={currentPrice * qty} /></strong>
+        </div>
+        <button
+          className="app-pdp-add"
+          disabled={isSoldOut}
+          onClick={handleAddToCart}
+        >
+          {justAdded ? <CheckCircle size={18} /> : <ShoppingBag size={18} />}
+          <span>{isSoldOut ? "Sold Out" : justAdded ? "Added" : "Add to Cart"}</span>
+        </button>
       </div>
     </div>
   );

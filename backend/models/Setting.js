@@ -66,6 +66,10 @@ const SettingSchema = new mongoose.Schema({
         type: String,
         default: "Hello {customer}, thank you for ordering from {siteName}. Order #{orderId}, GHS {total}. Track here: {trackingLink}"
     },
+    smsTemplateOrderProcessing: {
+        type: String,
+        default: "Hello {customer}, your {siteName} order #{orderId} is now PROCESSING. Track here: {trackingLink}"
+    },
     smsTemplateOrderShipped: {
         type: String,
         default: "Hello {customer}, your {siteName} order #{orderId} has been SHIPPED. Track: {trackingLink}"
@@ -73,6 +77,14 @@ const SettingSchema = new mongoose.Schema({
     smsTemplateOrderDelivered: {
         type: String,
         default: "Hello {customer}, your {siteName} order #{orderId} has been DELIVERED. Thank you. Details: {trackingLink}"
+    },
+    smsTemplateOrderCancelled: {
+        type: String,
+        default: "Hello {customer}, your {siteName} order #{orderId} was CANCELLED. Contact us if you need help."
+    },
+    smsTemplateOrderStatusUpdate: {
+        type: String,
+        default: "Hello {customer}, your {siteName} order #{orderId} status is now {status}. Track here: {trackingLink}"
     },
     // Paystack Payment Gateway
     paystackPublicKey: {

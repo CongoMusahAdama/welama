@@ -11,10 +11,12 @@ import { apiRequest } from "./utils/api";
 import { CartProvider } from "./context/CartContext";
 import { ModalProvider } from "./context/ModalContext";
 import { SAMPLE_PRODUCTS } from "./data/sampleProducts";
+import { DEFAULT_CATEGORIES, mergeCategories } from "./utils/categories";
 
 // --- COMPONENTS ---
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
+import MobileAppDock from "./components/layout/MobileAppDock";
 import SupportBot from "./components/ui/SupportBot";
 import Preloader from "./components/ui/Preloader";
 import PageRouteLoader from "./components/ui/PageRouteLoader";
@@ -28,7 +30,6 @@ import CollectionsPage from "./pages/CollectionsPage";
 import AuthPage from "./pages/AuthPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import TrackingPage from "./pages/TrackingPage";
-import CustomizePage from "./pages/CustomizePage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import GalleryPage from "./pages/GalleryPage";
 
@@ -102,50 +103,66 @@ const App = () => {
         setSettings(setRes.data);
       }
 
-      if (catRes?.success && catRes.data?.length > 0) {
-        const uniqueCats = [...new Set(catRes.data.map((c) => c.name.trim()))];
-        setCategories(uniqueCats);
-      }
+      const liveProducts =
+        prodRes?.success && Array.isArray(prodRes.data) && prodRes.data.length > 0
+          ? prodRes.data
+          : null;
 
-      if (prodRes?.success && prodRes.data?.length > 0) {
-        setProducts(prodRes.data);
+      if (liveProducts) {
+        setProducts(liveProducts);
         try {
-          sessionStorage.setItem("welama_products", JSON.stringify(prodRes.data));
+          sessionStorage.setItem("welama_products", JSON.stringify(liveProducts));
         } catch {
           /* quota / private mode */
         }
-
-        const productCategories = prodRes.data
-          .map((p) => p.category?.trim())
-          .filter(Boolean);
-        setCategories((prev) => {
-          const combined = [...prev, ...productCategories];
-          const normalized = combined.map(
-            (c) => c.charAt(0).toUpperCase() + c.slice(1).toLowerCase(),
-          );
-          return [...new Set(normalized)];
+      } else {
+        setProducts((prev) => {
+          if (prev.length) return prev;
+          return import.meta.env.PROD ? prev : SAMPLE_PRODUCTS;
         });
-      } else if (!cancelled && !import.meta.env.PROD) {
-        setProducts((prev) => (prev.length ? prev : SAMPLE_PRODUCTS));
       }
+
+      const catalogProducts = liveProducts?.length
+        ? liveProducts
+        : import.meta.env.PROD
+          ? []
+          : SAMPLE_PRODUCTS;
+      setCategories(
+        mergeCategories(
+          catRes?.success ? catRes.data : [],
+          catalogProducts.map((p) => p.category),
+          DEFAULT_CATEGORIES,
+        ),
+      );
     };
 
     const initApp = async () => {
-      const [catRes, prodRes, setRes] = await Promise.all([
-        apiRequest("/categories", "GET", null, 12000),
-        apiRequest("/products", "GET", null, 12000),
-        apiRequest("/settings", "GET", null, 12000),
-      ]);
-      applyCatalog(catRes, prodRes, setRes);
+      try {
+        const [catRes, prodRes, setRes] = await Promise.all([
+          apiRequest("/categories", "GET", null, 25000),
+          apiRequest("/products", "GET", null, 25000),
+          apiRequest("/settings", "GET", null, 25000),
+        ]);
+        applyCatalog(catRes, prodRes, setRes);
 
-      const verifyRes = await apiRequest("/auth/me", "GET", null, 2500);
-      if (cancelled) return;
-      if (verifyRes.success) {
-        setUser(verifyRes.data);
-        const ordRes = await apiRequest("/orders", "GET", null, 4000);
-        if (!cancelled && ordRes.success) setOrders(ordRes.data);
+        const verifyRes = await apiRequest("/auth/me", "GET", null, 2500);
+        if (cancelled) return;
+        if (verifyRes.success) {
+          setUser(verifyRes.data);
+          const ordRes = await apiRequest("/orders", "GET", null, 4000);
+          if (!cancelled && ordRes.success) setOrders(ordRes.data);
+        }
+      } catch (error) {
+        console.error("Failed to initialize catalog:", error);
+        if (!cancelled) {
+          setProducts((prev) => (prev.length ? prev : SAMPLE_PRODUCTS));
+          setCategories((prev) =>
+            prev.length ? prev : mergeCategories(SAMPLE_PRODUCTS.map((p) => p.category), DEFAULT_CATEGORIES),
+          );
+        }
+      } finally {
+        if (!cancelled) setAuthChecked(true);
       }
-      setAuthChecked(true);
     };
 
     initApp();
@@ -299,10 +316,10 @@ const App = () => {
     if (res.success) {
       setOrders((prev) => prev.map((o) => (o._id === id ? res.data : o)));
       Swal.fire({
-        title: "Status Updated!",
-        text: `Order status has been updated successfully.`,
+        title: "Status Updated! 📱",
+        text: `Order status updated & SMS notification sent to customer.`,
         icon: "success",
-        timer: 1500,
+        timer: 1800,
         showConfirmButton: false,
       });
     } else {
@@ -365,6 +382,10 @@ const App = () => {
               <Routes>
                 <Route
                   path="/"
+                  element={<Navigate to="/shop" replace />}
+                />
+                <Route
+                  path="/home"
                   element={
                     <HomePage products={products} categories={categories} />
                   }
@@ -381,10 +402,7 @@ const App = () => {
                 />
                 <Route path="/collections" element={<CollectionsPage settings={settings} />} />
                 <Route path="/about" element={<AboutPage />} />
-                <Route
-                  path="/customize"
-                  element={<CustomizePage addOrder={addOrder} />}
-                />
+                <Route path="/customize" element={<Navigate to="/shop" replace />} />
                 <Route path="/gallery" element={<GalleryPage />} />
                 <Route
                   path="/auth"
@@ -422,6 +440,7 @@ const App = () => {
                 />
               </Routes>
               <Footer settings={settings} />
+              <MobileAppDock />
               <SupportBot />
             </div>
           </ModalProvider>

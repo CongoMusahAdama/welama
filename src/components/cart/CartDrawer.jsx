@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { ShoppingBag, X, Send, Minus, Plus, Trash2, CheckCircle } from "lucide-react";
 import { useCart } from "../../context/CartContext";
-import { waLink } from "../../utils/whatsapp";
+import { waLink, getFullImageUrl } from "../../utils/whatsapp";
 import { Cedis, formatCedis } from "../../utils/currency";
 
 const CartDrawer = () => {
@@ -22,7 +22,8 @@ const CartDrawer = () => {
     const lines = cartItems.map(
       (i) => {
         const spec = [i.selectedSize && `Size: ${i.selectedSize}`, i.selectedColor && `Color: ${i.selectedColor}`].filter(Boolean).join(", ");
-        return `• ${i.name}${i.sku ? ` [${i.sku}]` : ''} ${spec ? `(${spec}) ` : ""}x${i.qty} — ${formatCedis(parseFloat(i.price) * i.qty, 2)}\n  🖼️ ${window.location.origin}${i.image}`;
+        const imgUrl = getFullImageUrl(i.image);
+        return `• *${i.name}*${i.sku ? ` [${i.sku}]` : ''} ${spec ? `(${spec}) ` : ""}x${i.qty} — ${formatCedis(parseFloat(i.price) * i.qty, 2)}\n  🖼️ Image: ${imgUrl}`;
       }
     );
     return `Hi WELAMA! I'd like to place an order:\n\n${lines.join("\n\n")}\n\n*Total: ${formatCedis(cartTotal, 2)}*\n\nPlease confirm my order. Thank you! 🙏`;

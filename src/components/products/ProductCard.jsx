@@ -61,7 +61,7 @@ const ProductCard = ({
       className="product-card reveal"
       onClick={handleSelect}
       style={{
-        opacity: isSoldOut ? 0.6 : undefined,
+        "--stagger": index,
         filter: isSoldOut ? "grayscale(100%)" : "none",
         transitionDelay: `${0.1 + (index % 4) * 0.08}s`,
       }}
@@ -85,49 +85,18 @@ const ProductCard = ({
       )}
       <div className="product-image-container">
         {isSoldOut ? (
-          <div
-            className="product-badge"
-            style={{
-              backgroundColor: "#ef4444",
-              color: "#fff",
-              zIndex: 10,
-              padding: "0.4rem 1rem",
-              fontSize: "0.8rem",
-              fontWeight: 800,
-            }}
-          >
+          <div className="product-badge badge-soldout">
             SOLD OUT
           </div>
         ) : (
-          <div
-            style={{
-              position: "absolute",
-              top: "10px",
-              left: "10px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "5px",
-              zIndex: 5,
-            }}
-          >
+          <div className="product-badge-group">
             {badge && (
-              <div
-                className="product-badge"
-                style={{ position: "relative", top: 0, left: 0 }}
-              >
+              <div className="product-badge badge-custom">
                 {badge}
               </div>
             )}
             {discountPrice && (
-              <div
-                className="product-badge"
-                style={{
-                  backgroundColor: "#ef4444",
-                  position: "relative",
-                  top: 0,
-                  left: 0,
-                }}
-              >
+              <div className="product-badge badge-sale">
                 SALE
               </div>
             )}

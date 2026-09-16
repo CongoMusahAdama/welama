@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import Toast from "../components/ui/Toast";
 import CartDrawer from "../components/cart/CartDrawer";
+import { getVisibleCartIcon } from "../utils/cartTarget";
 
 const CartContext = createContext(null);
 
@@ -24,7 +25,8 @@ export const CartProvider = ({ children }) => {
     setTimeout(() => setToast(null), 2200);
   };
 
-  const addToCart = (product, selectedSize, selectedColor) => {
+  const addToCart = (product, selectedSize, selectedColor, qtyToAdd = 1) => {
+    const addQty = Math.max(1, Number(qtyToAdd) || 1);
     setCartItems((prev) => {
       const parts = [product._id || product.id];
       if (selectedSize) parts.push(selectedSize);
@@ -33,7 +35,7 @@ export const CartProvider = ({ children }) => {
       const existing = prev.find((i) => i.cartId === cartId);
       if (existing)
         return prev.map((i) =>
-          i.cartId === cartId ? { ...i, qty: i.qty + 1 } : i,
+          i.cartId === cartId ? { ...i, qty: i.qty + addQty } : i,
         );
       return [
         ...prev,
@@ -42,20 +44,21 @@ export const CartProvider = ({ children }) => {
           cartId,
           selectedSize: selectedSize || "",
           selectedColor: selectedColor ? (typeof selectedColor === "object" ? selectedColor.name : selectedColor) : "",
-          qty: 1,
+          qty: addQty,
         },
       ];
     });
 
-    const cartEl = document.getElementById("nav-cart-target");
+    const cartEl = getVisibleCartIcon() || document.getElementById("nav-cart-target");
     const dest = cartEl?.getBoundingClientRect();
+    const destValid = dest && dest.width > 8 && dest.height > 8;
     setFlyItem({
       key: Date.now(),
       src: product.image,
       startX: lastPointer.x,
       startY: lastPointer.y,
-      endX: dest ? dest.left + dest.width / 2 : window.innerWidth - 48,
-      endY: dest ? dest.top + dest.height / 2 : 28,
+      endX: destValid ? dest.left + dest.width / 2 : window.innerWidth - 28,
+      endY: destValid ? dest.top + dest.height / 2 : 28,
     });
     addToast(product.name);
   };

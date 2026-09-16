@@ -124,25 +124,32 @@ const sendOrderStatusUpdateSMS = async (order) => {
     const siteName = setting?.siteName || 'WELAMA';
     const statusUpper = String(order.status || '').toUpperCase();
     
-    let message = `Hello ${order.customer}, your ${siteName} order #${orderId} is now ${statusUpper}. Track: ${trackingLink}`;
+    let message = '';
+    const statusKey = String(order.status || '').toLowerCase();
 
-    if (order.status === 'Delivered') {
+    if (statusKey === 'delivered') {
         const template = setting?.smsTemplateOrderDelivered || "Hello {customer}, your {siteName} order #{orderId} has been DELIVERED. Thank you. Details: {trackingLink}";
-        message = template
-            .replace(/{customer}/g, order.customer)
-            .replace(/{siteName}/g, siteName)
-            .replace(/{orderId}/g, orderId)
-            .replace(/{trackingLink}/g, trackingLink);
-    } else if (order.status === 'Cancelled') {
-        message = `Hello ${order.customer}, your ${siteName} order #${orderId} was CANCELLED. Contact us if you need help.`;
-    } else if (order.status === 'Shipped') {
+        message = template;
+    } else if (statusKey === 'cancelled') {
+        const template = setting?.smsTemplateOrderCancelled || "Hello {customer}, your {siteName} order #{orderId} was CANCELLED. Contact us if you need help.";
+        message = template;
+    } else if (statusKey === 'shipped') {
         const template = setting?.smsTemplateOrderShipped || "Hello {customer}, your {siteName} order #{orderId} has been SHIPPED. Track: {trackingLink}";
-        message = template
-            .replace(/{customer}/g, order.customer)
-            .replace(/{siteName}/g, siteName)
-            .replace(/{orderId}/g, orderId)
-            .replace(/{trackingLink}/g, trackingLink);
+        message = template;
+    } else if (statusKey === 'processing') {
+        const template = setting?.smsTemplateOrderProcessing || "Hello {customer}, your {siteName} order #{orderId} is now PROCESSING. Track here: {trackingLink}";
+        message = template;
+    } else {
+        const template = setting?.smsTemplateOrderStatusUpdate || "Hello {customer}, your {siteName} order #{orderId} status is now {status}. Track here: {trackingLink}";
+        message = template.replace(/{status}/g, statusUpper);
     }
+
+    message = message
+        .replace(/{customer}/g, order.customer || 'Customer')
+        .replace(/{siteName}/g, siteName)
+        .replace(/{orderId}/g, orderId)
+        .replace(/{total}/g, order.total || 0)
+        .replace(/{trackingLink}/g, trackingLink);
 
     return await sendSMS(dest, message);
 };

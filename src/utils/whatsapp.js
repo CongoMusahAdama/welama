@@ -9,3 +9,15 @@ export const displayStorePhone = (value) => {
 
 export const waLink = (text = "") =>
   `https://wa.me/${WHATSAPP_NUMBER}${text ? `?text=${encodeURIComponent(text)}` : ""}`;
+
+export const getFullImageUrl = (imagePath) => {
+  if (!imagePath || typeof imagePath !== 'string') {
+    return `${window.location.origin}/welamalogo.png`;
+  }
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  const cleanPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+  return `${window.location.origin}${cleanPath}`;
+};
+

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { Search, Heart, Menu, X, ArrowRight, LayoutGrid, ChevronDown, ShoppingBag, Phone, Mail, PackageSearch } from "lucide-react";
+import { Search, Heart, Menu, X, ArrowRight, LayoutGrid, ChevronDown, ShoppingCart, Phone, Mail, PackageSearch } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import RecentlyViewedDropdown from "./RecentlyViewedDropdown";
 import { Cedis } from "../../utils/currency";
@@ -11,6 +11,7 @@ const NavCartButton = () => {
   return (
     <button
       id="nav-cart-target"
+      data-cart-fly-target
       className={`icon-link nav-cart-btn ${cartPulse ? "cart-pulse" : ""}`}
       onClick={(e) => {
         e.preventDefault();
@@ -19,7 +20,7 @@ const NavCartButton = () => {
       }}
     >
       <span style={{ position: "relative", display: "inline-flex" }}>
-        <ShoppingBag size={20} strokeWidth={1.5} />
+        <ShoppingCart size={22} strokeWidth={1.5} />
         <span className="nav-cart-badge">{cartCount}</span>
       </span>
       <span className="nav-cart-text desktop-only">
@@ -91,15 +92,15 @@ const NavDropdown = ({ label, to, items }) => {
 
   return (
     <div
-      className="nav-item-dropdown"
+      className={`nav-item-dropdown${open ? " is-open" : ""}`}
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
     >
       <Link to={to} className="nav-link">{label}</Link>
-      {open && items?.length > 0 && (
+      {items?.length > 0 && (
         <div className="category-dropdown-menu">
           {items.map((item) => (
-            <Link key={item.to} to={item.to} onClick={() => setOpen(false)}>
+            <Link key={`${item.to}-${item.label}`} to={item.to} onClick={() => setOpen(false)}>
               {item.label}
             </Link>
           ))}
@@ -113,20 +114,25 @@ const CategoryDropdown = ({ categories = [] }) => {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="category-dropdown" onMouseLeave={() => setOpen(false)}>
+    <div
+      className={`category-dropdown${open ? " is-open" : ""}`}
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
       <button
         type="button"
         className="category-dropdown-btn"
         onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
       >
         <LayoutGrid size={16} />
         <span>Shop By Category</span>
         <ChevronDown size={14} />
       </button>
-      {open && categories.length > 0 && (
+      {categories.length > 0 && (
         <div className="category-dropdown-menu">
           {categories.map((c) => {
-            const label = typeof c === "object" ? c.label : c;
+            const label = typeof c === "object" ? c.label || c.name : c;
             return (
               <Link
                 key={label}
@@ -234,6 +240,7 @@ const Navbar = ({ user, categories = [], settings }) => {
   const [logoAnimKey, setLogoAnimKey] = useState(1);
   const isShopPage = location.pathname.startsWith("/shop");
   const isHomePage = location.pathname === "/";
+  const isProductPage = location.pathname.startsWith("/product");
   const isAuthPage =
     location.pathname === "/auth" || location.pathname.startsWith("/admin");
 
@@ -302,24 +309,21 @@ const Navbar = ({ user, categories = [], settings }) => {
     { to: "/shop", label: "View All Products" },
   ];
 
-  const collectionsMenuItems = [
-    { to: "/shop?q=Shirts", label: "Shirts" },
-    { to: "/shop?q=Dresses", label: "Dresses" },
-    { to: "/shop?q=Two-piece", label: "Two-piece" },
-    { to: "/shop?q=Bags", label: "Bags" },
-  ];
-
-  const customizeMenuItems = [
-    { to: "/customize#how-it-works", label: "How It Works" },
-    { to: "/customize#start-order", label: "Start Your Order" },
-  ];
+  const collectionsMenuItems = categories.map((c) => {
+    const label = typeof c === "object" ? c.label || c.name : c;
+    return { to: `/shop?q=${encodeURIComponent(label)}`, label };
+  });
 
   const galleryMenuItems = [
     { to: "/gallery", label: "All" },
-    { to: "/gallery?category=Shirts", label: "Shirts" },
-    { to: "/gallery?category=Dresses", label: "Dresses" },
-    { to: "/gallery?category=Two-piece", label: "Two-piece" },
-    { to: "/gallery?category=Bags", label: "Bags" },
+    ...categories.map((c) => {
+      const label = typeof c === "object" ? c.label || c.name : c;
+      return { to: `/gallery?category=${encodeURIComponent(label)}`, label };
+    }),
+  ];
+
+  const trackMenuItems = [
+    { to: "/track", label: "Track Your Order" },
   ];
 
   useEffect(() => {
@@ -355,7 +359,7 @@ const Navbar = ({ user, categories = [], settings }) => {
 
   return (
     <>
-      <header className={`header ${isScrolled ? "scrolled" : ""} ${isShopPage ? "header-shop" : ""} ${isHomePage ? "header-home" : ""}`}>
+      <header className={`header ${isScrolled ? "scrolled" : ""} ${isShopPage ? "header-shop" : ""} ${isHomePage ? "header-home" : ""} ${isProductPage ? "header-product" : ""}`}>
         <AnnouncementTicker />
         <div className="main-nav-row">
           <div className="container main-nav-row-inner">
@@ -408,6 +412,13 @@ const Navbar = ({ user, categories = [], settings }) => {
             </div>
 
             <div className="nav-icons">
+              <button
+                className="mobile-menu-btn"
+                onClick={() => setIsMobileMenuOpen(true)}
+                aria-label="Open menu"
+              >
+                <Menu size={20} strokeWidth={2} />
+              </button>
               <Link
                 to="/track"
                 className="icon-link mobile-only"
@@ -420,13 +431,6 @@ const Navbar = ({ user, categories = [], settings }) => {
               </a>
               <RecentlyViewedDropdown />
               <NavCartButton />
-              <button
-                className="mobile-menu-btn"
-                onClick={() => setIsMobileMenuOpen(true)}
-                aria-label="Open menu"
-              >
-                <Menu size={22} strokeWidth={1.5} />
-              </button>
             </div>
           </div>
         </div>
@@ -455,8 +459,8 @@ const Navbar = ({ user, categories = [], settings }) => {
               <NavDropdown label="Home" to="/" items={homeMenuItems} />
               <NavDropdown label="Shop" to="/shop" items={shopMenuItems} />
               <NavDropdown label="Collections" to="/collections" items={collectionsMenuItems} />
-              <NavDropdown label="Customize" to="/customize" items={customizeMenuItems} />
               <NavDropdown label="Gallery" to="/gallery" items={galleryMenuItems} />
+              <NavDropdown label="Track Order" to="/track" items={trackMenuItems} />
             </nav>
             <Link to="/track" className="sub-nav-track-link">
               Track Order
@@ -501,12 +505,20 @@ const Navbar = ({ user, categories = [], settings }) => {
           <Link to="/" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
           <Link to="/shop" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Shop</Link>
           <Link to="/collections" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Collections</Link>
-          <Link to="/customize" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Customize</Link>
           <Link to="/gallery" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Gallery</Link>
           <Link to="/about" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>About</Link>
           <Link to="/track" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Track Order</Link>
         </nav>
         <div className="mobile-nav-footer">
+          <div className="mobile-nav-contact">
+            <p>Concierge</p>
+            <a href={`tel:${storePhone}`}>
+              <Phone size={15} /> {storePhone}
+            </a>
+            <a href={`mailto:${settings?.contactEmail || "info@welama.com"}`}>
+              <Mail size={15} /> {settings?.contactEmail || "info@welama.com"}
+            </a>
+          </div>
           <a
             href={waLink()}
             target="_blank"
