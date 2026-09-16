@@ -36,9 +36,9 @@ const sendSMS = async (to, message) => {
             setting?.smsSenderId,
             process.env.MNOTIFY_SENDER_ID,
             process.env.NOTIFY_SENDER_ID,
-            'WELAMA'
+            'Welama'
         );
-        const senderId = String(rawSender).replace(/\s+/g, '').slice(0, 11) || 'WELAMA';
+        const senderId = String(rawSender).replace(/\s+/g, '').slice(0, 11) || 'Welama';
         const isEnabled = setting?.smsEnabled !== false;
 
         if (!isEnabled) {

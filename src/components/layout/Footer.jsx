@@ -60,9 +60,6 @@ const Footer = ({ settings }) => {
               <li>
                 <Link to="/shop?q=Bags">Bags</Link>
               </li>
-              <li>
-                <Link to="/reviews">Reviews</Link>
-              </li>
               <li style={{ marginTop: "0.5rem", paddingTop: "0.5rem", borderTop: "1px solid #333" }}>
                 <Link to="/track" style={{ color: "#C9A227", fontWeight: 700 }}>Track Order</Link>
               </li>

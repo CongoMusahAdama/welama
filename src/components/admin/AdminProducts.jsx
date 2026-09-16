@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Search, Plus, X, Upload, Edit3, PackageX, Trash } from "lucide-react";
+import { Search, Plus, X, Upload, Edit3, PackageX, Trash, Check } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import { API_URL } from "../../utils/api";
@@ -37,6 +37,7 @@ const AdminProducts = ({
   const [adminSearch, setAdminSearch] = useState("");
   const [customColorName, setCustomColorName] = useState("");
   const [customColorHex, setCustomColorHex] = useState("#0A0A0A");
+  const [collectionQuery, setCollectionQuery] = useState("");
 
   // Filtering & Pagination & Sorting (Newest First)
   const filteredProducts = products.filter(p => 
@@ -97,6 +98,7 @@ const AdminProducts = ({
     });
     setCustomColorName("");
     setCustomColorHex("#0A0A0A");
+    setCollectionQuery("");
     setShowModal(true);
   };
 
@@ -131,6 +133,7 @@ const AdminProducts = ({
     });
     setCustomColorName("");
     setCustomColorHex("#0A0A0A");
+    setCollectionQuery("");
     setShowModal(true);
   };
 
@@ -467,24 +470,59 @@ const AdminProducts = ({
                     </div>
 
                     <div className="product-form-row">
-                      <div className="product-field">
-                        <label htmlFor="product-category">Category</label>
-                        <select
-                          id="product-category"
-                          value={newProd.category}
-                          onChange={(e) =>
-                            setNewProd({ ...newProd, category: e.target.value })
-                          }
-                        >
-                          {categories.map((cat, idx) => {
-                            const label = typeof cat === "object" ? cat.label || cat.name : cat;
-                            return (
-                              <option key={idx} value={label}>
-                                {label}
-                              </option>
-                            );
-                          })}
-                        </select>
+                      <div className="product-field product-collection-field">
+                        <label htmlFor="product-collection-search">Collection</label>
+                        <input
+                          id="product-collection-search"
+                          type="search"
+                          autoComplete="off"
+                          placeholder="Search collections"
+                          value={collectionQuery}
+                          onChange={(e) => setCollectionQuery(e.target.value)}
+                        />
+                        {newProd.category ? (
+                          <span className="product-collection-current">Selected: {newProd.category}</span>
+                        ) : null}
+                        <div className="product-collection-list" role="listbox" aria-label="Collections">
+                          {(() => {
+                            const labels = (categories || [])
+                              .map((cat) => (typeof cat === "object" ? cat.label || cat.name : cat))
+                              .filter(Boolean);
+                            const q = collectionQuery.trim().toLowerCase();
+                            const visible = q
+                              ? labels.filter((label) => label.toLowerCase().includes(q))
+                              : labels;
+                            if (labels.length === 0) {
+                              return (
+                                <p className="product-collection-empty">No collections yet. Add them in Categories.</p>
+                              );
+                            }
+                            if (visible.length === 0) {
+                              return (
+                                <p className="product-collection-empty">No collection matches “{collectionQuery}”.</p>
+                              );
+                            }
+                            return visible.map((label) => {
+                              const selected = newProd.category === label;
+                              return (
+                                <button
+                                  key={label}
+                                  type="button"
+                                  role="option"
+                                  aria-selected={selected}
+                                  className={`product-collection-option ${selected ? "is-on" : ""}`}
+                                  onClick={() => {
+                                    setNewProd({ ...newProd, category: label });
+                                    setCollectionQuery("");
+                                  }}
+                                >
+                                  <span>{label}</span>
+                                  {selected ? <Check size={16} strokeWidth={2.5} /> : null}
+                                </button>
+                              );
+                            });
+                          })()}
+                        </div>
                       </div>
                       <div className="product-field">
                         <label htmlFor="product-stock">Stock</label>

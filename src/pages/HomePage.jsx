@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Quote } from "lucide-react";
 import Hero from "../components/home/Hero";
-import TrustCarousel from "../components/home/TrustCarousel";
 import ProductCard from "../components/products/ProductCard";
 
 const HomePage = ({ products = [], categories = [] }) => {
@@ -68,7 +67,6 @@ const HomePage = ({ products = [], categories = [] }) => {
   return (
     <>
       <Hero />
-      <TrustCarousel />
 
       <section
         id="featured-pieces"

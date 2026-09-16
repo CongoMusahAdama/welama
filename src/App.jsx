@@ -28,11 +28,9 @@ import CollectionsPage from "./pages/CollectionsPage";
 import AuthPage from "./pages/AuthPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import TrackingPage from "./pages/TrackingPage";
-import ReviewsPage from "./pages/ReviewsPage";
 import CustomizePage from "./pages/CustomizePage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import GalleryPage from "./pages/GalleryPage";
-import BrandsPage from "./pages/BrandsPage";
 
 // --- ADMIN ---
 import AdminDashboard from "./components/admin/AdminDashboard";
@@ -66,7 +64,7 @@ const App = () => {
     contactEmail: "info@welama.com",
     address: "Accra, Ghana",
     smsApiKey: "",
-    smsSenderId: "WELAMA",
+    smsSenderId: "Welama",
     smsEnabled: true,
   });
   const [user, setUser] = useState(null);
@@ -404,13 +402,11 @@ const App = () => {
                 />
                 <Route path="/collections" element={<CollectionsPage settings={settings} />} />
                 <Route path="/about" element={<AboutPage />} />
-                <Route path="/reviews" element={<ReviewsPage />} />
                 <Route
                   path="/customize"
                   element={<CustomizePage addOrder={addOrder} />}
                 />
                 <Route path="/gallery" element={<GalleryPage />} />
-                <Route path="/brands" element={<BrandsPage />} />
                 <Route
                   path="/auth"
                   element={<AuthPage onLogin={handleLogin} />}

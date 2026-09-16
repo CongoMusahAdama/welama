@@ -290,7 +290,6 @@ const Navbar = ({ user, categories = [], settings }) => {
 
   const homeMenuItems = [
     { to: "/#featured-pieces", label: "Featured Pieces" },
-    { to: "/#premium-brands", label: "Premium Brands" },
     { to: "/#our-story", label: "Our Story" },
     { to: "/#customer-reviews", label: "Customer Reviews" },
   ];
@@ -505,7 +504,6 @@ const Navbar = ({ user, categories = [], settings }) => {
           <Link to="/customize" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Customize</Link>
           <Link to="/gallery" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Gallery</Link>
           <Link to="/about" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>About</Link>
-          <Link to="/reviews" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Reviews</Link>
           <Link to="/track" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Track Order</Link>
         </nav>
         <div className="mobile-nav-footer">
