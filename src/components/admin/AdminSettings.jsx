@@ -39,6 +39,9 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
     // mNotify SMS
     mnotifyApiKey: "",
     mnotifySenderId: "WELAMA",
+    smsTemplateOrderConfirmation: "Hello {customer}, thank you for ordering from {siteName}. Order #{orderId}, GHS {total}. Track here: {trackingLink}",
+    smsTemplateOrderShipped: "Hello {customer}, your {siteName} order #{orderId} has been SHIPPED. Track: {trackingLink}",
+    smsTemplateOrderDelivered: "Hello {customer}, your {siteName} order #{orderId} has been DELIVERED. Thank you. Details: {trackingLink}",
     smsEnabled: true,
     // Paystack
     paystackPublicKey: "",
@@ -75,6 +78,9 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
           ...source,
           mnotifyApiKey: source.mnotifyApiKey || source.smsApiKey || "",
           mnotifySenderId: source.mnotifySenderId || source.smsSenderId || "WELAMA",
+          smsTemplateOrderConfirmation: source.smsTemplateOrderConfirmation || "Hello {customer}, thank you for ordering from {siteName}. Order #{orderId}, GHS {total}. Track here: {trackingLink}",
+          smsTemplateOrderShipped: source.smsTemplateOrderShipped || "Hello {customer}, your {siteName} order #{orderId} has been SHIPPED. Track: {trackingLink}",
+          smsTemplateOrderDelivered: source.smsTemplateOrderDelivered || "Hello {customer}, your {siteName} order #{orderId} has been DELIVERED. Thank you. Details: {trackingLink}",
         }));
       }
     };
@@ -784,6 +790,73 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
                     fontSize: "0.85rem",
                   }}
                 />
+              </div>
+
+              {/* SMS Templates */}
+              <div style={{ borderTop: "1px solid #f1f5f9", paddingTop: "1.25rem", marginBottom: "1.5rem" }}>
+                <h3 style={{ fontSize: "0.95rem", fontWeight: 600, color: "#0f172a", marginBottom: "1rem" }}>
+                  SMS Templates
+                </h3>
+                <p style={{ fontSize: "0.75rem", color: "#64748b", marginBottom: "1rem" }}>
+                  Use placeholders: <code>{`{customer}`}</code>, <code>{`{orderId}`}</code>, <code>{`{total}`}</code>, <code>{`{trackingLink}`}</code>, <code>{`{siteName}`}</code>
+                </p>
+
+                <div className="form-group" style={{ marginBottom: "1.25rem" }}>
+                  <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#334155", display: "block", marginBottom: "0.4rem" }}>
+                    Order Confirmation SMS
+                  </label>
+                  <textarea
+                    value={formData.smsTemplateOrderConfirmation}
+                    onChange={handleChange("smsTemplateOrderConfirmation")}
+                    rows={3}
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem 1rem",
+                      borderRadius: "10px",
+                      border: "1px solid #e2e8f0",
+                      fontSize: "0.85rem",
+                      resize: "vertical"
+                    }}
+                  />
+                </div>
+
+                <div className="form-group" style={{ marginBottom: "1.25rem" }}>
+                  <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#334155", display: "block", marginBottom: "0.4rem" }}>
+                    Order Shipped SMS
+                  </label>
+                  <textarea
+                    value={formData.smsTemplateOrderShipped}
+                    onChange={handleChange("smsTemplateOrderShipped")}
+                    rows={3}
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem 1rem",
+                      borderRadius: "10px",
+                      border: "1px solid #e2e8f0",
+                      fontSize: "0.85rem",
+                      resize: "vertical"
+                    }}
+                  />
+                </div>
+
+                <div className="form-group" style={{ marginBottom: "1.25rem" }}>
+                  <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#334155", display: "block", marginBottom: "0.4rem" }}>
+                    Order Delivered SMS
+                  </label>
+                  <textarea
+                    value={formData.smsTemplateOrderDelivered}
+                    onChange={handleChange("smsTemplateOrderDelivered")}
+                    rows={3}
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem 1rem",
+                      borderRadius: "10px",
+                      border: "1px solid #e2e8f0",
+                      fontSize: "0.85rem",
+                      resize: "vertical"
+                    }}
+                  />
+                </div>
               </div>
 
               {/* Test SMS Box */}

@@ -25,12 +25,7 @@ const sendSMS = async (to, message) => {
 
         const setting = await Setting.findOne();
         const firstValue = (...vals) => vals.map((v) => String(v || '').trim()).find(Boolean) || '';
-        const apiKey = firstValue(
-            setting?.mnotifyApiKey,
-            setting?.smsApiKey,
-            process.env.MNOTIFY_API_KEY,
-            process.env.NOTIFY_API_KEY
-        );
+        const apiKey = process.env.MNOTIFY_API_KEY || process.env.NOTIFY_API_KEY;
         const rawSender = firstValue(
             setting?.mnotifySenderId,
             setting?.smsSenderId,
@@ -98,11 +93,20 @@ const sendOrderConfirmationSMS = async (order) => {
     const orderId = order.orderId || order._id;
     const trackingLink = `${clientUrl}/track?orderId=${encodeURIComponent(orderId)}&phone=${encodeURIComponent(dest)}`;
 
+    const setting = await Setting.findOne();
+    const siteName = setting?.siteName || 'WELAMA';
+    
     let message = '';
     if (order.isCustomRequest) {
-        message = `Hello ${order.customer}, WELAMA received your custom request #${orderId}. We will confirm design and price shortly. Track: ${trackingLink}`;
+        message = `Hello ${order.customer}, ${siteName} received your custom request #${orderId}. We will confirm design and price shortly. Track: ${trackingLink}`;
     } else {
-        message = `Hello ${order.customer}, thank you for ordering from WELAMA. Order #${orderId}, GHS ${order.total}. Track here: ${trackingLink}`;
+        const template = setting?.smsTemplateOrderConfirmation || "Hello {customer}, thank you for ordering from {siteName}. Order #{orderId}, GHS {total}. Track here: {trackingLink}";
+        message = template
+            .replace(/{customer}/g, order.customer)
+            .replace(/{siteName}/g, siteName)
+            .replace(/{orderId}/g, orderId)
+            .replace(/{total}/g, order.total || 0)
+            .replace(/{trackingLink}/g, trackingLink);
     }
 
     return await sendSMS(dest, message);
@@ -116,14 +120,28 @@ const sendOrderStatusUpdateSMS = async (order) => {
     const orderId = order.orderId || order._id;
     const trackingLink = `${clientUrl}/track?orderId=${encodeURIComponent(orderId)}&phone=${encodeURIComponent(dest)}`;
 
-    let message = `Hello ${order.customer}, your WELAMA order #${orderId} is now ${String(order.status || '').toUpperCase()}. Track: ${trackingLink}`;
+    const setting = await Setting.findOne();
+    const siteName = setting?.siteName || 'WELAMA';
+    const statusUpper = String(order.status || '').toUpperCase();
+    
+    let message = `Hello ${order.customer}, your ${siteName} order #${orderId} is now ${statusUpper}. Track: ${trackingLink}`;
 
     if (order.status === 'Delivered') {
-        message = `Hello ${order.customer}, your WELAMA order #${orderId} has been DELIVERED. Thank you. Details: ${trackingLink}`;
+        const template = setting?.smsTemplateOrderDelivered || "Hello {customer}, your {siteName} order #{orderId} has been DELIVERED. Thank you. Details: {trackingLink}";
+        message = template
+            .replace(/{customer}/g, order.customer)
+            .replace(/{siteName}/g, siteName)
+            .replace(/{orderId}/g, orderId)
+            .replace(/{trackingLink}/g, trackingLink);
     } else if (order.status === 'Cancelled') {
-        message = `Hello ${order.customer}, your WELAMA order #${orderId} was CANCELLED. Contact us if you need help.`;
+        message = `Hello ${order.customer}, your ${siteName} order #${orderId} was CANCELLED. Contact us if you need help.`;
     } else if (order.status === 'Shipped') {
-        message = `Hello ${order.customer}, your WELAMA order #${orderId} has been SHIPPED. Track: ${trackingLink}`;
+        const template = setting?.smsTemplateOrderShipped || "Hello {customer}, your {siteName} order #{orderId} has been SHIPPED. Track: {trackingLink}";
+        message = template
+            .replace(/{customer}/g, order.customer)
+            .replace(/{siteName}/g, siteName)
+            .replace(/{orderId}/g, orderId)
+            .replace(/{trackingLink}/g, trackingLink);
     }
 
     return await sendSMS(dest, message);

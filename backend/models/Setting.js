@@ -56,11 +56,23 @@ const SettingSchema = new mongoose.Schema({
     },
     mnotifySenderId: {
         type: String,
-        default: 'WELAMA'
+        default: 'Welama'
     },
     smsEnabled: {
         type: Boolean,
         default: true
+    },
+    smsTemplateOrderConfirmation: {
+        type: String,
+        default: "Hello {customer}, thank you for ordering from {siteName}. Order #{orderId}, GHS {total}. Track here: {trackingLink}"
+    },
+    smsTemplateOrderShipped: {
+        type: String,
+        default: "Hello {customer}, your {siteName} order #{orderId} has been SHIPPED. Track: {trackingLink}"
+    },
+    smsTemplateOrderDelivered: {
+        type: String,
+        default: "Hello {customer}, your {siteName} order #{orderId} has been DELIVERED. Thank you. Details: {trackingLink}"
     },
     // Paystack Payment Gateway
     paystackPublicKey: {
