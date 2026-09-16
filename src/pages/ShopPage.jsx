@@ -116,19 +116,7 @@ const ShopPage = ({ products = [], categories = [] }) => {
     ),
   ];
 
-  const categoryCards = categoryTabs
-    .filter((cat) => cat.id !== "all")
-    .map((cat) => {
-      const sample = products.find(
-        (p) => p.category?.toLowerCase() === cat.id.toLowerCase(),
-      );
-      return {
-        ...cat,
-        image: sample?.image && !String(sample.image).startsWith("blob:")
-          ? sample.image
-          : "/welamalogo.png",
-      };
-    });
+  const categoryCards = categoryTabs.filter((cat) => cat.id !== "all");
 
   return (
     <div className={`shop-page-wrapper${isSearching ? " is-searching" : ""}`}>
@@ -337,9 +325,6 @@ const ShopPage = ({ products = [], categories = [] }) => {
                       className={`app-cat-card ${activeCategory === cat.id ? "active" : ""}`}
                       onClick={() => setActiveCategory(cat.id)}
                     >
-                      <span className="app-cat-photo">
-                        <img src={cat.image} alt="" />
-                      </span>
                       <span>{cat.label}</span>
                     </button>
                   ))}
