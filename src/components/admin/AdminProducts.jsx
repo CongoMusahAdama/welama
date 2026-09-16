@@ -304,7 +304,7 @@ const AdminProducts = ({
     const discPercent = parseFloat(newProd.discountPercentage) || 0;
     const stockVal = parseInt(newProd.stock) || 0;
     const calculatedDiscountPrice =
-      discPercent > 0
+      discPercent > 0 && priceVal > 0
         ? parseFloat((priceVal * (1 - discPercent / 100)).toFixed(2))
         : null;
 
@@ -653,14 +653,14 @@ const AdminProducts = ({
                         />
                       </div>
                       <div className="product-field">
-                        <label htmlFor="product-discount">Discount (%)</label>
+                        <label htmlFor="product-discount">Discount (%) — leave blank for no sale</label>
                         <input
                           id="product-discount"
                           type="number"
                           min="0"
                           max="100"
-                          placeholder="0"
-                          value={newProd.discountPercentage}
+                          placeholder="Leave blank for no discount"
+                          value={newProd.discountPercentage || ""}
                           onChange={(e) =>
                             setNewProd({
                               ...newProd,
@@ -668,7 +668,7 @@ const AdminProducts = ({
                             })
                           }
                         />
-                        {newProd.discountPercentage > 0 && newProd.price && (
+                        {parseFloat(newProd.discountPercentage) > 0 && newProd.price && (
                           <span className="product-price-hint">
                             Sale price:{" "}
                             <Cedis
@@ -699,20 +699,6 @@ const AdminProducts = ({
                       />
                     </div>
 
-                    <div className="product-check">
-                      <input
-                        type="checkbox"
-                        id="pouch-check"
-                        checked={newProd.comesWithPouch}
-                        onChange={(e) =>
-                          setNewProd({
-                            ...newProd,
-                            comesWithPouch: e.target.checked,
-                          })
-                        }
-                      />
-                      <label htmlFor="pouch-check">Include WELAMA gift wrap</label>
-                    </div>
                   </div>
               </div>
 
