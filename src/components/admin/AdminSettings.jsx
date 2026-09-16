@@ -38,7 +38,7 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
     address: "Accra, Ghana",
     // mNotify SMS
     mnotifyApiKey: "",
-    mnotifySenderId: "WELAMA",
+    mnotifySenderId: "Welama",
     smsTemplateOrderConfirmation: "Hello {customer}, thank you for ordering from {siteName}. Order #{orderId}, GHS {total}. Track here: {trackingLink}",
     smsTemplateOrderShipped: "Hello {customer}, your {siteName} order #{orderId} has been SHIPPED. Track: {trackingLink}",
     smsTemplateOrderDelivered: "Hello {customer}, your {siteName} order #{orderId} has been DELIVERED. Thank you. Details: {trackingLink}",
@@ -77,7 +77,7 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
           ...prev,
           ...source,
           mnotifyApiKey: source.mnotifyApiKey || source.smsApiKey || "",
-          mnotifySenderId: source.mnotifySenderId || source.smsSenderId || "WELAMA",
+          mnotifySenderId: source.mnotifySenderId || source.smsSenderId || "Welama",
           smsTemplateOrderConfirmation: source.smsTemplateOrderConfirmation || "Hello {customer}, thank you for ordering from {siteName}. Order #{orderId}, GHS {total}. Track here: {trackingLink}",
           smsTemplateOrderShipped: source.smsTemplateOrderShipped || "Hello {customer}, your {siteName} order #{orderId} has been SHIPPED. Track: {trackingLink}",
           smsTemplateOrderDelivered: source.smsTemplateOrderDelivered || "Hello {customer}, your {siteName} order #{orderId} has been DELIVERED. Thank you. Details: {trackingLink}",
@@ -781,7 +781,7 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
                   maxLength={11}
                   value={formData.mnotifySenderId}
                   onChange={handleChange("mnotifySenderId")}
-                  placeholder="WELAMA"
+                  placeholder="Welama"
                   style={{
                     width: "100%",
                     padding: "0.75rem 1rem",

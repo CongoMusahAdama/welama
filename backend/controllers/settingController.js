@@ -42,7 +42,7 @@ const ensureSetting = async () => {
             contactPhone: '0244374433',
             contactEmail: 'info@welama.com',
             address: 'Accra, Ghana',
-            mnotifySenderId: 'WELAMA',
+            mnotifySenderId: 'Welama',
             smsEnabled: true
         });
     }
