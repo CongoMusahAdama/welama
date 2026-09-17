@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { Search, Heart, Menu, X, ArrowRight, LayoutGrid, ChevronDown, ShoppingCart, Phone, Mail, PackageSearch } from "lucide-react";
+import { Search, Heart, Menu, X, ArrowRight, LayoutGrid, ChevronDown, ShoppingCart, Phone, Mail, PackageSearch, Moon, Sun } from "lucide-react";
 import { useCart } from "../../context/CartContext";
+import { useTheme } from "../../context/ThemeContext";
+import { useMobileMenu } from "../../context/MobileMenuContext";
 import RecentlyViewedDropdown from "./RecentlyViewedDropdown";
 import { Cedis } from "../../utils/currency";
 import { displayStorePhone, waLink } from "../../utils/whatsapp";
@@ -37,7 +39,7 @@ const ANNOUNCEMENTS = [
   "Standard Delivery Within 48 Hours In Accra",
 ];
 
-const AnnouncementTicker = () => {
+const AnnouncementTicker = ({ className = "nav-announcement-ticker desktop-only" }) => {
   const [text, setText] = useState("");
 
   useEffect(() => {
@@ -81,7 +83,7 @@ const AnnouncementTicker = () => {
   }, []);
 
   return (
-    <div className="nav-announcement-ticker desktop-only">
+    <div className={className} aria-live="polite">
       <span className="nav-announcement-text">{text}</span>
     </div>
   );
@@ -228,8 +230,9 @@ const SearchOverlay = ({ isOpen, onClose }) => {
 const Navbar = ({ user, categories = [], settings }) => {
   const logoUrl = settings?.logoUrl || "/welamalogo.png";
   const storePhone = displayStorePhone(settings?.contactPhone);
+  const { theme, toggleTheme } = useTheme();
+  const { isOpen: isMobileMenuOpen, setOpen: setIsMobileMenuOpen } = useMobileMenu();
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [inlineQuery, setInlineQuery] = useState("");
   const [inlineCategory, setInlineCategory] = useState("");
@@ -370,6 +373,7 @@ const Navbar = ({ user, categories = [], settings }) => {
                 alt={settings?.siteName || "WELAMA"}
                 className="logo-img logo-img-enter"
               />
+              <AnnouncementTicker className="logo-announce mobile-only flex" />
             </Link>
 
             <div className="nav-contact-line desktop-only">
@@ -419,13 +423,6 @@ const Navbar = ({ user, categories = [], settings }) => {
               >
                 <Menu size={20} strokeWidth={2} />
               </button>
-              <Link
-                to="/track"
-                className="icon-link mobile-only"
-                aria-label="Track order"
-              >
-                <PackageSearch size={20} strokeWidth={1.5} />
-              </Link>
               <a href="#" className="icon-link desktop-only">
                 <Heart size={20} strokeWidth={1.5} />
               </a>
@@ -475,6 +472,7 @@ const Navbar = ({ user, categories = [], settings }) => {
       />
 
       <div className={`mobile-nav-drawer ${isMobileMenuOpen ? "open" : ""}`}>
+        <div className="mobile-nav-sheet-handle mobile-only" aria-hidden="true" />
         <div className="mobile-nav-header">
           <h2 className="mobile-nav-title">Menu</h2>
           <button
@@ -507,7 +505,14 @@ const Navbar = ({ user, categories = [], settings }) => {
           <Link to="/collections" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Collections</Link>
           <Link to="/gallery" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Gallery</Link>
           <Link to="/about" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>About</Link>
-          <Link to="/track" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Track Order</Link>
+          <Link
+            to="/track"
+            className="mobile-nav-track"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <PackageSearch size={18} />
+            Track Order
+          </Link>
         </nav>
         <div className="mobile-nav-footer">
           <div className="mobile-nav-contact">
@@ -519,6 +524,14 @@ const Navbar = ({ user, categories = [], settings }) => {
               <Mail size={15} /> {settings?.contactEmail || "info@welama.com"}
             </a>
           </div>
+          <button
+            type="button"
+            className="mobile-theme-toggle"
+            onClick={toggleTheme}
+          >
+            {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+            {theme === "dark" ? "Light mode" : "Dark mode"}
+          </button>
           <a
             href={waLink()}
             target="_blank"

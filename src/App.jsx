@@ -10,6 +10,8 @@ import Swal from "sweetalert2";
 import { apiRequest } from "./utils/api";
 import { CartProvider } from "./context/CartContext";
 import { ModalProvider } from "./context/ModalContext";
+import { ThemeProvider } from "./context/ThemeContext";
+import { MobileMenuProvider } from "./context/MobileMenuContext";
 import { SAMPLE_PRODUCTS } from "./data/sampleProducts";
 import { DEFAULT_CATEGORIES, mergeCategories } from "./utils/categories";
 
@@ -373,6 +375,8 @@ const App = () => {
     <AnimatePresence mode="wait">
         <Router key="app">
         <style>{`:root { --brand-color: ${brandColor}; }`}</style>
+        <ThemeProvider>
+        <MobileMenuProvider>
         <CartProvider>
           <ModalProvider products={products}>
             <div className="app">
@@ -445,6 +449,8 @@ const App = () => {
             </div>
           </ModalProvider>
         </CartProvider>
+        </MobileMenuProvider>
+        </ThemeProvider>
         </Router>
     </AnimatePresence>
   );

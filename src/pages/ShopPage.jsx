@@ -109,6 +109,11 @@ const ShopPage = ({ products = [], categories = [] }) => {
 
   const isSearching = Boolean(searchQuery.trim());
 
+  const categoryCount = (id) =>
+    id === "all"
+      ? products.length
+      : products.filter((p) => p.category?.toLowerCase() === id.toLowerCase()).length;
+
   const categoryTabs = [
     { id: "all", label: "All Collections" },
     ...categories.map((c) =>
@@ -116,7 +121,25 @@ const ShopPage = ({ products = [], categories = [] }) => {
     ),
   ];
 
-  const categoryCards = categoryTabs.filter((cat) => cat.id !== "all");
+  const categoryCards = categoryTabs
+    .filter((cat) => cat.id !== "all")
+    .map((cat) => {
+      const sample = products.find((p) => {
+        const same = p.category?.toLowerCase() === cat.id.toLowerCase();
+        const src = String(p.image || "");
+        return (
+          same &&
+          src &&
+          !src.startsWith("blob:") &&
+          !src.includes("welamalogo")
+        );
+      });
+      return sample ? { ...cat, image: sample.image } : null;
+    })
+    .filter(Boolean);
+  const filterCategories = categoryTabs.filter(
+    (cat) => cat.id === "all" || categoryCount(cat.id) > 0,
+  );
 
   return (
     <div className={`shop-page-wrapper${isSearching ? " is-searching" : ""}`}>
@@ -140,8 +163,7 @@ const ShopPage = ({ products = [], categories = [] }) => {
                 <div className="filter-sheet-handle mobile-only" aria-hidden="true" />
                 <div className="sidebar-header filter-sheet-head mobile-only flex">
                   <div className="filter-sheet-titles">
-                    <p className="filter-kicker">WELAMA</p>
-                    <h3>Filter &amp; Sort</h3>
+                    <h3>Filters</h3>
                   </div>
                   <button
                     type="button"
@@ -171,7 +193,7 @@ const ShopPage = ({ products = [], categories = [] }) => {
                 <div className="sidebar-section">
                   <h4 className="sidebar-title">Category</h4>
                   <div className="category-list">
-                    {categoryTabs.map((cat) => (
+                    {filterCategories.map((cat) => (
                       <button
                         key={cat.id}
                         type="button"
@@ -179,13 +201,7 @@ const ShopPage = ({ products = [], categories = [] }) => {
                         className={`category-item-btn ${activeCategory === cat.id ? "active" : ""}`}
                       >
                         <span className="cat-label">{cat.id === "all" ? "All" : cat.label}</span>
-                        <span className="cat-count">
-                          {cat.id === "all"
-                            ? products.length
-                            : products.filter(
-                                (p) => p.category?.toLowerCase() === cat.id,
-                              ).length}
-                        </span>
+                        <span className="cat-count">{categoryCount(cat.id)}</span>
                       </button>
                     ))}
                   </div>
@@ -325,6 +341,9 @@ const ShopPage = ({ products = [], categories = [] }) => {
                       className={`app-cat-card ${activeCategory === cat.id ? "active" : ""}`}
                       onClick={() => setActiveCategory(cat.id)}
                     >
+                      <span className="app-cat-photo">
+                        <img src={cat.image} alt="" />
+                      </span>
                       <span>{cat.label}</span>
                     </button>
                   ))}

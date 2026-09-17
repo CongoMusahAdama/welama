@@ -1,11 +1,12 @@
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, LayoutGrid, Images } from "lucide-react";
+import { Home, LayoutGrid, Images, PackageSearch } from "lucide-react";
 
 const TABS = [
   { to: "/shop", label: "Shop", icon: Home, match: (path) => path.startsWith("/shop") },
   { to: "/collections", label: "Looks", icon: LayoutGrid, match: (path) => path.startsWith("/collections") },
   { to: "/gallery", label: "Gallery", icon: Images, match: (path) => path.startsWith("/gallery") },
+  { to: "/track", label: "Track", icon: PackageSearch, match: (path) => path.startsWith("/track") },
 ];
 
 const HIDDEN = ["/auth", "/admin", "/checkout", "/product", "/home"];
@@ -25,7 +26,7 @@ const MobileAppDock = () => {
             className={`mobile-app-dock-item${active ? " is-active" : ""}`}
             aria-current={active ? "page" : undefined}
           >
-            <Icon size={20} strokeWidth={active ? 2.2 : 1.7} />
+            <Icon size={18} strokeWidth={active ? 2.2 : 1.7} />
             {active && <span>{label}</span>}
           </NavLink>
         );
