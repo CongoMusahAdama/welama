@@ -105,6 +105,7 @@ const ShopPage = ({ products = [], categories = [] }) => {
     setActiveCategory("all");
     setMaxPrice(5000);
     setSortBy("Recommended");
+    setShowFilters(false);
   };
 
   const isSearching = Boolean(searchQuery.trim());
@@ -197,7 +198,10 @@ const ShopPage = ({ products = [], categories = [] }) => {
                       <button
                         key={cat.id}
                         type="button"
-                        onClick={() => setActiveCategory(cat.id)}
+                        onClick={() => {
+                          setActiveCategory(cat.id);
+                          setShowFilters(false);
+                        }}
                         className={`category-item-btn ${activeCategory === cat.id ? "active" : ""}`}
                       >
                         <span className="cat-label">{cat.id === "all" ? "All" : cat.label}</span>
@@ -220,6 +224,8 @@ const ShopPage = ({ products = [], categories = [] }) => {
                       step="50"
                       value={maxPrice}
                       onChange={(e) => setMaxPrice(parseInt(e.target.value))}
+                      onPointerUp={() => setShowFilters(false)}
+                      onKeyUp={() => setShowFilters(false)}
                       className="price-slider"
                     />
                     <div className="price-labels">
@@ -241,7 +247,10 @@ const ShopPage = ({ products = [], categories = [] }) => {
                         key={opt}
                         type="button"
                         className={`sort-option-btn ${sortBy === opt ? "active" : ""}`}
-                        onClick={() => setSortBy(opt)}
+                        onClick={() => {
+                          setSortBy(opt);
+                          setShowFilters(false);
+                        }}
                       >
                         {opt}
                       </button>

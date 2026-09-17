@@ -81,6 +81,14 @@ const ProductCard = ({
           {sku}
         </div>
       )}
+      <p className="product-price">
+        <span className={discountPrice ? "product-price-sale" : "product-price-current"}>
+          <Cedis value={currentPrice} />
+        </span>
+        {discountPrice && (
+          <span className="product-price-was"><Cedis value={price} /></span>
+        )}
+      </p>
       <div className="product-image-container">
         {isSoldOut ? (
           <div className="product-badge badge-soldout">
@@ -129,15 +137,6 @@ const ProductCard = ({
             ))}
           </div>
         )}
-
-        <p className="product-price">
-          {discountPrice && (
-            <span className="product-price-was"><Cedis value={price} /></span>
-          )}
-          <span className={discountPrice ? "product-price-sale" : "product-price-current"}>
-            <Cedis value={currentPrice} />
-          </span>
-        </p>
 
         {!isSoldOut && typeof stock === "number" && stock > 0 && stock <= 5 && (
           <p className="product-stock-hint">Only {stock} left in stock</p>

@@ -28,40 +28,22 @@ const CollectionsPage = ({ settings }) => {
         />
         <div className="collections-hero-overlay" />
         <div className="container center-text reveal">
-          <span
-            style={{
-              textTransform: "uppercase",
-              letterSpacing: "0.5em",
-              fontSize: "0.9rem",
-              color: "var(--yellow-accent, #C9A227)",
-              fontWeight: 700
-            }}
-          >
+          <span className="looks-hero-kicker">
             WELAMA
           </span>
-          <h1 className="serif" style={{ fontSize: "clamp(2.5rem, 5vw, 5rem)", marginTop: "1rem", color: "#fff" }}>
+          <h1 className="serif looks-hero-title">
             Our Ranges
           </h1>
         </div>
       </section>
 
       <section className="section-padding container">
-        <div
-          className="flex justify-between items-end reveal"
-          style={{ marginBottom: "4rem" }}
-        >
-          <div style={{ maxWidth: "600px" }}>
-            <h2 className="serif" style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)" }}>
+        <div className="looks-intro reveal">
+          <div className="looks-intro-copy">
+            <h2 className="serif">
               The Art of Dressing Well
             </h2>
-            <p
-              style={{
-                marginTop: "1.5rem",
-                color: "#666",
-                fontSize: "1.1rem",
-                lineHeight: "1.8",
-              }}
-            >
+            <p>
               Explore our curated selection of clothing and bags, where
               each piece tells a unique story of craftsmanship,
               versatility, and quiet luxury.
@@ -126,8 +108,7 @@ const CollectionsPage = ({ settings }) => {
 
           <div
             id="signature"
-            className="large-collection-card reveal"
-            style={{ gridColumn: "span 2", height: "600px" }}
+            className="large-collection-card looks-featured reveal"
           >
             <img src="/heroframe.png" alt="WELAMA Signature Range" />
             <div
