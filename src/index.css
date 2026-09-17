@@ -326,6 +326,8 @@ img {
   .page-route-spinner-ring,
   .page-route-spinner-dot,
   .logo-img-enter,
+  .logo-mark,
+  .logo-mark::after,
   .hero-split-photo {
     animation: none;
     transition: none;

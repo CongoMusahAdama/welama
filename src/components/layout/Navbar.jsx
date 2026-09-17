@@ -325,12 +325,14 @@ const Navbar = ({ user, categories = [], settings }) => {
         <div className="main-nav-row">
           <div className="container main-nav-row-inner">
             <Link to="/" className="logo logo-lockup">
-              <img
-                key={logoAnimKey}
-                src={logoUrl}
-                alt={settings?.siteName || "WELAMA"}
-                className="logo-img logo-img-enter"
-              />
+              <span className="logo-mark">
+                <img
+                  key={logoAnimKey}
+                  src={logoUrl}
+                  alt={settings?.siteName || "WELAMA"}
+                  className="logo-img logo-img-enter"
+                />
+              </span>
               <AnnouncementTicker className="logo-announce mobile-only flex" />
             </Link>
 

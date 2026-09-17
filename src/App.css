@@ -541,30 +541,81 @@ span.nav-cart-text {
   white-space: nowrap;
 }
 
+.logo-mark {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.logo-mark::after {
+  content: "";
+  position: absolute;
+  inset: -8% -40%;
+  background: linear-gradient(
+    105deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 62%
+  );
+  transform: translateX(-70%);
+  animation: logoSheen 4.8s ease-in-out 1.1s infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
 .logo-img {
   height: 84px;
   width: auto;
   object-fit: contain;
   transform-origin: left center;
-  transition: height 0.3s ease, filter 0.3s ease;
+  transition: height 0.3s ease, filter 0.3s ease, transform 0.35s ease;
 }
 
 .logo-img-enter {
-  animation: welamaLogoIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: welamaLogoIn 1.05s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes welamaLogoIn {
   0% {
     opacity: 0;
-    transform: translateY(-10px) scale(0.86);
+    transform: translateY(-12px) scale(0.82);
+    filter: saturate(0.7);
   }
-  58% {
+  62% {
     opacity: 1;
-    transform: translateY(2px) scale(1.06);
+    transform: translateY(3px) scale(1.08);
+    filter: saturate(1.05);
   }
   100% {
     opacity: 1;
     transform: translateY(0) scale(1);
+    filter: none;
+  }
+}
+
+@keyframes logoSheen {
+  0%, 58% {
+    transform: translateX(-70%);
+    opacity: 0;
+  }
+  68% {
+    opacity: 0.9;
+  }
+  82%, 100% {
+    transform: translateX(70%);
+    opacity: 0;
+  }
+}
+
+@keyframes logoIdleFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
   }
 }
 
@@ -1892,7 +1943,7 @@ span.nav-cart-text {
   }
 
   .logo-img {
-    height: 46px !important;
+    height: 72px !important;
   }
 
   .nav-icons {
@@ -4796,7 +4847,9 @@ body:has(.header-shop .nav-search-bar input:not(:placeholder-shown)) .shop-hero 
   .masonry-item,
   .masonry-item img,
   .masonry-item video,
-  .logo-img-enter {
+  .logo-img-enter,
+  .logo-mark,
+  .logo-mark::after {
     animation: none !important;
     transition: none !important;
     opacity: 1 !important;

@@ -19,6 +19,7 @@ import { DEFAULT_CATEGORIES, mergeCategories } from "./utils/categories";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import MobileAppDock from "./components/layout/MobileAppDock";
+import AddToHomeScreen from "./components/ui/AddToHomeScreen";
 import SupportBot from "./components/ui/SupportBot";
 import Preloader from "./components/ui/Preloader";
 import PageRouteLoader from "./components/ui/PageRouteLoader";
@@ -454,6 +455,7 @@ const App = () => {
               </Routes>
               <Footer settings={settings} />
               <MobileAppDock />
+              <AddToHomeScreen />
               <SupportBot />
             </div>
           </ModalProvider>
