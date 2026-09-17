@@ -3389,6 +3389,13 @@ body {
   transform: translateY(0);
 }
 
+.shop-page-wrapper .product-card.reveal {
+  opacity: 1;
+  transform: none;
+  transition: none;
+  will-change: auto;
+}
+
 .product-card {
   transition-delay: 0.1s;
 }

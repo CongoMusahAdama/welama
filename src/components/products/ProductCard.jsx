@@ -61,9 +61,7 @@ const ProductCard = ({
       className="product-card reveal"
       onClick={handleSelect}
       style={{
-        "--stagger": index,
         filter: isSoldOut ? "grayscale(100%)" : "none",
-        transitionDelay: `${0.1 + (index % 4) * 0.08}s`,
       }}
     >
       {sku && (

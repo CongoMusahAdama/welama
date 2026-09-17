@@ -6,7 +6,7 @@ import { useTheme } from "../../context/ThemeContext";
 import { useMobileMenu } from "../../context/MobileMenuContext";
 import RecentlyViewedDropdown from "./RecentlyViewedDropdown";
 import { Cedis } from "../../utils/currency";
-import { displayStorePhone, waLink } from "../../utils/whatsapp";
+import { STORE_PHONE, waLink } from "../../utils/whatsapp";
 
 const NavCartButton = () => {
   const { cartCount, cartTotal, setIsCartOpen, cartPulse } = useCart();
@@ -229,7 +229,7 @@ const SearchOverlay = ({ isOpen, onClose }) => {
 
 const Navbar = ({ user, categories = [], settings }) => {
   const logoUrl = settings?.logoUrl || "/welamalogo.png";
-  const storePhone = displayStorePhone(settings?.contactPhone);
+  const storePhone = STORE_PHONE;
   const { theme, toggleTheme } = useTheme();
   const { isOpen: isMobileMenuOpen, setOpen: setIsMobileMenuOpen } = useMobileMenu();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -520,8 +520,8 @@ const Navbar = ({ user, categories = [], settings }) => {
             <a href={`tel:${storePhone}`}>
               <Phone size={15} /> {storePhone}
             </a>
-            <a href={`mailto:${settings?.contactEmail || "info@welama.com"}`}>
-              <Mail size={15} /> {settings?.contactEmail || "info@welama.com"}
+            <a href="mailto:info@welama.com">
+              <Mail size={15} /> info@welama.com
             </a>
           </div>
           <button
