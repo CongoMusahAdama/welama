@@ -55,7 +55,7 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [isUploadingHero, setIsUploadingHero] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [testPhone, setTestPhone] = useState("");
+  const [testPhone, setTestPhone] = useState("0506626068");
   const [isSendingTest, setIsSendingTest] = useState(false);
   const [settingsTab, setSettingsTab] = useState("brand");
 
@@ -777,6 +777,29 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
               </div>
 
 
+
+              <div className="form-group" style={{ marginBottom: "1.25rem" }}>
+                <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#334155", display: "block", marginBottom: "0.4rem" }}>
+                  mNotify API Key
+                </label>
+                <input
+                  type="password"
+                  autoComplete="off"
+                  value={formData.mnotifyApiKey}
+                  onChange={handleChange("mnotifyApiKey")}
+                  placeholder="Paste your mNotify API key"
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem 1rem",
+                    borderRadius: "10px",
+                    border: "1px solid #e2e8f0",
+                    fontSize: "0.85rem",
+                  }}
+                />
+                <p style={{ fontSize: "0.72rem", color: "#64748b", margin: "0.4rem 0 0" }}>
+                  Get this from apps.mnotify.net. Leave blank when saving if the key is already stored.
+                </p>
+              </div>
 
               <div className="form-group" style={{ marginBottom: "1.5rem" }}>
                 <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#334155", display: "block", marginBottom: "0.4rem" }}>

@@ -62,8 +62,14 @@ exports.login = async (req, res) => {
             return res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
 
-        sendAdminLoginSMS(admin, identifier).catch((err) => console.error('[Login SMS Error]:', err.message));
         sendTokenResponse(admin, 200, res);
+        sendAdminLoginSMS(admin, identifier)
+            .then((smsResult) => {
+                if (!smsResult?.success) {
+                    console.error('[Login SMS]', smsResult?.message || 'SMS was not sent');
+                }
+            })
+            .catch((err) => console.error('[Login SMS Error]:', err.message));
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({ success: false, message: 'Internal server error' });

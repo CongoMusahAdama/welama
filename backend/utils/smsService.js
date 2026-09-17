@@ -1,12 +1,16 @@
 const Setting = require('../models/Setting');
+const { ghanaLocalPhone } = require('./phone');
 
 /**
  * Normalizes phone numbers for mNotify SMS sending.
  * e.g., 0244374433 -> 233244374433, +233244374433 -> 233244374433
  */
 const normalizePhone = (phone) => {
-    if (!phone) return '';
-    let cleaned = String(phone).replace(/[^0-9]/g, '');
+    const local = ghanaLocalPhone(phone);
+    if (local && local.startsWith('0') && local.length === 10) {
+        return `233${local.slice(1)}`;
+    }
+    let cleaned = String(phone || '').replace(/[^0-9]/g, '');
     if (cleaned.startsWith('0') && cleaned.length === 10) {
         cleaned = '233' + cleaned.substring(1);
     }
@@ -21,16 +25,71 @@ const storefrontUrl = () => (
     (process.env.NODE_ENV === 'production' ? 'https://welama-gh.shop' : 'http://localhost:5173')
 ).split(',')[0].trim().replace(/\/$/, '');
 
+const firstValue = (...vals) => vals.map((v) => String(v || '').trim()).find(Boolean) || '';
+
+const isMnotifySuccess = (data) => {
+    if (!data || typeof data !== 'object') return false;
+    const statusText = String(data.status || data.Status || '').toLowerCase();
+    const code = String(data.code || data.status_code || data.statusCode || '');
+    const apiMessage = String(data.message || data.summary || data.msg || '');
+    return (
+        data.success === true ||
+        statusText === 'success' ||
+        statusText === 'ok' ||
+        code === '2000' ||
+        code === '200' ||
+        /success|sent|queued|submitted/i.test(apiMessage)
+    );
+};
+
+const failMessage = (data, fallback) => {
+    const apiMessage = String(data?.message || data?.summary || data?.msg || fallback || 'mNotify rejected the SMS');
+    const low = `${apiMessage} ${JSON.stringify(data || {})}`.toLowerCase();
+    if (/insufficient|credit|balance|wallet/.test(low)) {
+        return 'mNotify wallet has insufficient credit. Top up at https://apps.mnotify.net and try again.';
+    }
+    if (/sender/i.test(low) && /invalid|not.?approved|pending/i.test(low)) {
+        return 'mNotify sender ID is not approved. Use the exact approved sender name, or wait for approval.';
+    }
+    return apiMessage;
+};
+
+const postMnotify = async (apiKey, senderId, recipient, message) => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 12000);
+    try {
+        const endpoint = `https://api.mnotify.com/api/sms/quick?key=${encodeURIComponent(apiKey)}`;
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json'
+            },
+            signal: controller.signal,
+            body: JSON.stringify({
+                recipient: [recipient],
+                sender: senderId,
+                message,
+                is_schedule: false,
+                schedule_date: ''
+            })
+        });
+        const data = await response.json().catch(() => ({ status: response.status, message: response.statusText }));
+        return { data, ok: isMnotifySuccess(data) };
+    } finally {
+        clearTimeout(timer);
+    }
+};
+
 const sendSMS = async (to, message) => {
     try {
         const recipient = normalizePhone(to);
-        if (!recipient) {
+        if (!recipient || recipient.length < 10) {
             console.warn('[mNotify SMS] Invalid recipient phone number:', to);
             return { success: false, message: 'Invalid phone number' };
         }
 
         const setting = await Setting.findOne();
-        const firstValue = (...vals) => vals.map((v) => String(v || '').trim()).find(Boolean) || '';
         const apiKey = firstValue(
             process.env.MNOTIFY_API_KEY,
             process.env.NOTIFY_API_KEY,
@@ -45,11 +104,10 @@ const sendSMS = async (to, message) => {
             'Welama'
         );
         const senderId = String(rawSender).replace(/\s+/g, '').slice(0, 11) || 'Welama';
-        const isEnabled = setting?.smsEnabled !== false;
 
-        if (!isEnabled) {
+        if (setting?.smsEnabled === false) {
             console.log(`[mNotify SMS] SMS disabled in settings. Skipping SMS to ${recipient}`);
-            return { success: true, message: 'SMS disabled in settings' };
+            return { success: false, message: 'SMS is turned off in Admin Settings > mNotify SMS' };
         }
 
         console.log(`\n================== [mNotify SMS DISPATCH] ==================`);
@@ -60,47 +118,28 @@ const sendSMS = async (to, message) => {
 
         if (!apiKey) {
             console.log('[mNotify SMS] MNOTIFY_API_KEY is missing. SMS was not sent.');
-            return { success: false, message: 'mNotify API key is not configured' };
-        }
-
-        const endpoint = `https://api.mnotify.com/api/sms/quick?key=${encodeURIComponent(apiKey)}`;
-        const payload = {
-            recipient: [recipient],
-            sender: senderId,
-            message,
-            is_schedule: false,
-            schedule_date: ''
-        };
-
-        const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        });
-
-        const data = await response.json().catch(() => ({ status: response.status }));
-        console.log('[mNotify SMS] mNotify API Response:', data);
-
-        const statusText = String(data?.status || '').toLowerCase();
-        const code = String(data?.code || data?.status_code || '');
-        const apiMessage = String(data?.message || data?.summary || '');
-        const ok = statusText === 'success' || code === '2000';
-        if (!ok) {
-            const low = `${apiMessage} ${JSON.stringify(data)}`.toLowerCase();
-            const noCredit = /insufficient|credit|balance|wallet/.test(low);
             return {
                 success: false,
-                message: noCredit
-                    ? 'mNotify wallet has insufficient credit. Top up at https://apps.mnotify.net and try again.'
-                    : (apiMessage || 'mNotify rejected the SMS'),
-                data
+                message: 'mNotify API key is missing. Add it in Admin Settings > mNotify SMS, or set MNOTIFY_API_KEY on the server.'
             };
         }
 
-        return { success: true, data };
+        let result = await postMnotify(apiKey, senderId, recipient, message);
+        console.log('[mNotify SMS] mNotify API Response:', result.data);
+
+        if (!result.ok && ghanaLocalPhone(to)) {
+            const local = ghanaLocalPhone(to);
+            if (local && local !== recipient) {
+                result = await postMnotify(apiKey, senderId, local, message);
+                console.log('[mNotify SMS] Retry with local number:', result.data);
+            }
+        }
+
+        if (!result.ok) {
+            return { success: false, message: failMessage(result.data), data: result.data };
+        }
+
+        return { success: true, data: result.data };
     } catch (error) {
         console.error('[mNotify SMS Error]:', error.message);
         return { success: false, message: error.message };
@@ -235,8 +274,12 @@ const sendAdminNewOrderSMS = async (order) => {
 const sendAdminLoginSMS = async (admin, loginIdentifier) => {
     const ident = String(loginIdentifier || '').trim();
     const identIsPhone = Boolean(ident) && !ident.includes('@') && /\d/.test(ident);
-    const dest = identIsPhone ? ident : (admin?.phone || process.env.ADMIN_PHONE);
-    if (!dest) return;
+    const dests = uniquePhones(
+        admin?.phone,
+        identIsPhone ? ident : '',
+        process.env.ADMIN_PHONE
+    );
+    if (!dests.length) return { success: false, message: 'No admin phone to SMS' };
     const when = new Date().toLocaleString('en-GH', {
         timeZone: 'Africa/Accra',
         hour: 'numeric',
@@ -246,7 +289,8 @@ const sendAdminLoginSMS = async (admin, loginIdentifier) => {
     });
     const who = admin?.name || 'Admin';
     const message = `WELAMA: ${who} signed in to the admin dashboard at ${when}. If this was not you, change your password immediately.`;
-    return await sendSMS(dest, message);
+    const results = await Promise.all(dests.map((phone) => sendSMS(phone, message)));
+    return results.find((row) => row?.success) || results[0];
 };
 
 module.exports = {
