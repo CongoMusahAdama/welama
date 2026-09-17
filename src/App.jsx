@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import "./App.css";
 import "./mobile.css";
@@ -42,11 +42,13 @@ import AdminDashboard from "./components/admin/AdminDashboard";
 
 // --- PROTECTED ROUTE GUARD ---
 const ProtectedRoute = ({ user, authChecked, children }) => {
+  const location = useLocation();
   if (!authChecked) {
     return <div className="section-padding container" style={{ minHeight: "40vh" }} />;
   }
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    const next = `${location.pathname}${location.search}`;
+    return <Navigate to={`/auth?next=${encodeURIComponent(next)}`} replace />;
   }
   return children;
 };
@@ -184,7 +186,8 @@ const App = () => {
 
   // Auto-refresh orders for admin every 30 seconds
   useEffect(() => {
-    if (!user) return;
+    if (!user) return undefined;
+    fetchOrders();
     const interval = setInterval(() => {
       fetchOrders();
     }, 30000);

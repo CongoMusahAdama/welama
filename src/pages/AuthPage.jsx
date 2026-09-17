@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { User, Lock, Eye, EyeOff, ArrowRight, ArrowLeft, ShieldCheck, AlertCircle } from "lucide-react";
 import Swal from "sweetalert2";
 import { apiRequest } from "../utils/api";
@@ -11,6 +11,7 @@ const AuthPage = ({ onLogin }) => {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
@@ -42,7 +43,9 @@ const AuthPage = ({ onLogin }) => {
           iconColor: "#0A0A0A",
         });
         onLogin(res);
-        navigate("/admin");
+        const nextRaw = searchParams.get("next") || "/admin";
+        const next = nextRaw.startsWith("/admin") ? nextRaw : "/admin";
+        navigate(next);
       } else {
         setError(res.message || "Invalid email/phone or password");
       }

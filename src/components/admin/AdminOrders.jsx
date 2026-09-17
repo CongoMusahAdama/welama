@@ -40,6 +40,7 @@ const AdminOrders = ({
     const searchId = searchParams.get("search");
     if (searchId) {
       setSearchTerm(searchId);
+      setCurrentPage(1);
     }
   }, [location.search]);
 
@@ -590,8 +591,16 @@ const AdminOrders = ({
                   </td>
                 </tr>
               ) : (
-                currentItems.map((order, index) => (
-                  <tr key={order._id || order.id}>
+                currentItems.map((order, index) => {
+                  const focused =
+                    searchTerm &&
+                    String(order.orderId || "").toLowerCase() === searchTerm.toLowerCase();
+                  return (
+                  <tr
+                    key={order._id || order.id}
+                    data-admin-order={order.orderId || order.id}
+                    style={focused ? { background: "rgba(201, 162, 39, 0.14)" } : undefined}
+                  >
                     <td data-label="#">{indexOfFirstItem + index + 1}</td>
                     <td
                       data-label="Order ID"
@@ -772,7 +781,8 @@ const AdminOrders = ({
                       </div>
                     </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>

@@ -15,6 +15,12 @@ const normalizePhone = (phone) => {
 
 const smsDestination = (order) => order?.smsPhone || order?.phone;
 
+const storefrontUrl = () => (
+    process.env.CLIENT_URL ||
+    process.env.FRONTEND_URL ||
+    (process.env.NODE_ENV === 'production' ? 'https://welama-gh.shop' : 'http://localhost:5173')
+).split(',')[0].trim().replace(/\/$/, '');
+
 const sendSMS = async (to, message) => {
     try {
         const recipient = normalizePhone(to);
@@ -105,7 +111,7 @@ const sendOrderConfirmationSMS = async (order) => {
     if (!order) return;
     const dest = smsDestination(order);
     if (!dest) return;
-    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+    const clientUrl = storefrontUrl();
     const orderId = order.orderId || order._id;
     const trackingLink = `${clientUrl}/track?orderId=${encodeURIComponent(orderId)}&phone=${encodeURIComponent(dest)}`;
 
@@ -132,7 +138,7 @@ const sendOrderStatusUpdateSMS = async (order) => {
     if (!order) return;
     const dest = smsDestination(order);
     if (!dest) return;
-    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+    const clientUrl = storefrontUrl();
     const orderId = order.orderId || order._id;
     const trackingLink = `${clientUrl}/track?orderId=${encodeURIComponent(orderId)}&phone=${encodeURIComponent(dest)}`;
 
@@ -174,7 +180,7 @@ const sendPaymentReceivedSMS = async (order) => {
     if (!order) return;
     const dest = smsDestination(order);
     if (!dest) return;
-    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+    const clientUrl = storefrontUrl();
     const orderId = order.orderId || order._id;
     const trackingLink = `${clientUrl}/track?orderId=${encodeURIComponent(orderId)}&phone=${encodeURIComponent(dest)}`;
     const message = `Hello ${order.customer}, payment received for WELAMA order #${orderId} (GHS ${order.total}). We are processing it. Track: ${trackingLink}`;
@@ -197,7 +203,12 @@ const uniquePhones = (...values) => {
 const adminAccountPhones = async () => {
     const Admin = require('../models/Admin');
     const admins = await Admin.find({ phone: { $exists: true, $ne: '' } }).select('phone');
-    return uniquePhones(...admins.map((row) => row.phone), process.env.ADMIN_PHONE);
+    const setting = await Setting.findOne();
+    return uniquePhones(
+        ...admins.map((row) => row.phone),
+        process.env.ADMIN_PHONE,
+        setting?.contactPhone
+    );
 };
 
 const sendAdminNewOrderSMS = async (order) => {
@@ -206,7 +217,17 @@ const sendAdminNewOrderSMS = async (order) => {
     if (!dests.length) return;
     const orderId = order.orderId || order._id;
     const kind = order.isCustomRequest ? 'custom request' : 'order';
-    const message = `WELAMA: New ${kind} #${orderId} from ${order.customer}. GHS ${order.total || 0}. Phone: ${smsDestination(order) || order.phone}`;
+    const items = (order.items || [])
+        .map((item) => `${item.qty || 1}x ${item.name || 'Item'}`)
+        .join(', ')
+        .slice(0, 90);
+    const dashboardLink = `${storefrontUrl()}/admin/orders?search=${encodeURIComponent(orderId)}`;
+    const message = [
+        `WELAMA: New ${kind} #${orderId}`,
+        `${order.customer || 'Customer'} | ${smsDestination(order) || order.phone || ''} | GHS ${order.total || 0}`,
+        items ? items : '',
+        `Open in dashboard: ${dashboardLink}`
+    ].filter(Boolean).join('\n');
     const results = await Promise.all(dests.map((phone) => sendSMS(phone, message)));
     return results[0];
 };
