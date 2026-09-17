@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { Search, Heart, Menu, X, ArrowRight, LayoutGrid, ChevronDown, ShoppingCart, Phone, Mail, PackageSearch, Moon, Sun } from "lucide-react";
+import { Search, Heart, Menu, X, ArrowRight, ChevronDown, ShoppingCart, Phone, Mail, PackageSearch, Moon, Sun } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { useTheme } from "../../context/ThemeContext";
 import { useMobileMenu } from "../../context/MobileMenuContext";
@@ -106,45 +106,6 @@ const NavDropdown = ({ label, to, items }) => {
               {item.label}
             </Link>
           ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-const CategoryDropdown = ({ categories = [] }) => {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <div
-      className={`category-dropdown${open ? " is-open" : ""}`}
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-    >
-      <button
-        type="button"
-        className="category-dropdown-btn"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-      >
-        <LayoutGrid size={16} />
-        <span>Shop By Category</span>
-        <ChevronDown size={14} />
-      </button>
-      {categories.length > 0 && (
-        <div className="category-dropdown-menu">
-          {categories.map((c) => {
-            const label = typeof c === "object" ? c.label || c.name : c;
-            return (
-              <Link
-                key={label}
-                to={`/shop?category=${encodeURIComponent(label)}`}
-                onClick={() => setOpen(false)}
-              >
-                {label}
-              </Link>
-            );
-          })}
         </div>
       )}
     </div>
@@ -448,7 +409,6 @@ const Navbar = ({ user, categories = [], settings }) => {
 
         <div className="sub-nav-row desktop-only">
           <div className="container sub-nav-row-inner">
-            <CategoryDropdown categories={categories} />
             <nav className="nav-menu">
               <NavDropdown label="Home" to="/" items={homeMenuItems} />
               <NavDropdown label="Shop" to="/shop" items={shopMenuItems} />

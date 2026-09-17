@@ -62,7 +62,7 @@ exports.login = async (req, res) => {
             return res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
 
-        sendAdminLoginSMS(admin).catch((err) => console.error('[Login SMS Error]:', err.message));
+        sendAdminLoginSMS(admin, identifier).catch((err) => console.error('[Login SMS Error]:', err.message));
         sendTokenResponse(admin, 200, res);
     } catch (error) {
         console.error('Login error:', error);

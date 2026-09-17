@@ -181,19 +181,40 @@ const sendPaymentReceivedSMS = async (order) => {
     return await sendSMS(dest, message);
 };
 
+const uniquePhones = (...values) => {
+    const seen = new Set();
+    return values
+        .map((value) => String(value || '').trim())
+        .filter(Boolean)
+        .filter((value) => {
+            const key = normalizePhone(value);
+            if (!key || seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+};
+
+const adminAccountPhones = async () => {
+    const Admin = require('../models/Admin');
+    const admins = await Admin.find({ phone: { $exists: true, $ne: '' } }).select('phone');
+    return uniquePhones(...admins.map((row) => row.phone), process.env.ADMIN_PHONE);
+};
+
 const sendAdminNewOrderSMS = async (order) => {
     if (!order) return;
-    const setting = await Setting.findOne();
-    const adminPhone = setting?.contactPhone;
-    if (!adminPhone) return;
+    const dests = await adminAccountPhones();
+    if (!dests.length) return;
     const orderId = order.orderId || order._id;
     const kind = order.isCustomRequest ? 'custom request' : 'order';
     const message = `WELAMA: New ${kind} #${orderId} from ${order.customer}. GHS ${order.total || 0}. Phone: ${smsDestination(order) || order.phone}`;
-    return await sendSMS(adminPhone, message);
+    const results = await Promise.all(dests.map((phone) => sendSMS(phone, message)));
+    return results[0];
 };
 
-const sendAdminLoginSMS = async (admin) => {
-    const dest = admin?.phone || process.env.ADMIN_PHONE;
+const sendAdminLoginSMS = async (admin, loginIdentifier) => {
+    const ident = String(loginIdentifier || '').trim();
+    const identIsPhone = Boolean(ident) && !ident.includes('@') && /\d/.test(ident);
+    const dest = identIsPhone ? ident : (admin?.phone || process.env.ADMIN_PHONE);
     if (!dest) return;
     const when = new Date().toLocaleString('en-GH', {
         timeZone: 'Africa/Accra',
