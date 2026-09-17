@@ -68,7 +68,7 @@ const App = () => {
     tagline: "The Essence of Luxury",
     logoUrl: "/welamalogo.png",
     contactPhone: "0244374433",
-    contactEmail: "",
+    contactEmail: "welama.business@gmail.com",
     address: "Accra, Ghana",
     smsApiKey: "",
     smsSenderId: "Welama",

@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { Search, Heart, Menu, X, ArrowRight, ChevronDown, ShoppingCart, Phone, PackageSearch, Moon, Sun } from "lucide-react";
+import { Search, Heart, Menu, X, ArrowRight, ChevronDown, ShoppingCart, Phone, Mail, PackageSearch, Moon, Sun } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { useTheme } from "../../context/ThemeContext";
 import { useMobileMenu } from "../../context/MobileMenuContext";
 import RecentlyViewedDropdown from "./RecentlyViewedDropdown";
 import { Cedis } from "../../utils/currency";
 import { STORE_PHONE, waLink } from "../../utils/whatsapp";
+import { STORE_EMAIL } from "../../utils/site";
 
 const NavCartButton = () => {
   const { cartCount, cartTotal, setIsCartOpen, cartPulse } = useCart();
@@ -191,6 +192,7 @@ const SearchOverlay = ({ isOpen, onClose }) => {
 const Navbar = ({ user, categories = [], settings }) => {
   const logoUrl = settings?.logoUrl || "/welamalogo.png";
   const storePhone = STORE_PHONE;
+  const storeEmail = settings?.contactEmail || STORE_EMAIL;
   const { theme, toggleTheme } = useTheme();
   const { isOpen: isMobileMenuOpen, setOpen: setIsMobileMenuOpen } = useMobileMenu();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -340,6 +342,9 @@ const Navbar = ({ user, categories = [], settings }) => {
               <a href={`tel:${storePhone}`}>
                 <Phone size={13} /> {storePhone}
               </a>
+              <a href={`mailto:${storeEmail}`}>
+                <Mail size={13} /> {storeEmail}
+              </a>
             </div>
 
             <div className="nav-search-wrap desktop-only">
@@ -475,6 +480,9 @@ const Navbar = ({ user, categories = [], settings }) => {
             <p>Concierge</p>
             <a href={`tel:${storePhone}`}>
               <Phone size={15} /> {storePhone}
+            </a>
+            <a href={`mailto:${storeEmail}`}>
+              <Mail size={15} /> {storeEmail}
             </a>
           </div>
           <button

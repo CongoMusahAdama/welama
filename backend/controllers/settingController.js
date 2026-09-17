@@ -29,6 +29,9 @@ const toPublicSettings = (setting) => {
     if (!data.paystackPublicKey) {
         data.paystackPublicKey = process.env.PAYSTACK_PUBLIC_KEY || '';
     }
+    if (!data.contactEmail) {
+        data.contactEmail = 'welama.business@gmail.com';
+    }
     return data;
 };
 
@@ -40,11 +43,14 @@ const ensureSetting = async () => {
             tagline: 'The Essence of Luxury',
             logoUrl: '/welamalogo.png',
             contactPhone: '0244374433',
-            contactEmail: '',
+            contactEmail: 'welama.business@gmail.com',
             address: 'Accra, Ghana',
             mnotifySenderId: 'Welama',
             smsEnabled: true
         });
+    } else if (!String(setting.contactEmail || '').trim()) {
+        setting.contactEmail = 'welama.business@gmail.com';
+        await setting.save();
     }
     return setting;
 };

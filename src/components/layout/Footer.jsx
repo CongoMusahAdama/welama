@@ -1,7 +1,8 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Phone, MessageCircle, Instagram, Facebook, Ghost, ArrowRight } from "lucide-react";
+import { Phone, MessageCircle, Mail, Instagram, Facebook, Ghost, ArrowRight } from "lucide-react";
 import { STORE_PHONE, displayStorePhone, waLink } from "../../utils/whatsapp";
+import { STORE_EMAIL } from "../../utils/site";
 
 const Footer = ({ settings }) => {
   const location = useLocation();
@@ -37,6 +38,12 @@ const Footer = ({ settings }) => {
               <div className="flex items-center gap-3 footer-desc">
                 <MessageCircle size={16} className="text-teal" />
                 <span>{storePhone} (WhatsApp/Call)</span>
+              </div>
+              <div className="flex items-center gap-3 footer-desc">
+                <Mail size={16} className="text-teal" />
+                <a href={`mailto:${settings?.contactEmail || STORE_EMAIL}`} style={{ fontSize: "0.85rem" }}>
+                  {settings?.contactEmail || STORE_EMAIL}
+                </a>
               </div>
             </div>
           </div>

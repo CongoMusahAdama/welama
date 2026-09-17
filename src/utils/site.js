@@ -1,5 +1,6 @@
 export const SITE_URL = "https://welama-gh.shop";
 export const SITE_NAME = "WELAMA";
+export const STORE_EMAIL = "welama.business@gmail.com";
 export const SITE_TAGLINE = "Women's clothing and bags from Accra, Ghana";
 export const DEFAULT_DESCRIPTION =
   "WELAMA is a Ghana women's fashion shop for clothing, dresses, two-piece sets and bags. Shop WELAMA online at welama-gh.shop.";

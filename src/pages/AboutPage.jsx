@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
-import { Shield, Globe, Award, Phone, MessageCircle, Instagram, Facebook, Ghost } from "lucide-react";
+import { Shield, Globe, Award, Phone, MessageCircle, Mail, Instagram, Facebook, Ghost } from "lucide-react";
 import { STORE_PHONE, waLink } from "../utils/whatsapp";
+import { STORE_EMAIL } from "../utils/site";
 
 const AboutPage = () => {
   useEffect(() => {
@@ -278,6 +279,18 @@ const AboutPage = () => {
                   <div className="text-wrap">
                     <label>WhatsApp / Call</label>
                     <a href={waLink()}>{STORE_PHONE}</a>
+                  </div>
+                </div>
+
+                <div className="contact-premium-item">
+                  <div className="icon-wrap">
+                    <Mail size={24} />
+                  </div>
+                  <div className="text-wrap">
+                    <label>Professional Inquiries</label>
+                    <a href={`mailto:${STORE_EMAIL}`}>
+                      {STORE_EMAIL}
+                    </a>
                   </div>
                 </div>
               </div>

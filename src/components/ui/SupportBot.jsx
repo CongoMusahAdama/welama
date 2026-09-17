@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
-import { Headset, X, Phone, MessageCircle, ArrowRight } from "lucide-react";
+import { Headset, X, Phone, MessageCircle, Mail, ArrowRight } from "lucide-react";
 import { STORE_PHONE, waLink } from "../../utils/whatsapp";
+import { STORE_EMAIL } from "../../utils/site";
 
 const SupportBot = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -73,6 +74,20 @@ const SupportBot = () => {
                 <div className="action-details">
                   <span>WhatsApp / Chat</span>
                   <strong>{STORE_PHONE}</strong>
+                </div>
+                <ArrowRight size={14} className="action-arrow" />
+              </a>
+
+              <a
+                href={`mailto:${STORE_EMAIL}`}
+                className="support-action-card"
+              >
+                <div className="action-icon-circle tel-bg">
+                  <Mail size={18} />
+                </div>
+                <div className="action-details">
+                  <span>Email Us</span>
+                  <strong>{STORE_EMAIL}</strong>
                 </div>
                 <ArrowRight size={14} className="action-arrow" />
               </a>

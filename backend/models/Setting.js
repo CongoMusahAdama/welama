@@ -43,7 +43,7 @@ const SettingSchema = new mongoose.Schema({
     },
     contactEmail: {
         type: String,
-        default: ''
+        default: 'welama.business@gmail.com'
     },
     address: {
         type: String,
