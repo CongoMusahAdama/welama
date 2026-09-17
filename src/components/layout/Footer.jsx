@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Phone, MessageCircle, Mail, Instagram, Facebook, Ghost, ArrowRight } from "lucide-react";
+import { Phone, MessageCircle, Instagram, Facebook, Ghost, ArrowRight } from "lucide-react";
 import { STORE_PHONE, displayStorePhone, waLink } from "../../utils/whatsapp";
 
 const Footer = ({ settings }) => {
@@ -37,12 +37,6 @@ const Footer = ({ settings }) => {
               <div className="flex items-center gap-3 footer-desc">
                 <MessageCircle size={16} className="text-teal" />
                 <span>{storePhone} (WhatsApp/Call)</span>
-              </div>
-              <div className="flex items-center gap-3 footer-desc">
-                <Mail size={16} className="text-teal" />
-                <span style={{ fontSize: "0.85rem" }}>
-                  {settings?.contactEmail || "info@welama.com"}
-                </span>
               </div>
             </div>
           </div>

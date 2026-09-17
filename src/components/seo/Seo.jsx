@@ -89,7 +89,6 @@ export const WEBSITE_JSON_LD = {
       url: SITE_URL,
       logo: `${SITE_URL}/welamalogo.png`,
       image: DEFAULT_OG_IMAGE,
-      email: "info@welama.com",
       telephone: "+233244374433",
       address: {
         "@type": "PostalAddress",

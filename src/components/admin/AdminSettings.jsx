@@ -34,7 +34,7 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
     heroSubtitle: "Curated corporate wears & bags for the modern woman",
     brandColor: "#0A0A0A",
     contactPhone: "0244374433",
-    contactEmail: "info@welama.com",
+    contactEmail: "",
     address: "Accra, Ghana",
     // mNotify SMS
     mnotifyApiKey: "",
@@ -712,7 +712,7 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
                   type="email"
                   value={formData.contactEmail}
                   onChange={handleChange("contactEmail")}
-                  placeholder="concierge@welama.com"
+                  placeholder=""
                   style={{
                     width: "100%",
                     padding: "0.7rem 1rem",

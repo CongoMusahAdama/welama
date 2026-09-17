@@ -40,7 +40,7 @@ const ensureSetting = async () => {
             tagline: 'The Essence of Luxury',
             logoUrl: '/welamalogo.png',
             contactPhone: '0244374433',
-            contactEmail: 'info@welama.com',
+            contactEmail: '',
             address: 'Accra, Ghana',
             mnotifySenderId: 'Welama',
             smsEnabled: true

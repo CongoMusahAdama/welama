@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { Search, Heart, Menu, X, ArrowRight, ChevronDown, ShoppingCart, Phone, Mail, PackageSearch, Moon, Sun } from "lucide-react";
+import { Search, Heart, Menu, X, ArrowRight, ChevronDown, ShoppingCart, Phone, PackageSearch, Moon, Sun } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { useTheme } from "../../context/ThemeContext";
 import { useMobileMenu } from "../../context/MobileMenuContext";
@@ -338,9 +338,6 @@ const Navbar = ({ user, categories = [], settings }) => {
               <a href={`tel:${storePhone}`}>
                 <Phone size={13} /> {storePhone}
               </a>
-              <a href="mailto:info@welama.com">
-                <Mail size={13} /> info@welama.com
-              </a>
             </div>
 
             <div className="nav-search-wrap desktop-only">
@@ -476,9 +473,6 @@ const Navbar = ({ user, categories = [], settings }) => {
             <p>Concierge</p>
             <a href={`tel:${storePhone}`}>
               <Phone size={15} /> {storePhone}
-            </a>
-            <a href="mailto:info@welama.com">
-              <Mail size={15} /> info@welama.com
             </a>
           </div>
           <button
