@@ -9,11 +9,11 @@ const TABS = [
   { to: "/track", label: "Track", icon: PackageSearch, match: (path) => path.startsWith("/track") },
 ];
 
-const HIDDEN = ["/auth", "/admin", "/checkout", "/product", "/home"];
+const HIDDEN = ["/auth", "/admin", "/checkout", "/product"];
 
 const MobileAppDock = () => {
   const { pathname } = useLocation();
-  if (HIDDEN.some((path) => pathname.startsWith(path)) || pathname === "/") return null;
+  if (HIDDEN.some((path) => pathname.startsWith(path)) || pathname === "/" || pathname === "/home") return null;
 
   return (
     <nav className="mobile-app-dock" aria-label="Main pages">

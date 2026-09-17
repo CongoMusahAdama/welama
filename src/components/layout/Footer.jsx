@@ -8,7 +8,7 @@ const Footer = ({ settings }) => {
   if (location.pathname === "/auth" || location.pathname.startsWith("/admin"))
     return null;
 
-  const isHome = location.pathname === "/home";
+  const isHome = location.pathname === "/" || location.pathname === "/home";
 
   const logoUrl = settings?.logoUrl || "/welamalogo.png";
   const storePhone = displayStorePhone(settings?.contactPhone);
@@ -51,16 +51,16 @@ const Footer = ({ settings }) => {
             <h4 className="footer-heading">Categories</h4>
             <ul className="footer-links">
               <li>
-                <Link to="/shop?q=Shirts">Shirts</Link>
+                <Link to="/shop?category=Shirts">Shirts</Link>
               </li>
               <li>
-                <Link to="/shop?q=Dresses">Dresses</Link>
+                <Link to="/shop?category=Dresses">Dresses</Link>
               </li>
               <li>
-                <Link to="/shop?q=Two-piece">Two-piece</Link>
+                <Link to="/shop?category=Two-piece">Two-piece</Link>
               </li>
               <li>
-                <Link to="/shop?q=Bags">Bags</Link>
+                <Link to="/shop?category=Bags">Bags</Link>
               </li>
               <li style={{ marginTop: "0.5rem", paddingTop: "0.5rem", borderTop: "1px solid #333" }}>
                 <Link to="/track" style={{ color: "#C9A227", fontWeight: 700 }}>Track Order</Link>

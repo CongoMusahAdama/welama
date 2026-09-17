@@ -70,7 +70,7 @@ const CollectionsPage = ({ settings }) => {
                 with you, day to night.
               </p>
               <Link
-                to="/shop?q=Dresses"
+                to="/shop?category=Dresses"
                 className="cta-button"
                 style={{ display: "inline-block" }}
               >
@@ -97,7 +97,7 @@ const CollectionsPage = ({ settings }) => {
                 that carry you through every occasion.
               </p>
               <Link
-                to="/shop?q=Bags"
+                to="/shop?category=Bags"
                 className="cta-button"
                 style={{ display: "inline-block" }}
               >

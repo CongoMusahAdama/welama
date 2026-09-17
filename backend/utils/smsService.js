@@ -25,7 +25,12 @@ const sendSMS = async (to, message) => {
 
         const setting = await Setting.findOne();
         const firstValue = (...vals) => vals.map((v) => String(v || '').trim()).find(Boolean) || '';
-        const apiKey = process.env.MNOTIFY_API_KEY || process.env.NOTIFY_API_KEY;
+        const apiKey = firstValue(
+            process.env.MNOTIFY_API_KEY,
+            process.env.NOTIFY_API_KEY,
+            setting?.mnotifyApiKey,
+            setting?.smsApiKey
+        );
         const rawSender = firstValue(
             setting?.mnotifySenderId,
             setting?.smsSenderId,
@@ -48,8 +53,8 @@ const sendSMS = async (to, message) => {
         console.log(`============================================================\n`);
 
         if (!apiKey) {
-            console.log('[mNotify SMS] MNOTIFY_API_KEY not configured yet. Logged message above for testing.');
-            return { success: true, message: 'mNotify API key not configured, logged to console' };
+            console.log('[mNotify SMS] MNOTIFY_API_KEY is missing. SMS was not sent.');
+            return { success: false, message: 'mNotify API key is not configured' };
         }
 
         const endpoint = `https://api.mnotify.com/api/sms/quick?key=${encodeURIComponent(apiKey)}`;
@@ -73,9 +78,20 @@ const sendSMS = async (to, message) => {
         const data = await response.json().catch(() => ({ status: response.status }));
         console.log('[mNotify SMS] mNotify API Response:', data);
 
-        const ok = data?.status === 'success' || data?.code === '2000' || response.ok;
+        const statusText = String(data?.status || '').toLowerCase();
+        const code = String(data?.code || data?.status_code || '');
+        const apiMessage = String(data?.message || data?.summary || '');
+        const ok = statusText === 'success' || code === '2000';
         if (!ok) {
-            return { success: false, message: data?.message || 'mNotify rejected the SMS', data };
+            const low = `${apiMessage} ${JSON.stringify(data)}`.toLowerCase();
+            const noCredit = /insufficient|credit|balance|wallet/.test(low);
+            return {
+                success: false,
+                message: noCredit
+                    ? 'mNotify wallet has insufficient credit. Top up at https://apps.mnotify.net and try again.'
+                    : (apiMessage || 'mNotify rejected the SMS'),
+                data
+            };
         }
 
         return { success: true, data };

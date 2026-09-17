@@ -49,6 +49,13 @@ const ProtectedRoute = ({ user, authChecked, children }) => {
   return children;
 };
 
+const RootLanding = ({ products, categories, settings }) => {
+  const isMobile =
+    typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
+  if (isMobile) return <Navigate to="/shop" replace />;
+  return <HomePage products={products} categories={categories} settings={settings} />;
+};
+
 const App = () => {
   // --- STATE ---
   const [products, setProducts] = useState([]);
@@ -386,12 +393,12 @@ const App = () => {
               <Routes>
                 <Route
                   path="/"
-                  element={<Navigate to="/shop" replace />}
+                  element={<RootLanding products={products} categories={categories} settings={settings} />}
                 />
                 <Route
                   path="/home"
                   element={
-                    <HomePage products={products} categories={categories} />
+                    <HomePage products={products} categories={categories} settings={settings} />
                   }
                 />
                 <Route

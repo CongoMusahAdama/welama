@@ -138,7 +138,7 @@ const CategoryDropdown = ({ categories = [] }) => {
             return (
               <Link
                 key={label}
-                to={`/shop?q=${encodeURIComponent(label)}`}
+                to={`/shop?category=${encodeURIComponent(label)}`}
                 onClick={() => setOpen(false)}
               >
                 {label}
@@ -193,7 +193,7 @@ const SearchOverlay = ({ isOpen, onClose }) => {
               <strong
                 onClick={() => {
                   setQuery("Dresses");
-                  navigate("/shop?q=Dresses");
+                  navigate("/shop?category=Dresses");
                   onClose();
                 }}
               >
@@ -203,7 +203,7 @@ const SearchOverlay = ({ isOpen, onClose }) => {
               <strong
                 onClick={() => {
                   setQuery("Bags");
-                  navigate("/shop?q=Bags");
+                  navigate("/shop?category=Bags");
                   onClose();
                 }}
               >
@@ -213,7 +213,7 @@ const SearchOverlay = ({ isOpen, onClose }) => {
               <strong
                 onClick={() => {
                   setQuery("Accessories");
-                  navigate("/shop?q=Accessories");
+                  navigate("/shop?category=Accessories");
                   onClose();
                 }}
               >
@@ -242,7 +242,7 @@ const Navbar = ({ user, categories = [], settings }) => {
   const prevPath = useRef(location.pathname);
   const [logoAnimKey, setLogoAnimKey] = useState(1);
   const isShopPage = location.pathname.startsWith("/shop");
-  const isHomePage = location.pathname === "/";
+  const isHomePage = location.pathname === "/" || location.pathname === "/home";
   const isProductPage = location.pathname.startsWith("/product");
   const isAuthPage =
     location.pathname === "/auth" || location.pathname.startsWith("/admin");
@@ -305,16 +305,13 @@ const Navbar = ({ user, categories = [], settings }) => {
   ];
 
   const shopMenuItems = [
-    ...categories.map((c) => {
-      const label = typeof c === "object" ? c.label : c;
-      return { to: `/shop?q=${encodeURIComponent(label)}`, label };
-    }),
-    { to: "/shop", label: "View All Products" },
+    { to: "/shop", label: "All Products" },
+    { to: "/shop?sort=new", label: "New Arrivals" },
   ];
 
   const collectionsMenuItems = categories.map((c) => {
     const label = typeof c === "object" ? c.label || c.name : c;
-    return { to: `/shop?q=${encodeURIComponent(label)}`, label };
+    return { to: `/shop?category=${encodeURIComponent(label)}`, label };
   });
 
   const galleryMenuItems = [
@@ -490,7 +487,7 @@ const Navbar = ({ user, categories = [], settings }) => {
             return (
               <Link
                 key={label}
-                to={`/shop?q=${encodeURIComponent(label)}`}
+                to={`/shop?category=${encodeURIComponent(label)}`}
                 className="mobile-nav-link"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
@@ -500,7 +497,7 @@ const Navbar = ({ user, categories = [], settings }) => {
           })}
 
           <p className="mobile-nav-section-label">Explore</p>
-          <Link to="/" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
+          <Link to="/home" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
           <Link to="/shop" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Shop</Link>
           <Link to="/collections" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Collections</Link>
           <Link to="/gallery" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Gallery</Link>

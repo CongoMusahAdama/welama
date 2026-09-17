@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Search, X, SlidersHorizontal, ArrowUpRight } from "lucide-react";
 import ProductCard from "../components/products/ProductCard";
 import { Cedis } from "../utils/currency";
+import { DEFAULT_CATEGORIES, mergeCategories } from "../utils/categories";
 
 const PROMO_SLIDES = [
   {
@@ -36,12 +37,24 @@ const ShopPage = ({ products = [], categories = [] }) => {
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    setSearchQuery(searchParams.get("q") || "");
-    const cat = searchParams.get("category");
+    const q = searchParams.get("q") || "";
+    const cat = searchParams.get("category") || "";
+    const known = mergeCategories(DEFAULT_CATEGORIES, categories).map((c) =>
+      c.toLowerCase(),
+    );
+    const qLooksLikeCategory = known.includes(q.trim().toLowerCase());
+
     if (cat) {
       setActiveCategory(cat.toLowerCase());
+      setSearchQuery(qLooksLikeCategory ? "" : q);
+    } else if (qLooksLikeCategory) {
+      setActiveCategory(q.trim().toLowerCase());
+      setSearchQuery("");
+    } else {
+      setSearchQuery(q);
+      setActiveCategory("all");
     }
-  }, [searchParams]);
+  }, [searchParams, categories]);
 
   const filteredProducts = products
     .filter((product) => {
@@ -117,30 +130,30 @@ const ShopPage = ({ products = [], categories = [] }) => {
 
   const categoryTabs = [
     { id: "all", label: "All Collections" },
-    ...categories.map((c) =>
-      typeof c === "object" ? c : { id: c.toLowerCase(), label: c },
-    ),
+    ...mergeCategories(DEFAULT_CATEGORIES, categories).map((c) => ({
+      id: c.toLowerCase(),
+      label: c,
+    })),
   ];
 
   const categoryCards = categoryTabs
     .filter((cat) => cat.id !== "all")
     .map((cat) => {
-      const sample = products.find((p) => {
-        const same = p.category?.toLowerCase() === cat.id.toLowerCase();
-        const src = String(p.image || "");
-        return (
-          same &&
-          src &&
-          !src.startsWith("blob:") &&
-          !src.includes("welamalogo")
-        );
-      });
-      return sample ? { ...cat, image: sample.image } : null;
-    })
-    .filter(Boolean);
-  const filterCategories = categoryTabs.filter(
-    (cat) => cat.id === "all" || categoryCount(cat.id) > 0,
-  );
+      const sample =
+        products.find((p) => {
+          const same = p.category?.toLowerCase() === cat.id.toLowerCase();
+          const src = String(p.image || "");
+          return (
+            same &&
+            src &&
+            !src.startsWith("blob:") &&
+            !src.includes("welamalogo")
+          );
+        }) ||
+        products.find((p) => p.category?.toLowerCase() === cat.id.toLowerCase());
+      return { ...cat, image: sample?.image || "/heroframe1.png" };
+    });
+  const filterCategories = categoryTabs;
 
   return (
     <div className={`shop-page-wrapper${isSearching ? " is-searching" : ""}`}>
@@ -431,7 +444,7 @@ const ShopPage = ({ products = [], categories = [] }) => {
                       onClick={() => {
                         setSearchQuery("");
                         setActiveCategory("all");
-                        setMaxPrice(1000);
+                        setMaxPrice(5000);
                       }}
                     >
                       Reset All Filters
