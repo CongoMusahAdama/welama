@@ -5,6 +5,7 @@ import { useCart } from "../../context/CartContext";
 import ProductCard from "../products/ProductCard";
 import { waLink, getFullImageUrl } from "../../utils/whatsapp";
 import { Cedis, formatCedis } from "../../utils/currency";
+import { galleryThumbLabel, productGalleryImages } from "../../utils/productImages";
 
 const ProductDetailModal = () => {
   const { selectedProduct, closeProduct, products } = useModal();
@@ -13,6 +14,7 @@ const ProductDetailModal = () => {
   const [qty, setQty] = useState(1);
   const [size, setSize] = useState("");
   const [color, setColor] = useState("");
+  const [activeImage, setActiveImage] = useState("");
 
   useEffect(() => {
     if (selectedProduct) {
@@ -30,6 +32,7 @@ const ProductDetailModal = () => {
       } else {
         setColor("");
       }
+      setActiveImage(productGalleryImages(selectedProduct)[0] || "");
     }
   }, [selectedProduct]);
 
@@ -54,12 +57,13 @@ const ProductDetailModal = () => {
     discountPrice,
     discountPercentage,
     badge,
-    image,
     sizes,
     colors,
     stock,
     category,
   } = selectedProduct;
+  const galleryImages = productGalleryImages(selectedProduct);
+  const image = galleryImages.includes(activeImage) ? activeImage : galleryImages[0];
 
   const finalDiscountPrice =
     discountPrice ||
@@ -90,6 +94,26 @@ const ProductDetailModal = () => {
           <div className="modal-image-container">
             <img src={image} alt={name} />
             {badge && <div className="modal-badge">{badge}</div>}
+            {galleryImages.length > 1 && (
+              <div className="product-detail-thumbs modal-thumbs" role="tablist" aria-label="Product photos">
+                {galleryImages.map((src, index) => {
+                  const selected = src === image;
+                  return (
+                    <button
+                      key={`${src}-${index}`}
+                      type="button"
+                      className={`product-detail-thumb${selected ? " is-active" : ""}`}
+                      onClick={() => setActiveImage(src)}
+                      aria-pressed={selected}
+                      aria-label={galleryThumbLabel(index, galleryImages.length)}
+                    >
+                      <img src={src} alt="" />
+                      <span>{galleryThumbLabel(index, galleryImages.length)}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <div className="modal-info">

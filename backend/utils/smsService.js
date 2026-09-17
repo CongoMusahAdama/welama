@@ -25,6 +25,8 @@ const storefrontUrl = () => (
     (process.env.NODE_ENV === 'production' ? 'https://welama-gh.shop' : 'http://localhost:5173')
 ).split(',')[0].trim().replace(/\/$/, '');
 
+const orderTrackingLink = (orderId) => `${storefrontUrl()}/track?orderId=${encodeURIComponent(orderId)}`;
+
 const firstValue = (...vals) => vals.map((v) => String(v || '').trim()).find(Boolean) || '';
 
 const isMnotifySuccess = (data) => {
@@ -172,9 +174,8 @@ const sendOrderConfirmationSMS = async (order) => {
     if (!order) return;
     const dest = smsDestination(order);
     if (!dest) return;
-    const clientUrl = storefrontUrl();
     const orderId = order.orderId || order._id;
-    const trackingLink = `${clientUrl}/track?orderId=${encodeURIComponent(orderId)}&phone=${encodeURIComponent(dest)}`;
+    const trackingLink = orderTrackingLink(orderId);
 
     const setting = await Setting.findOne();
     const siteName = setting?.siteName || 'WELAMA';
@@ -199,9 +200,8 @@ const sendOrderStatusUpdateSMS = async (order) => {
     if (!order) return;
     const dest = smsDestination(order);
     if (!dest) return;
-    const clientUrl = storefrontUrl();
     const orderId = order.orderId || order._id;
-    const trackingLink = `${clientUrl}/track?orderId=${encodeURIComponent(orderId)}&phone=${encodeURIComponent(dest)}`;
+    const trackingLink = orderTrackingLink(orderId);
 
     const setting = await Setting.findOne();
     const siteName = setting?.siteName || 'WELAMA';
@@ -241,9 +241,8 @@ const sendPaymentReceivedSMS = async (order) => {
     if (!order) return;
     const dest = smsDestination(order);
     if (!dest) return;
-    const clientUrl = storefrontUrl();
     const orderId = order.orderId || order._id;
-    const trackingLink = `${clientUrl}/track?orderId=${encodeURIComponent(orderId)}&phone=${encodeURIComponent(dest)}`;
+    const trackingLink = orderTrackingLink(orderId);
     const message = `Hello ${order.customer}, payment received for WELAMA order #${orderId} (GHS ${order.total}). We are processing it. Track: ${trackingLink}`;
     return await sendSMS(dest, message);
 };

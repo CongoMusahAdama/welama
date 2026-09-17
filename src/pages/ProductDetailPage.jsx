@@ -8,6 +8,7 @@ import { apiRequest } from "../utils/api";
 import { waLink, getFullImageUrl, displayStorePhone } from "../utils/whatsapp";
 import { catalogProductId } from "../utils/productId";
 import { Cedis, formatCedis } from "../utils/currency";
+import { galleryThumbLabel, productGalleryImages } from "../utils/productImages";
 import Seo from "../components/seo/Seo";
 import { SITE_NAME, SITE_URL, absoluteUrl } from "../utils/site";
 
@@ -25,6 +26,7 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("whatsapp"); // 'whatsapp' | 'paystack'
   const [orderForm, setOrderForm] = useState({ customer: "", phone: "", smsPhone: "", email: "", location: "", country: "Ghana", deliveryMethod: "Home Delivery", street: "", city: "", region: "" });
+  const [activeImage, setActiveImage] = useState("");
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -35,6 +37,13 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
       setColor(firstColor ? (typeof firstColor === "object" ? firstColor.name : firstColor) : "");
     }
   }, [id]);
+
+  const galleryImages = product ? productGalleryImages(product) : [];
+  const galleryKey = galleryImages.join("|");
+
+  useEffect(() => {
+    if (galleryImages[0]) setActiveImage(galleryImages[0]);
+  }, [id, galleryKey]);
 
   if (!products.length) {
     return (
@@ -57,17 +66,17 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
     );
   }
 
-  const { name, price, discountPrice, badge, image, sizes, colors, stock, sku, category, description } = product;
+  const { name, price, discountPrice, badge, sizes, colors, stock, sku, category, description } = product;
   const isSoldOut = product.status === "Sold Out" || stock === 0 || !!product.soldOutAt;
   const currentPrice = discountPrice || price;
-  const resolvedImage = image && !image.startsWith("blob:") ? image : "/welamalogo.png";
+  const resolvedImage = galleryImages.includes(activeImage) ? activeImage : galleryImages[0];
   const productUrl = `/product/${id}`;
   const productImage = absoluteUrl(resolvedImage);
   const productJsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
     name,
-    image: [productImage],
+    image: galleryImages.map((src) => absoluteUrl(src)),
     description: description || `${name} from WELAMA, Accra Ghana.`,
     sku: sku || undefined,
     brand: { "@type": "Brand", name: SITE_NAME },
@@ -127,7 +136,7 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
       window.open(waLink(whatsappMessage), "_blank");
       setOrderForm({ customer: "", phone: "", smsPhone: "", location: "", country: "Ghana", deliveryMethod: "Home Delivery", street: "", city: "", region: "" });
 
-      const trackingUrl = `/track?orderId=${encodeURIComponent(order.orderId)}&phone=${encodeURIComponent(orderForm.smsPhone || orderForm.phone)}`;
+      const trackingUrl = `/track?orderId=${encodeURIComponent(order.orderId)}`;
 
       Swal.fire({
         title: "Order Placed Successfully! 🎉",
@@ -258,6 +267,7 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
           </button>
 
           <div className="product-detail-gallery">
+            <div className="product-detail-stage">
             <div className="product-detail-heading">
               <h1 className="serif product-detail-title">{name}</h1>
               {sku && <p className="product-detail-sku">{sku}</p>}
@@ -279,6 +289,27 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
                 </div>
               )}
             </div>
+            </div>
+            {galleryImages.length > 1 && (
+              <div className="product-detail-thumbs" role="tablist" aria-label="Product photos">
+                {galleryImages.map((src, index) => {
+                  const selected = src === resolvedImage;
+                  return (
+                    <button
+                      key={`${src}-${index}`}
+                      type="button"
+                      className={`product-detail-thumb${selected ? " is-active" : ""}`}
+                      onClick={() => setActiveImage(src)}
+                      aria-pressed={selected}
+                      aria-label={galleryThumbLabel(index, galleryImages.length)}
+                    >
+                      <img src={src} alt="" />
+                      <span>{galleryThumbLabel(index, galleryImages.length)}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 

@@ -78,8 +78,10 @@ exports.createOrder = async (req, res) => {
                     return created;
                 });
 
-                sendOrderConfirmationSMS(order).catch((err) => console.error('[Order SMS Error]:', err.message));
                 sendAdminNewOrderSMS(order).catch((err) => console.error('[Admin Order SMS Error]:', err.message));
+                if (order.payment === 'Paid') {
+                    sendOrderConfirmationSMS(order).catch((err) => console.error('[Order SMS Error]:', err.message));
+                }
 
                 return res.status(201).json({ success: true, data: order });
             } catch (error) {
@@ -123,10 +125,12 @@ exports.updateOrder = async (req, res) => {
             });
         });
 
-        if (req.body.status && req.body.status !== previousStatus) {
-            sendOrderStatusUpdateSMS(order).catch((err) => console.error('[Order Status SMS Error]:', err.message));
-        } else if (req.body.payment === 'Paid' && previousPayment !== 'Paid') {
+        const becamePaid = req.body.payment === 'Paid' && previousPayment !== 'Paid';
+        if (becamePaid) {
+            sendOrderConfirmationSMS(order).catch((err) => console.error('[Order SMS Error]:', err.message));
             sendPaymentReceivedSMS(order).catch((err) => console.error('[Order Payment SMS Error]:', err.message));
+        } else if (req.body.status && req.body.status !== previousStatus) {
+            sendOrderStatusUpdateSMS(order).catch((err) => console.error('[Order Status SMS Error]:', err.message));
         }
 
         res.status(200).json({ success: true, data: order });
@@ -159,19 +163,18 @@ exports.deleteOrder = async (req, res) => {
 
 exports.trackOrders = async (req, res) => {
     try {
-        const { orderId, phone } = req.query;
-        if (!orderId || !phone) {
-            return res.status(400).json({ success: false, message: 'Order ID and Phone number are required' });
+        const raw = String(req.query.orderId || req.query.id || '').trim();
+        if (!raw) {
+            return res.status(400).json({ success: false, message: 'Order ID is required' });
         }
 
-        const normalizedInput = phone.replace(/[^0-9]/g, '');
+        const escaped = raw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const order = await Order.findOne({
-            orderId: orderId.trim(),
-            phone: { $regex: normalizedInput.slice(-9) }
+            orderId: { $regex: new RegExp(`^${escaped}$`, 'i') }
         }).lean();
 
         if (!order) {
-            return res.status(404).json({ success: false, message: 'Order not found. Please check your ID and Phone.' });
+            return res.status(404).json({ success: false, message: 'Order not found. Please check your Order ID.' });
         }
 
         res.status(200).json({ success: true, data: order });

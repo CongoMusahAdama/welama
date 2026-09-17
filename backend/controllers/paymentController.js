@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const Order = require('../models/Order');
 const Setting = require('../models/Setting');
-const { sendPaymentReceivedSMS } = require('../utils/smsService');
+const { sendOrderConfirmationSMS, sendPaymentReceivedSMS } = require('../utils/smsService');
 const { markOrderPaid } = require('./orderController');
 
 const getPaystackSecret = (setting) => {
@@ -10,6 +10,12 @@ const getPaystackSecret = (setting) => {
     if (fromDb.startsWith('sk_')) return fromDb;
     if (fromEnv.startsWith('sk_')) return fromEnv;
     return fromDb || fromEnv;
+};
+
+const notifyCustomerPaid = (order) => {
+    if (!order) return;
+    sendOrderConfirmationSMS(order).catch((err) => console.error('[SMS Error]:', err.message));
+    sendPaymentReceivedSMS(order).catch((err) => console.error('[SMS Error]:', err.message));
 };
 
 // @desc    Initialize Paystack Transaction
@@ -127,9 +133,7 @@ exports.verifyPaystack = async (req, res) => {
                 paymentMethod: 'Paystack (Verified)',
                 paystackReference: reference
             });
-            if (order) {
-                sendPaymentReceivedSMS(order).catch(err => console.error('[SMS Error]:', err.message));
-            }
+            notifyCustomerPaid(order);
             const paidOrder = order || await Order.findOne({ $or: [{ orderId: targetOrderId }, { _id: targetOrderId }] });
             return res.status(200).json({
                 success: true,
@@ -161,9 +165,7 @@ exports.verifyPaystack = async (req, res) => {
                     paymentMethod: `Paystack (${data.data.channel || 'Online'})`,
                     paystackReference: reference
                 });
-                if (order) {
-                    sendPaymentReceivedSMS(order).catch(err => console.error('[SMS Error]:', err.message));
-                }
+                notifyCustomerPaid(order);
                 const paidOrder = order || await Order.findOne({ $or: [{ orderId: resolvedOrderId }, { _id: resolvedOrderId }] });
                 return res.status(200).json({
                     success: true,
@@ -222,9 +224,7 @@ exports.paystackWebhook = async (req, res) => {
                     paymentMethod: `Paystack (${event.data.channel || 'Online'})`,
                     paystackReference: event.data.reference
                 });
-                if (order) {
-                    sendPaymentReceivedSMS(order).catch(err => console.error('[SMS Error]:', err.message));
-                }
+                notifyCustomerPaid(order);
             }
         }
 

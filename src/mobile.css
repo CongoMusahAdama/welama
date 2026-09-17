@@ -1066,14 +1066,19 @@
 
   .modal-image-container {
     width: 100% !important;
-    aspect-ratio: 1 / 1 !important;
+    aspect-ratio: auto !important;
     background: #f8f8f8 !important;
     position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
   }
 
-  .modal-image-container img {
+  .modal-image-container > img {
     width: 100% !important;
-    height: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    aspect-ratio: 1 / 1 !important;
     object-fit: cover !important;
   }
 
@@ -3439,29 +3444,92 @@
     top: auto !important;
     z-index: auto !important;
     background: transparent !important;
-    display: block !important;
+    display: flex !important;
     flex-direction: column !important;
     align-items: stretch !important;
-    gap: 0 !important;
+    gap: 0.75rem !important;
     padding: 0 !important;
     border-bottom: none !important;
     margin: 0 !important;
+  }
+
+  .product-detail-stage {
+    position: relative !important;
   }
 
   .tracking-page,
   .tracking-page.section-padding {
     padding-top: var(--site-header-offset) !important;
     padding-bottom: 4rem !important;
+    background: #fff !important;
   }
 
-  .tracking-page h1.serif {
-    font-size: 2rem !important;
-    margin-bottom: 0.5rem !important;
+  .track-wrap {
+    padding: 0.85rem 1rem 2rem !important;
+    width: 100% !important;
   }
 
-  .tracking-page .search-card {
-    padding: 1.5rem 1.15rem !important;
-    border-radius: 16px !important;
+  .track-hero {
+    text-align: left !important;
+    margin-bottom: 1.15rem !important;
+  }
+
+  .track-hero h1 {
+    font-size: 1.55rem !important;
+    line-height: 1.2 !important;
+    margin-bottom: 0.3rem !important;
+  }
+
+  .track-hero p {
+    font-size: 0.88rem !important;
+  }
+
+  .track-form,
+  .track-result {
+    padding: 1rem !important;
+    border-radius: 14px !important;
+    box-shadow: none !important;
+  }
+
+  .track-steps {
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+  }
+
+  .track-step {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 0.75rem !important;
+    padding: 0.35rem 0 0.35rem 0.15rem !important;
+  }
+
+  .track-step:not(:last-child)::after {
+    top: 32px !important;
+    left: 15px !important;
+    right: auto !important;
+    width: 2px !important;
+    height: calc(100% - 10px) !important;
+    background: #ececec;
+  }
+
+  .track-step.is-done:not(:last-child)::after,
+  .track-step.is-current:not(:last-child)::after {
+    background: #111;
+  }
+
+  .track-step-label {
+    font-size: 0.88rem !important;
+  }
+
+  .track-result-top {
+    flex-direction: column !important;
+  }
+
+  .track-badges {
+    flex-direction: row !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
   }
 
   .about-hero,
@@ -3716,11 +3784,36 @@
 
   .product-detail-main-image {
     width: 100% !important;
-    height: 220px !important;
+    height: auto !important;
+    min-height: 280px !important;
     min-width: 0 !important;
     max-width: none !important;
-    aspect-ratio: auto !important;
+    aspect-ratio: 1 / 1 !important;
     border-radius: 12px !important;
+  }
+
+  .product-detail-thumbs {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 0.65rem !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    padding: 0.85rem 0 0.15rem !important;
+    scrollbar-width: none;
+  }
+
+  .product-detail-thumbs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .product-detail-thumb {
+    flex: 0 0 76px !important;
+    width: 76px !important;
+    border-radius: 4px;
+  }
+
+  .product-detail-thumb img {
+    height: 76px !important;
   }
 
   .product-detail-main-image .product-detail-badge {
@@ -4835,12 +4928,17 @@
   }
 
   .product-detail-main-image {
-    height: min(52vw, 280px) !important;
-    min-height: 240px !important;
+    height: auto !important;
+    min-height: 300px !important;
+    aspect-ratio: 1 / 1 !important;
     border-radius: 0 !important;
     overflow: hidden;
     background: #fff !important;
     box-shadow: none;
+  }
+
+  .product-detail-thumbs {
+    padding: 0.9rem 0 0 !important;
   }
 
   .app-pdp-meta {
@@ -5244,6 +5342,59 @@
   html[data-mobile-theme="dark"] .home-page {
     background: #070707 !important;
     color: #f4f0e6 !important;
+  }
+
+  html[data-mobile-theme="dark"] .track-hero h1,
+  html[data-mobile-theme="dark"] .track-result-top h2,
+  html[data-mobile-theme="dark"] .track-meta-row strong,
+  html[data-mobile-theme="dark"] .track-total,
+  html[data-mobile-theme="dark"] .track-items strong,
+  html[data-mobile-theme="dark"] .track-step.is-done,
+  html[data-mobile-theme="dark"] .track-step.is-current {
+    color: #f4f0e6 !important;
+  }
+
+  html[data-mobile-theme="dark"] .track-form,
+  html[data-mobile-theme="dark"] .track-result {
+    background: #141414 !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  html[data-mobile-theme="dark"] .track-input input {
+    background: #1c1c1c !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: #f4f0e6 !important;
+  }
+
+  html[data-mobile-theme="dark"] .track-submit {
+    background: #f4f0e6 !important;
+    color: #111 !important;
+  }
+
+  html[data-mobile-theme="dark"] .track-step-icon {
+    background: #141414;
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+
+  html[data-mobile-theme="dark"] .track-step.is-done .track-step-icon,
+  html[data-mobile-theme="dark"] .track-step.is-current .track-step-icon {
+    background: #f4f0e6;
+    border-color: #f4f0e6;
+    color: #111;
+  }
+
+  html[data-mobile-theme="dark"] .track-step:not(:last-child)::after {
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  html[data-mobile-theme="dark"] .track-step.is-done:not(:last-child)::after,
+  html[data-mobile-theme="dark"] .track-step.is-current:not(:last-child)::after {
+    background: #f4f0e6;
+  }
+
+  html[data-mobile-theme="dark"] .track-items,
+  html[data-mobile-theme="dark"] .track-total {
+    border-color: rgba(255, 255, 255, 0.08);
   }
 
   html[data-mobile-theme="dark"] .app-shop-search {

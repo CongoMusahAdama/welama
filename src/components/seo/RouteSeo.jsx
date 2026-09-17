@@ -63,8 +63,8 @@ const RouteSeo = () => {
   if (pathname === "/track") {
     return (
       <Seo
-        title="Track a WELAMA Order"
-        description="Track your WELAMA order with your order ID and phone number."
+        title="Track your order"
+        description="Track your WELAMA order with your order ID."
         path={`/track${search || ""}`}
         noindex
       />

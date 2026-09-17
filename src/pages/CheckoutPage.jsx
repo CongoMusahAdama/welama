@@ -55,7 +55,7 @@ const CheckoutPage = ({ addOrder }) => {
 
             const order = res.data;
             const orderId = order?.orderId || mockOrderId || 'VS-SUCCESS';
-            const trackUrl = `/track?orderId=${orderId}&phone=${encodeURIComponent(order?.phone || '')}`;
+            const trackUrl = `/track?orderId=${encodeURIComponent(orderId)}`;
 
             Swal.fire({
               title: "💳 Payment Successful!",
@@ -150,7 +150,7 @@ const CheckoutPage = ({ addOrder }) => {
           `Hi WELAMA! I'd like to order:\n\n${itemsList}\n\n💰 Total: ${formatCedis(totalWithDelivery, 2)}\n\n*Order ID:* ${order.orderId}\n👤 Name: ${formData.customer}\n📞 WhatsApp: ${formData.phone}\n📍 ${deliveryLocation}\n\nPlease confirm availability. Thank you! 🙏`;
         window.open(waLink(whatsappMessage), "_blank");
         clearCart();
-        const trackingUrl = `/track?orderId=${encodeURIComponent(order.orderId)}&phone=${encodeURIComponent(formData.smsPhone || formData.phone)}`;
+        const trackingUrl = `/track?orderId=${encodeURIComponent(order.orderId)}`;
 
         Swal.fire({
           title: "Order Placed Successfully! 🎉",
