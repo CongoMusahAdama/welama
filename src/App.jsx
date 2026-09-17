@@ -23,6 +23,7 @@ import SupportBot from "./components/ui/SupportBot";
 import Preloader from "./components/ui/Preloader";
 import PageRouteLoader from "./components/ui/PageRouteLoader";
 import HeadingAnimator from "./components/ui/HeadingAnimator";
+import RouteSeo from "./components/seo/RouteSeo";
 
 // --- PAGES ---
 import HomePage from "./pages/HomePage";
@@ -387,6 +388,7 @@ const App = () => {
         <CartProvider>
           <ModalProvider products={products}>
             <div className="app">
+              <RouteSeo />
               <HeadingAnimator />
               <PageRouteLoader />
               <Navbar user={user} categories={categories} settings={settings} />

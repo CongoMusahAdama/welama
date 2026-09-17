@@ -8,6 +8,8 @@ import { apiRequest } from "../utils/api";
 import { waLink, getFullImageUrl, displayStorePhone } from "../utils/whatsapp";
 import { catalogProductId } from "../utils/productId";
 import { Cedis, formatCedis } from "../utils/currency";
+import Seo from "../components/seo/Seo";
+import { SITE_NAME, SITE_URL, absoluteUrl } from "../utils/site";
 
 const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
   const { id } = useParams();
@@ -43,6 +45,7 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
   if (!product) {
     return (
       <div className="section-padding container center-text" style={{ minHeight: "60vh" }}>
+        <Seo title="Product not found" path={`/product/${id}`} noindex description="This WELAMA product is no longer available." />
         <h2 className="serif">Product Not Found</h2>
         <p style={{ color: "#666", margin: "1rem 0 2rem" }}>
           This item may have sold out or been removed.
@@ -58,6 +61,28 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
   const isSoldOut = product.status === "Sold Out" || stock === 0 || !!product.soldOutAt;
   const currentPrice = discountPrice || price;
   const resolvedImage = image && !image.startsWith("blob:") ? image : "/welamalogo.png";
+  const productUrl = `/product/${id}`;
+  const productImage = absoluteUrl(resolvedImage);
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name,
+    image: [productImage],
+    description: description || `${name} from WELAMA, Accra Ghana.`,
+    sku: sku || undefined,
+    brand: { "@type": "Brand", name: SITE_NAME },
+    category: category || "Women's clothing",
+    offers: {
+      "@type": "Offer",
+      url: `${SITE_URL}${productUrl}`,
+      priceCurrency: "GHS",
+      price: String(currentPrice || price || 0),
+      availability: isSoldOut
+        ? "https://schema.org/OutOfStock"
+        : "https://schema.org/InStock",
+      seller: { "@type": "Organization", name: SITE_NAME },
+    },
+  };
 
   const handleAddToCart = () => {
     addToCart(product, size, color, qty);
@@ -194,6 +219,16 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
 
   return (
     <div className="product-detail-page section-padding container">
+      <Seo
+        title={`${name} | WELAMA`}
+        description={
+          description ||
+          `Buy ${name} from WELAMA in Ghana.${category ? ` Shop ${category} at the official WELAMA store.` : ""}`
+        }
+        path={productUrl}
+        image={productImage}
+        jsonLd={productJsonLd}
+      />
       <div className="app-pdp-topbar mobile-only">
         <button type="button" className="app-pdp-icon-btn" onClick={() => navigate(-1)} aria-label="Back">
           <ChevronLeft size={22} />
@@ -236,7 +271,7 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
             </div>
 
             <div className="product-detail-main-image">
-              <img src={resolvedImage} alt={name} />
+              <img src={resolvedImage} alt={`${name} — WELAMA`} />
               {badge && !isSoldOut && <div className="product-detail-badge">{badge}</div>}
               {isSoldOut && (
                 <div className="product-detail-badge" style={{ background: "#ef4444", color: "white" }}>

@@ -32,7 +32,7 @@ const CollectionsPage = ({ settings }) => {
             WELAMA
           </span>
           <h1 className="serif looks-hero-title">
-            Our Ranges
+            WELAMA Ranges
           </h1>
         </div>
       </section>

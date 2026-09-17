@@ -32,7 +32,7 @@ const AboutPage = () => {
             WELAMA
           </span>
           <h1 className="serif page-hero-heading" style={{ marginTop: "1rem" }}>
-            Our Story
+            About WELAMA
           </h1>
         </div>
       </section>

@@ -104,7 +104,7 @@ const GalleryPage = () => {
         <div className="gallery-intro center-text">
           <span className="gallery-kicker">Visuals</span>
           <h1 className="serif page-hero-heading">
-            Our Gallery
+            WELAMA Gallery
           </h1>
           <p>
             Explore our curated collection of styles and inspirations.

@@ -36,7 +36,7 @@ exports.initializePaystack = async (req, res) => {
         const clientUrl = (
             process.env.CLIENT_URL ||
             process.env.FRONTEND_URL ||
-            (process.env.NODE_ENV === 'production' ? 'https://welama.vercel.app' : 'http://localhost:5173')
+            (process.env.NODE_ENV === 'production' ? 'https://welama-gh.shop' : 'http://localhost:5173')
         ).split(',')[0].trim().replace(/\/$/, '');
 
         const amountInPesewas = Math.round(Number(order.total) * 100);

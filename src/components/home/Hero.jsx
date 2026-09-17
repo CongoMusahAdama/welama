@@ -22,7 +22,8 @@ const Hero = ({ settings }) => {
 
       <div className="container hero-split-inner">
         <div className="hero-split-text">
-          <h1 className="serif hero-split-title" aria-label="Hero Title">
+          <span className="shop-hero-brand">WELAMA</span>
+          <h1 className="serif hero-split-title" aria-label="WELAMA. Elegant. Effortless. Empowered.">
             {TITLE_LINES.map((line, index) => {
               const content = line.text;
               const word = line.italic ? <em>{content}</em> : content;

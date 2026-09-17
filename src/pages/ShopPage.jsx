@@ -4,6 +4,7 @@ import { Search, X, SlidersHorizontal, ArrowUpRight } from "lucide-react";
 import ProductCard from "../components/products/ProductCard";
 import { Cedis } from "../utils/currency";
 import { DEFAULT_CATEGORIES, mergeCategories } from "../utils/categories";
+import Seo from "../components/seo/Seo";
 
 const PROMO_SLIDES = [
   {
@@ -154,14 +155,36 @@ const ShopPage = ({ products = [], categories = [] }) => {
       return { ...cat, image: sample?.image || "/heroframe1.png" };
     });
   const filterCategories = categoryTabs;
+  const categoryLabel =
+    activeCategory !== "all"
+      ? mergeCategories(DEFAULT_CATEGORIES, categories).find(
+          (c) => c.toLowerCase() === activeCategory.toLowerCase(),
+        ) || activeCategory
+      : "";
+  const shopTitle = searchQuery
+    ? `${searchQuery} | Shop WELAMA`
+    : categoryLabel
+      ? `${categoryLabel} | Shop WELAMA`
+      : "Shop WELAMA | Women's Clothing & Bags in Ghana";
+  const shopDescription = searchQuery
+    ? `Search WELAMA for ${searchQuery}. Women's clothing and bags from Accra, Ghana.`
+    : categoryLabel
+      ? `Shop WELAMA ${categoryLabel} in Ghana. Official WELAMA store for women's clothing and bags.`
+      : "Shop WELAMA women's clothing, dresses, two-piece sets and bags. Official WELAMA Ghana store.";
+  const shopPath = searchQuery
+    ? `/shop?q=${encodeURIComponent(searchQuery)}`
+    : categoryLabel
+      ? `/shop?category=${encodeURIComponent(categoryLabel)}`
+      : "/shop";
 
   return (
     <div className={`shop-page-wrapper${isSearching ? " is-searching" : ""}`}>
+      <Seo title={shopTitle} description={shopDescription} path={shopPath} />
       {!isSearching && (
         <section className="shop-hero">
           <div className="center-text reveal">
             <span className="shop-hero-brand">WELAMA</span>
-            <h1 className="serif shop-hero-title">Elegance, Curated</h1>
+            <h1 className="serif shop-hero-title">Shop WELAMA</h1>
           </div>
         </section>
       )}
