@@ -80,7 +80,9 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
           ...prev,
           ...source,
           mnotifyApiKey: source.mnotifyApiKey || source.smsApiKey || "",
-          mnotifySenderId: source.mnotifySenderId || source.smsSenderId || "Welama",
+          mnotifySenderId: /^welama$/i.test(String(source.mnotifySenderId || source.smsSenderId || "Welama").trim())
+            ? "Welama"
+            : (source.mnotifySenderId || source.smsSenderId || "Welama"),
           smsTemplateOrderConfirmation: source.smsTemplateOrderConfirmation || "Hello {customer}, thank you for ordering from {siteName}. Order #{orderId}, GHS {total}. Track here: {trackingLink}",
           smsTemplateOrderProcessing: source.smsTemplateOrderProcessing || "Hello {customer}, your {siteName} order #{orderId} is now PROCESSING. Track here: {trackingLink}",
           smsTemplateOrderShipped: source.smsTemplateOrderShipped || "Hello {customer}, your {siteName} order #{orderId} has been SHIPPED. Track: {trackingLink}",

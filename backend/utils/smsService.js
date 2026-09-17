@@ -54,6 +54,12 @@ const failMessage = (data, fallback) => {
     return apiMessage;
 };
 
+const canonicalSender = (value) => {
+    const raw = String(value || '').replace(/\s+/g, '').slice(0, 11);
+    if (/^welama$/i.test(raw)) return 'Welama';
+    return raw;
+};
+
 const postMnotify = async (apiKey, senderId, recipient, message) => {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 12000);
@@ -62,6 +68,7 @@ const postMnotify = async (apiKey, senderId, recipient, message) => {
         const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
+                Authorization: apiKey,
                 'Content-Type': 'application/json',
                 Accept: 'application/json'
             },
@@ -75,7 +82,22 @@ const postMnotify = async (apiKey, senderId, recipient, message) => {
             })
         });
         const data = await response.json().catch(() => ({ status: response.status, message: response.statusText }));
-        return { data, ok: isMnotifySuccess(data) };
+        if (isMnotifySuccess(data)) return { data, ok: true };
+
+        const fallback = new URL('https://apps.mnotify.net/smsapi');
+        fallback.searchParams.set('key', apiKey);
+        fallback.searchParams.set('to', recipient);
+        fallback.searchParams.set('msg', message);
+        fallback.searchParams.set('sender_id', senderId);
+        const legacy = await fetch(fallback.toString(), { signal: controller.signal });
+        const legacyText = await legacy.text();
+        let legacyData = { status: legacyText, message: legacyText };
+        try { legacyData = JSON.parse(legacyText); } catch { /* plain text ok */ }
+        const legacyOk = legacy.ok && (
+            isMnotifySuccess(legacyData) ||
+            /^(ok|success|sent|\d+)$/i.test(String(legacyText).trim())
+        );
+        return { data: legacyData, ok: Boolean(legacyOk) };
     } finally {
         clearTimeout(timer);
     }
@@ -97,13 +119,13 @@ const sendSMS = async (to, message) => {
             setting?.smsApiKey
         );
         const rawSender = firstValue(
-            setting?.mnotifySenderId,
-            setting?.smsSenderId,
             process.env.MNOTIFY_SENDER_ID,
             process.env.NOTIFY_SENDER_ID,
+            setting?.mnotifySenderId,
+            setting?.smsSenderId,
             'Welama'
         );
-        const senderId = String(rawSender).replace(/\s+/g, '').slice(0, 11) || 'Welama';
+        const senderId = canonicalSender(rawSender) || 'Welama';
 
         if (setting?.smsEnabled === false) {
             console.log(`[mNotify SMS] SMS disabled in settings. Skipping SMS to ${recipient}`);
@@ -288,7 +310,7 @@ const sendAdminLoginSMS = async (admin, loginIdentifier) => {
         month: 'short'
     });
     const who = admin?.name || 'Admin';
-    const message = `WELAMA: ${who} signed in to the admin dashboard at ${when}. If this was not you, change your password immediately.`;
+    const message = `WELAMA: Login successful. ${who} signed in to the admin dashboard at ${when}.`;
     const results = await Promise.all(dests.map((phone) => sendSMS(phone, message)));
     return results.find((row) => row?.success) || results[0];
 };

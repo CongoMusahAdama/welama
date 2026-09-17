@@ -48,9 +48,20 @@ const ensureSetting = async () => {
             mnotifySenderId: 'Welama',
             smsEnabled: true
         });
-    } else if (!String(setting.contactEmail || '').trim()) {
-        setting.contactEmail = 'welama.business@gmail.com';
-        await setting.save();
+    } else {
+        let dirty = false;
+        if (!String(setting.contactEmail || '').trim()) {
+            setting.contactEmail = 'welama.business@gmail.com';
+            dirty = true;
+        }
+        const sender = String(setting.mnotifySenderId || setting.smsSenderId || '').trim();
+        if (!sender || /^welama$/i.test(sender)) {
+            if (setting.mnotifySenderId !== 'Welama') {
+                setting.mnotifySenderId = 'Welama';
+                dirty = true;
+            }
+        }
+        if (dirty) await setting.save();
     }
     return setting;
 };
@@ -81,6 +92,11 @@ exports.updateSettings = async (req, res) => {
                 delete body[key];
             }
         });
+
+        if (typeof body.mnotifySenderId === 'string') {
+            const sender = body.mnotifySenderId.trim();
+            body.mnotifySenderId = /^welama$/i.test(sender) ? 'Welama' : sender;
+        }
 
         let setting = await Setting.findOne();
         if (!setting) {
