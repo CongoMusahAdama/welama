@@ -9,13 +9,16 @@ import {
   Building, 
   Send,
   Lock,
-  CheckCircle
+  CheckCircle,
+  FileText
 } from "lucide-react";
 import Swal from "sweetalert2";
 import { apiRequest, API_URL } from "../../utils/api";
+import { DEFAULT_ABOUT } from "../../utils/aboutContent";
 
 const SETTINGS_TABS = [
   { id: "brand", label: "Brand", icon: ImageIcon },
+  { id: "about", label: "About", icon: FileText },
   { id: "contact", label: "Contact", icon: Building },
   { id: "sms", label: "mNotify SMS", icon: Smartphone },
   { id: "paystack", label: "Paystack", icon: CreditCard },
@@ -50,10 +53,12 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
     paystackPublicKey: "",
     paystackSecretKey: "",
     paystackEnabled: true,
+    ...DEFAULT_ABOUT,
   });
 
   const [isUploading, setIsUploading] = useState(false);
   const [isUploadingHero, setIsUploadingHero] = useState(false);
+  const [isUploadingAbout, setIsUploadingAbout] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [testPhone, setTestPhone] = useState("0506626068");
   const [isSendingTest, setIsSendingTest] = useState(false);
@@ -76,9 +81,15 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
       if (cancelled) return;
       const source = res.success && res.data ? res.data : settings;
       if (source) {
-        setFormData((prev) => ({
+        setFormData((prev) => {
+          const aboutFields = {};
+          Object.keys(DEFAULT_ABOUT).forEach((key) => {
+            aboutFields[key] = String(source[key] || "").trim() || DEFAULT_ABOUT[key];
+          });
+          return {
           ...prev,
           ...source,
+          ...aboutFields,
           mnotifyApiKey: source.mnotifyApiKey || source.smsApiKey || "",
           mnotifySenderId: /^welama$/i.test(String(source.mnotifySenderId || source.smsSenderId || "Welama").trim())
             ? "Welama"
@@ -89,7 +100,8 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
           smsTemplateOrderDelivered: source.smsTemplateOrderDelivered || "Hello {customer}, your {siteName} order #{orderId} has been DELIVERED. Thank you. Details: {trackingLink}",
           smsTemplateOrderCancelled: source.smsTemplateOrderCancelled || "Hello {customer}, your {siteName} order #{orderId} was CANCELLED. Contact us if you need help.",
           smsTemplateOrderStatusUpdate: source.smsTemplateOrderStatusUpdate || "Hello {customer}, your {siteName} order #{orderId} status is now {status}. Track here: {trackingLink}",
-        }));
+          };
+        });
       }
     };
     loadAdminSettings();
@@ -187,6 +199,42 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
     }
   };
 
+  const handleAboutFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      Swal.fire("Invalid File", "Please select an image file.", "error");
+      return;
+    }
+    setIsUploadingAbout(true);
+    const uploadData = new FormData();
+    uploadData.append("hero", file);
+    try {
+      const token = localStorage.getItem("welama_auth_token");
+      const res = await fetch(`${API_URL}/upload/hero`, {
+        method: "POST",
+        headers: { Authorization: token ? `Bearer ${token}` : "" },
+        body: uploadData,
+      });
+      const data = await res.json();
+      if (data.success && data.url) {
+        setFormData((prev) => ({ ...prev, aboutImageUrl: data.url }));
+        Swal.fire({
+          title: "About photo uploaded",
+          text: "Click Save Changes to show it on the About page.",
+          icon: "success",
+          confirmButtonColor: "#0A0A0A",
+        });
+      } else {
+        Swal.fire("Upload Failed", data.message || "Failed to upload photo.", "error");
+      }
+    } catch {
+      Swal.fire("Upload Error", "Could not connect to the upload server.", "error");
+    } finally {
+      setIsUploadingAbout(false);
+    }
+  };
+
   const handlePwdChange = (e) => {
     setPwdData({ ...pwdData, [e.target.name]: e.target.value });
   };
@@ -247,7 +295,7 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
     if (success) {
       Swal.fire({
         title: "Settings Saved!",
-        text: "Store branding, mNotify SMS, and Paystack configurations updated successfully.",
+        text: "Your store content has been updated.",
         icon: "success",
         timer: 1800,
         showConfirmButton: false,
@@ -289,7 +337,7 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
       <header className="admin-header">
         <div className="page-title">
           <h1 className="serif">Settings</h1>
-          <p>Brand, contact, SMS, payments, and your account — switch tabs instead of scrolling.</p>
+          <p>Brand, about page, contact, SMS, payments, and your account.</p>
         </div>
         <div className="header-actions">
           {settingsTab !== "account" && (
@@ -666,6 +714,101 @@ const AdminSettings = ({ settings, updateSettings, user, onUpdateUser }) => {
               </div>
             </div>
           </div>
+          </div>
+        )}
+
+        {settingsTab === "about" && (
+          <div className="settings-tab-panel">
+            <div className="admin-card" style={{ display: "flex", flexDirection: "column", gap: "1.15rem" }}>
+              <div className="card-header">
+                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                  <div style={{ background: "#f8fafc", padding: "8px", borderRadius: "10px", border: "1px solid #e2e8f0" }}>
+                    <FileText size={20} color="#0A0A0A" />
+                  </div>
+                  <div>
+                    <h2 style={{ fontSize: "1.1rem", margin: 0 }}>About page</h2>
+                    <p style={{ fontSize: "0.75rem", color: "#64748b", margin: 0 }}>
+                      Edit the story customers see on About. Save to publish.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <label className="form-group">
+                <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "#334155", display: "block", marginBottom: "0.4rem" }}>Hero label</span>
+                <input type="text" value={formData.aboutHeroKicker} onChange={handleChange("aboutHeroKicker")} style={{ width: "100%", padding: "0.75rem 1rem", borderRadius: "10px", border: "1px solid #e2e8f0", fontSize: "0.85rem" }} />
+              </label>
+              <label className="form-group">
+                <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "#334155", display: "block", marginBottom: "0.4rem" }}>Hero title</span>
+                <input type="text" value={formData.aboutHeroTitle} onChange={handleChange("aboutHeroTitle")} style={{ width: "100%", padding: "0.75rem 1rem", borderRadius: "10px", border: "1px solid #e2e8f0", fontSize: "0.85rem" }} />
+              </label>
+              <label className="form-group">
+                <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "#334155", display: "block", marginBottom: "0.4rem" }}>Established line</span>
+                <input type="text" value={formData.aboutEstablished} onChange={handleChange("aboutEstablished")} style={{ width: "100%", padding: "0.75rem 1rem", borderRadius: "10px", border: "1px solid #e2e8f0", fontSize: "0.85rem" }} />
+              </label>
+              <label className="form-group">
+                <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "#334155", display: "block", marginBottom: "0.4rem" }}>Story heading</span>
+                <input type="text" value={formData.aboutTitle} onChange={handleChange("aboutTitle")} style={{ width: "100%", padding: "0.75rem 1rem", borderRadius: "10px", border: "1px solid #e2e8f0", fontSize: "0.85rem" }} />
+              </label>
+              <label className="form-group">
+                <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "#334155", display: "block", marginBottom: "0.4rem" }}>First paragraph</span>
+                <textarea value={formData.aboutBody1} onChange={handleChange("aboutBody1")} rows={5} style={{ width: "100%", padding: "0.75rem 1rem", borderRadius: "10px", border: "1px solid #e2e8f0", fontSize: "0.85rem", resize: "vertical", lineHeight: 1.55 }} />
+              </label>
+              <label className="form-group">
+                <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "#334155", display: "block", marginBottom: "0.4rem" }}>Second paragraph</span>
+                <textarea value={formData.aboutBody2} onChange={handleChange("aboutBody2")} rows={5} style={{ width: "100%", padding: "0.75rem 1rem", borderRadius: "10px", border: "1px solid #e2e8f0", fontSize: "0.85rem", resize: "vertical", lineHeight: 1.55 }} />
+              </label>
+
+              <div style={{ background: "#f8fafc", border: "2px dashed #cbd5e1", borderRadius: "16px", padding: "1.25rem", textAlign: "center" }}>
+                <div style={{ fontSize: "0.85rem", fontWeight: 700, marginBottom: "0.65rem" }}>Story photo</div>
+                <img
+                  src={formData.aboutImageUrl || "/heroframe2.png"}
+                  alt="About story"
+                  style={{ width: "100%", height: "160px", objectFit: "cover", borderRadius: "12px", marginBottom: "0.85rem" }}
+                  onError={(e) => { e.target.src = "/heroframe2.png"; }}
+                />
+                <label className="cta-button-premium" style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "0.6rem 1.4rem", fontSize: "0.8rem", borderRadius: "10px", cursor: isUploadingAbout ? "not-allowed" : "pointer" }}>
+                  <Upload size={16} /> {isUploadingAbout ? "Uploading..." : "Upload photo"}
+                  <input type="file" accept="image/*" onChange={handleAboutFileUpload} disabled={isUploadingAbout} style={{ display: "none" }} />
+                </label>
+                <input
+                  type="text"
+                  value={formData.aboutImageUrl}
+                  onChange={handleChange("aboutImageUrl")}
+                  placeholder="Or paste an image URL"
+                  style={{ width: "100%", marginTop: "0.85rem", padding: "0.75rem 1rem", borderRadius: "10px", border: "1px solid #e2e8f0", fontSize: "0.85rem" }}
+                />
+              </div>
+            </div>
+
+            <div className="admin-card" style={{ marginTop: "1.25rem", display: "flex", flexDirection: "column", gap: "1.15rem" }}>
+              <h2 style={{ fontSize: "1.1rem", margin: 0 }}>Values</h2>
+              <label className="form-group">
+                <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "#334155", display: "block", marginBottom: "0.4rem" }}>Section label</span>
+                <input type="text" value={formData.aboutPhilosophyKicker} onChange={handleChange("aboutPhilosophyKicker")} style={{ width: "100%", padding: "0.75rem 1rem", borderRadius: "10px", border: "1px solid #e2e8f0", fontSize: "0.85rem" }} />
+              </label>
+              <label className="form-group">
+                <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "#334155", display: "block", marginBottom: "0.4rem" }}>Section title</span>
+                <input type="text" value={formData.aboutPhilosophyTitle} onChange={handleChange("aboutPhilosophyTitle")} style={{ width: "100%", padding: "0.75rem 1rem", borderRadius: "10px", border: "1px solid #e2e8f0", fontSize: "0.85rem" }} />
+              </label>
+              {[1, 2, 3].map((n) => (
+                <div key={n} style={{ border: "1px solid #e2e8f0", borderRadius: "12px", padding: "1rem", display: "grid", gap: "0.7rem" }}>
+                  <strong style={{ fontSize: "0.8rem" }}>Value {n}</strong>
+                  <input type="text" value={formData[`aboutValue${n}Title`]} onChange={handleChange(`aboutValue${n}Title`)} style={{ width: "100%", padding: "0.75rem 1rem", borderRadius: "10px", border: "1px solid #e2e8f0", fontSize: "0.85rem" }} />
+                  <textarea value={formData[`aboutValue${n}Body`]} onChange={handleChange(`aboutValue${n}Body`)} rows={3} style={{ width: "100%", padding: "0.75rem 1rem", borderRadius: "10px", border: "1px solid #e2e8f0", fontSize: "0.85rem", resize: "vertical" }} />
+                </div>
+              ))}
+              <label className="form-group">
+                <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "#334155", display: "block", marginBottom: "0.4rem" }}>Contact intro</span>
+                <textarea value={formData.aboutContactIntro} onChange={handleChange("aboutContactIntro")} rows={4} style={{ width: "100%", padding: "0.75rem 1rem", borderRadius: "10px", border: "1px solid #e2e8f0", fontSize: "0.85rem", resize: "vertical" }} />
+              </label>
+            </div>
+
+            <div className="admin-card" style={{ marginTop: "1.25rem" }}>
+              <h2 style={{ fontSize: "1.1rem", margin: "0 0 0.75rem" }}>Footer intro</h2>
+              <p style={{ fontSize: "0.75rem", color: "#64748b", margin: "0 0 0.75rem" }}>This is the first sentence under the logo in the footer.</p>
+              <textarea value={formData.footerIntro} onChange={handleChange("footerIntro")} rows={3} style={{ width: "100%", padding: "0.75rem 1rem", borderRadius: "10px", border: "1px solid #e2e8f0", fontSize: "0.85rem", resize: "vertical" }} />
+            </div>
           </div>
         )}
 

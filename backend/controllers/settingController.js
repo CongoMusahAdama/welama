@@ -17,7 +17,24 @@ const PUBLIC_FIELDS = [
     'heroTitle2',
     'heroTitle3',
     'heroSubtitle',
-    'brandColor'
+    'brandColor',
+    'aboutHeroKicker',
+    'aboutHeroTitle',
+    'aboutEstablished',
+    'aboutTitle',
+    'aboutBody1',
+    'aboutBody2',
+    'aboutImageUrl',
+    'aboutPhilosophyKicker',
+    'aboutPhilosophyTitle',
+    'aboutValue1Title',
+    'aboutValue1Body',
+    'aboutValue2Title',
+    'aboutValue2Body',
+    'aboutValue3Title',
+    'aboutValue3Body',
+    'aboutContactIntro',
+    'footerIntro'
 ];
 
 const toPublicSettings = (setting) => {
@@ -29,8 +46,13 @@ const toPublicSettings = (setting) => {
     if (!data.paystackPublicKey) {
         data.paystackPublicKey = process.env.PAYSTACK_PUBLIC_KEY || '';
     }
-    if (!data.contactEmail) {
+    const email = String(data.contactEmail || '').trim().toLowerCase();
+    if (!email || email === 'business.welama@gmail.com' || email === 'info@welama.com') {
         data.contactEmail = 'welama.business@gmail.com';
+    }
+    const phoneDigits = String(data.contactPhone || '').replace(/\D/g, '');
+    if (!phoneDigits || phoneDigits.endsWith('551082163')) {
+        data.contactPhone = '0244374433';
     }
     return data;
 };
@@ -50,8 +72,14 @@ const ensureSetting = async () => {
         });
     } else {
         let dirty = false;
-        if (!String(setting.contactEmail || '').trim()) {
+        const email = String(setting.contactEmail || '').trim().toLowerCase();
+        if (!email || email === 'business.welama@gmail.com' || email === 'info@welama.com') {
             setting.contactEmail = 'welama.business@gmail.com';
+            dirty = true;
+        }
+        const phoneDigits = String(setting.contactPhone || '').replace(/\D/g, '');
+        if (!phoneDigits || phoneDigits.endsWith('551082163')) {
+            setting.contactPhone = '0244374433';
             dirty = true;
         }
         const sender = String(setting.mnotifySenderId || setting.smsSenderId || '').trim();

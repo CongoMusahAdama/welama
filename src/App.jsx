@@ -418,7 +418,7 @@ const App = () => {
                   element={<ProductDetailPage products={products} addOrder={addOrder} settings={settings} />}
                 />
                 <Route path="/collections" element={<CollectionsPage settings={settings} />} />
-                <Route path="/about" element={<AboutPage />} />
+                <Route path="/about" element={<AboutPage settings={settings} />} />
                 <Route path="/customize" element={<Navigate to="/shop" replace />} />
                 <Route path="/gallery" element={<GalleryPage />} />
                 <Route

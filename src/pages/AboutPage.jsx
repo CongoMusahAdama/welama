@@ -1,9 +1,20 @@
 import React, { useEffect } from "react";
-import { Shield, Globe, Award, Phone, MessageCircle, Mail, Instagram, Facebook, Ghost } from "lucide-react";
-import { STORE_PHONE, waLink } from "../utils/whatsapp";
-import { STORE_EMAIL } from "../utils/site";
+import { Shield, Globe, Award, Phone, MessageCircle, Mail, Instagram } from "lucide-react";
+import { STORE_PHONE, displayStorePhone, waLink } from "../utils/whatsapp";
+import { STORE_EMAIL, displayStoreEmail } from "../utils/site";
+import { aboutContent } from "../utils/aboutContent";
 
-const AboutPage = () => {
+const VALUE_ICONS = [Shield, Globe, Award];
+
+const AboutPage = ({ settings = {} }) => {
+  const copy = aboutContent(settings);
+  const storePhone = displayStorePhone(settings?.contactPhone) || STORE_PHONE;
+  const storeEmail = displayStoreEmail(settings?.contactEmail) || STORE_EMAIL;
+  const values = [
+    { title: copy.aboutValue1Title, body: copy.aboutValue1Body },
+    { title: copy.aboutValue2Title, body: copy.aboutValue2Body },
+    { title: copy.aboutValue3Title, body: copy.aboutValue3Body },
+  ];
   useEffect(() => {
     window.scrollTo(0, 0);
     const observer = new IntersectionObserver(
@@ -30,10 +41,10 @@ const AboutPage = () => {
               fontSize: "0.9rem",
             }}
           >
-            WELAMA
+            {copy.aboutHeroKicker}
           </span>
           <h1 className="serif page-hero-heading" style={{ marginTop: "1rem" }}>
-            About WELAMA
+            {copy.aboutHeroTitle}
           </h1>
         </div>
       </section>
@@ -49,7 +60,7 @@ const AboutPage = () => {
                 color: "#0A0A0A",
               }}
             >
-              Established 2025
+              {copy.aboutEstablished}
             </span>
             <h2
               className="serif"
@@ -59,7 +70,7 @@ const AboutPage = () => {
                 marginBottom: "2rem",
               }}
             >
-              A Legacy of Timeless Elegance.
+              {copy.aboutTitle}
             </h2>
             <p
               style={{
@@ -69,21 +80,15 @@ const AboutPage = () => {
                 marginBottom: "2rem",
               }}
             >
-              WELAMA was born from a simple yet profound belief: that a
-              woman's wardrobe should be as confident and considered as she
-              is. For years, we have been curating clothing and bags that
-              balance clean silhouettes with rich, tactile detail.
+              {copy.aboutBody1}
             </p>
             <p style={{ color: "#666", lineHeight: "1.8" }}>
-              Our journey began with a small capsule collection, designed for
-              women who value quality over noise. Today, we are proud to be a
-              premier destination for those who seek pieces that feel as good
-              as they look — refined, versatile, and unmistakably WELAMA.
+              {copy.aboutBody2}
             </p>
           </div>
           <div className="heritage-image-wrapper reveal">
             <img
-              src="/heroframe2.png"
+              src={copy.aboutImageUrl}
               alt="WELAMA Craftsmanship"
               style={{
                 width: "100%",
@@ -118,97 +123,48 @@ const AboutPage = () => {
                 color: "#C9A227",
               }}
             >
-              Our Philosophy
+              {copy.aboutPhilosophyKicker}
             </span>
             <h2
               className="serif"
               style={{ fontSize: "3.5rem", marginTop: "1rem", color: "white" }}
             >
-              Values That Define Us
+              {copy.aboutPhilosophyTitle}
             </h2>
           </div>
 
           <div className="values-grid">
-            <div
-              className="value-card reveal"
-              style={{
-                backgroundColor: "rgba(255,255,255,0.05)",
-                borderColor: "rgba(255,255,255,0.1)",
-              }}
-            >
-              <div className="value-icon" style={{ color: "#C9A227" }}>
-                <Shield size={30} strokeWidth={1.5} />
-              </div>
-              <h4
-                className="serif"
-                style={{
-                  fontSize: "1.8rem",
-                  marginBottom: "1.5rem",
-                  color: "white",
-                }}
-              >
-                Premium Craftsmanship
-              </h4>
-              <p style={{ color: "rgba(255,255,255,0.7)", lineHeight: "1.6" }}>
-                We source only the finest fabrics and materials, from supple
-                leathers to fluid, breathable textiles, ensuring every piece
-                is built to last.
-              </p>
-            </div>
-
-            <div
-              className="value-card reveal"
-              style={{
-                transitionDelay: "0.2s",
-                backgroundColor: "rgba(255,255,255,0.05)",
-                borderColor: "rgba(255,255,255,0.1)",
-              }}
-            >
-              <div className="value-icon" style={{ color: "#C9A227" }}>
-                <Globe size={30} strokeWidth={1.5} />
-              </div>
-              <h4
-                className="serif"
-                style={{
-                  fontSize: "1.8rem",
-                  marginBottom: "1.5rem",
-                  color: "white",
-                }}
-              >
-                Global Reach
-              </h4>
-              <p style={{ color: "rgba(255,255,255,0.7)", lineHeight: "1.6" }}>
-                Our designs draw on a global sensibility, formulated to serve
-                the modern woman's wardrobe wherever she calls home.
-              </p>
-            </div>
-
-            <div
-              className="value-card reveal"
-              style={{
-                transitionDelay: "0.4s",
-                backgroundColor: "rgba(255,255,255,0.05)",
-                borderColor: "rgba(255,255,255,0.1)",
-              }}
-            >
-              <div className="value-icon" style={{ color: "#C9A227" }}>
-                <Award size={30} strokeWidth={1.5} />
-              </div>
-              <h4
-                className="serif"
-                style={{
-                  fontSize: "1.8rem",
-                  marginBottom: "1.5rem",
-                  color: "white",
-                }}
-              >
-                Customer Care
-              </h4>
-              <p style={{ color: "rgba(255,255,255,0.7)", lineHeight: "1.6" }}>
-                WELAMA is a partner in your personal style journey. We provide
-                personalized advice for every customer's unique taste.
-              </p>
-            </div>
+            {values.map((value, idx) => {
+              const Icon = VALUE_ICONS[idx] || Award;
+              return (
+                <div
+                  key={value.title}
+                  className="value-card reveal"
+                  style={{
+                    transitionDelay: `${idx * 0.2}s`,
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    borderColor: "rgba(255,255,255,0.1)",
+                  }}
+                >
+                  <div className="value-icon" style={{ color: "#C9A227" }}>
+                    <Icon size={30} strokeWidth={1.5} />
+                  </div>
+                  <h4
+                    className="serif"
+                    style={{
+                      fontSize: "1.8rem",
+                      marginBottom: "1.5rem",
+                      color: "white",
+                    }}
+                  >
+                    {value.title}
+                  </h4>
+                  <p style={{ color: "rgba(255,255,255,0.7)", lineHeight: "1.6" }}>
+                    {value.body}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -249,9 +205,7 @@ const AboutPage = () => {
                   maxWidth: "500px",
                 }}
               >
-                Whether you have a question about our collections, need
-                personalized styling advice, or want to discuss a wholesale
-                partnership, we are here to assist you.
+                {copy.aboutContactIntro}
               </p>
             </div>
           </div>
@@ -265,7 +219,7 @@ const AboutPage = () => {
                   </div>
                   <div className="text-wrap">
                     <label>Call & Direct Inquiries</label>
-                    <a href={`tel:${STORE_PHONE}`}>{STORE_PHONE} (Customer Care)</a>
+                    <a href={`tel:${storePhone}`}>{storePhone} (Customer Care)</a>
                   </div>
                 </div>
 
@@ -278,7 +232,7 @@ const AboutPage = () => {
                   </div>
                   <div className="text-wrap">
                     <label>WhatsApp / Call</label>
-                    <a href={waLink()}>{STORE_PHONE}</a>
+                    <a href={waLink()}>{storePhone}</a>
                   </div>
                 </div>
 
@@ -288,8 +242,8 @@ const AboutPage = () => {
                   </div>
                   <div className="text-wrap">
                     <label>Professional Inquiries</label>
-                    <a href={`mailto:${STORE_EMAIL}`}>
-                      {STORE_EMAIL}
+                    <a href={`mailto:${storeEmail}`}>
+                      {storeEmail}
                     </a>
                   </div>
                 </div>

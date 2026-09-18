@@ -1,8 +1,9 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Phone, MessageCircle, Mail, Instagram, Facebook, Ghost, ArrowRight } from "lucide-react";
-import { STORE_PHONE, displayStorePhone, waLink } from "../../utils/whatsapp";
-import { STORE_EMAIL } from "../../utils/site";
+import { displayStorePhone, waLink } from "../../utils/whatsapp";
+import { displayStoreEmail } from "../../utils/site";
+import { aboutContent } from "../../utils/aboutContent";
 
 const Footer = ({ settings }) => {
   const location = useLocation();
@@ -13,6 +14,8 @@ const Footer = ({ settings }) => {
 
   const logoUrl = settings?.logoUrl || "/welamalogo.png";
   const storePhone = displayStorePhone(settings?.contactPhone);
+  const storeEmail = displayStoreEmail(settings?.contactEmail);
+  const intro = aboutContent(settings).footerIntro;
 
   return (
     <footer className={`footer${isHome ? "" : " footer-mobile-hidden"}`}>
@@ -27,8 +30,7 @@ const Footer = ({ settings }) => {
               />
             </a>
             <p className="footer-desc">
-              {settings?.tagline || "Elegance redefined."} WELAMA crafts premium clothing and bags
-              for the woman who moves through the world with quiet confidence.
+              {intro}
             </p>
             <div className="flex flex-col gap-3" style={{ marginTop: "1rem" }}>
               <div className="flex items-center gap-3 footer-desc">
@@ -41,8 +43,8 @@ const Footer = ({ settings }) => {
               </div>
               <div className="flex items-center gap-3 footer-desc">
                 <Mail size={16} className="text-teal" />
-                <a href={`mailto:${settings?.contactEmail || STORE_EMAIL}`} style={{ fontSize: "0.85rem" }}>
-                  {settings?.contactEmail || STORE_EMAIL}
+                <a href={`mailto:${storeEmail}`} style={{ fontSize: "0.85rem" }}>
+                  {storeEmail}
                 </a>
               </div>
             </div>
@@ -84,12 +86,12 @@ const Footer = ({ settings }) => {
               </li>
               <li>
                 <a href={waLink()} target="_blank" rel="noreferrer" className="flex items-center gap-2">
-                  <MessageCircle size={16} /> {STORE_PHONE}
+                  <MessageCircle size={16} /> {storePhone}
                 </a>
               </li>
               <li>
-                <a href={`tel:${STORE_PHONE}`} className="flex items-center gap-2">
-                  <Phone size={16} /> {STORE_PHONE}
+                <a href={`tel:${storePhone}`} className="flex items-center gap-2">
+                  <Phone size={16} /> {storePhone}
                 </a>
               </li>
             </ul>

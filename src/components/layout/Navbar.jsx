@@ -7,7 +7,7 @@ import { useMobileMenu } from "../../context/MobileMenuContext";
 import RecentlyViewedDropdown from "./RecentlyViewedDropdown";
 import { Cedis } from "../../utils/currency";
 import { STORE_PHONE, waLink } from "../../utils/whatsapp";
-import { STORE_EMAIL } from "../../utils/site";
+import { displayStoreEmail } from "../../utils/site";
 
 const NavCartButton = () => {
   const { cartCount, cartTotal, setIsCartOpen, cartPulse } = useCart();
@@ -192,7 +192,7 @@ const SearchOverlay = ({ isOpen, onClose }) => {
 const Navbar = ({ user, categories = [], settings }) => {
   const logoUrl = settings?.logoUrl || "/welamalogo.png";
   const storePhone = STORE_PHONE;
-  const storeEmail = settings?.contactEmail || STORE_EMAIL;
+  const storeEmail = displayStoreEmail(settings?.contactEmail);
   const { theme, toggleTheme } = useTheme();
   const { isOpen: isMobileMenuOpen, setOpen: setIsMobileMenuOpen } = useMobileMenu();
   const [isScrolled, setIsScrolled] = useState(false);
