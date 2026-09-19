@@ -1096,6 +1096,60 @@
     font-weight: 600;
 }
 
+.variant-stock-hint {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #64748b;
+    line-height: 1.45;
+    font-weight: 500;
+}
+
+.variant-stock-scroll {
+    overflow-x: auto;
+}
+
+.variant-stock-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+
+.variant-stock-table th,
+.variant-stock-table td {
+    border: 1px solid #e2e8f0;
+    padding: 0.4rem;
+    text-align: center;
+}
+
+.variant-stock-table th:first-child,
+.variant-stock-table td:first-child {
+    text-align: left;
+    font-weight: 700;
+}
+
+.variant-qty-input {
+    width: 72px !important;
+    padding: 0.4rem !important;
+    text-align: center;
+}
+
+.variant-stock-list {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.variant-stock-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 650;
+}
+
 .product-color-tags {
     display: flex;
     flex-wrap: wrap;

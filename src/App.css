@@ -6655,6 +6655,19 @@ div.shop-toolbar {
   box-shadow: 0 0 0 1px var(--yellow-accent);
 }
 
+.size-chip-premium.is-sold,
+.product-detail-swatch.is-sold {
+  opacity: 0.38;
+  cursor: not-allowed;
+  text-decoration: line-through;
+  filter: grayscale(1);
+}
+
+.size-chip-premium.is-sold:hover,
+.product-detail-swatch.is-sold:hover {
+  border-color: #e2e8f0;
+}
+
 .product-detail-qty-controls {
   display: flex;
   align-items: center;

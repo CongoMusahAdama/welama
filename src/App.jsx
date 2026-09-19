@@ -14,6 +14,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 import { MobileMenuProvider } from "./context/MobileMenuContext";
 import { SAMPLE_PRODUCTS } from "./data/sampleProducts";
 import { DEFAULT_CATEGORIES, mergeCategories } from "./utils/categories";
+import { colorName, hasVariants, normalizeSize } from "./utils/productStock";
 
 // --- COMPONENTS ---
 import Navbar from "./components/layout/Navbar";
@@ -313,11 +314,33 @@ const App = () => {
       if (res.data.items) {
         res.data.items.forEach((item) => {
           setProducts((prev) =>
-            prev.map((p) =>
-              p.name === item.name
-                ? { ...p, stock: Math.max(0, p.stock - item.qty) }
-                : p,
-            ),
+            prev.map((p) => {
+              const matchesId = item.productId && String(p._id || p.id) === String(item.productId);
+              if (!matchesId) return p;
+              if (hasVariants(p)) {
+                const variants = p.variants.map((row) => {
+                  const sameColor = String(row.color || "").trim().toLowerCase() === colorName(item.color).toLowerCase();
+                  const sameSize = normalizeSize(row.size).toLowerCase() === normalizeSize(item.size).toLowerCase();
+                  if (!sameColor || !sameSize) return row;
+                  return { ...row, stock: Math.max(0, (Number(row.stock) || 0) - item.qty) };
+                });
+                const stock = variants.reduce((sum, row) => sum + (Number(row.stock) || 0), 0);
+                return {
+                  ...p,
+                  variants,
+                  stock,
+                  status: stock > 0 ? "Active" : "Sold Out",
+                  soldOutAt: stock > 0 ? null : p.soldOutAt || new Date().toISOString(),
+                };
+              }
+              const stock = Math.max(0, (Number(p.stock) || 0) - item.qty);
+              return {
+                ...p,
+                stock,
+                status: stock > 0 ? p.status : "Sold Out",
+                soldOutAt: stock > 0 ? p.soldOutAt : p.soldOutAt || new Date().toISOString(),
+              };
+            }),
           );
         });
       }

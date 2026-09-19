@@ -5,6 +5,8 @@ import { useSearchParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import { API_URL } from "../../utils/api";
 import { Cedis } from "../../utils/currency";
+import { CLOTHING_SIZES, isClothingCategory } from "../../utils/categories";
+import { buildVariantGrid, colorName, productFullySoldOut, totalStock } from "../../utils/productStock";
 
 const PRESET_COLORS = [
   { name: "Onyx Black", hex: "#0A0A0A" },
@@ -57,20 +59,23 @@ const AdminProducts = ({
   const currentItems = sortedProducts.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
-  const [newProd, setNewProd] = useState({
+  const emptyForm = () => ({
     name: "",
     price: "",
     discountPrice: "",
     stock: "",
-    category: "Luxury",
+    category: "Dresses",
     description: "",
     comesWithPouch: false,
     images: [],
+    discountPercentage: 0,
     sku: "",
-    sizes: [],
+    sizes: [...CLOTHING_SIZES],
     colors: [],
-    discountPercentage: 0
+    variants: buildVariantGrid([], CLOTHING_SIZES),
   });
+
+  const [newProd, setNewProd] = useState(emptyForm);
 
   useEffect(() => {
     if (showModal) document.body.style.overflow = "hidden";
@@ -82,20 +87,7 @@ const AdminProducts = ({
 
   const openAddModal = () => {
     setEditingId(null);
-    setNewProd({
-      name: "",
-      price: "",
-      discountPrice: "",
-      stock: "",
-      category: "Luxury",
-      description: "",
-      comesWithPouch: false,
-      images: [],
-      discountPercentage: 0,
-      sku: "",
-      sizes: [],
-      colors: [],
-    });
+    setNewProd(emptyForm());
     setCustomColorName("");
     setCustomColorHex("#0A0A0A");
     setCollectionQuery("");
@@ -117,19 +109,24 @@ const AdminProducts = ({
       ? prod.colors.map(c => typeof c === "string" ? { name: c, hex: "#0A0A0A" } : c)
       : [];
 
+    const nextSizes = Array.isArray(prod.sizes) && prod.sizes.length
+      ? prod.sizes
+      : (isClothingCategory(prod.category) ? [...CLOTHING_SIZES] : []);
+
     setNewProd({
       name: prod.name || "",
       price: prod.price || "",
       discountPrice: prod.discountPrice || "",
       stock: prod.stock || "",
-      category: prod.category || "Luxury",
+      category: prod.category || "Dresses",
       description: prod.description || "",
       comesWithPouch: !!prod.comesWithPouch,
       images: prod.images || (prod.image ? [prod.image] : []),
       discountPercentage: prod.discountPercentage || 0,
       sku: prod.sku || "",
-      sizes: prod.sizes || [],
+      sizes: nextSizes,
       colors: parsedColors,
+      variants: buildVariantGrid(parsedColors, nextSizes, prod.variants || [], prod.stock),
     });
     setCustomColorName("");
     setCustomColorHex("#0A0A0A");
@@ -140,22 +137,29 @@ const AdminProducts = ({
   const closeModal = () => {
     setShowModal(false);
     setEditingId(null);
-    setNewProd({
-      name: "",
-      price: "",
-      discountPrice: "",
-      stock: "",
-      category: "Luxury",
-      description: "",
-      comesWithPouch: false,
-      images: [],
-      discountPercentage: 0,
-      sku: "",
-      sizes: [],
-      colors: [],
-    });
+    setNewProd(emptyForm());
     setCustomColorName("");
     setCustomColorHex("#0A0A0A");
+  };
+
+  const applyOptions = (patch) => {
+    setNewProd((prev) => {
+      const next = { ...prev, ...patch };
+      next.variants = buildVariantGrid(next.colors, next.sizes, prev.variants);
+      return next;
+    });
+  };
+
+  const setVariantQty = (color, size, stock) => {
+    const qty = Math.max(0, parseInt(stock, 10) || 0);
+    setNewProd((prev) => ({
+      ...prev,
+      variants: (prev.variants || []).map((row) =>
+        colorName(row.color) === colorName(color) && String(row.size || "") === String(size || "")
+          ? { ...row, stock: qty }
+          : row
+      ),
+    }));
   };
 
   const handleTogglePresetColor = (preset) => {
@@ -163,19 +167,12 @@ const AdminProducts = ({
     const exists = currentColors.some(
       (c) => (typeof c === "object" ? c.name.toLowerCase() === preset.name.toLowerCase() : c.toLowerCase() === preset.name.toLowerCase())
     );
-    if (exists) {
-      setNewProd({
-        ...newProd,
-        colors: currentColors.filter(
+    const nextColors = exists
+      ? currentColors.filter(
           (c) => (typeof c === "object" ? c.name.toLowerCase() !== preset.name.toLowerCase() : c.toLowerCase() !== preset.name.toLowerCase())
-        ),
-      });
-    } else {
-      setNewProd({
-        ...newProd,
-        colors: [...currentColors, preset],
-      });
-    }
+        )
+      : [...currentColors, preset];
+    applyOptions({ colors: nextColors });
   };
 
   const handleAddCustomColor = (e) => {
@@ -192,8 +189,7 @@ const AdminProducts = ({
       Swal.fire("Color Already Added", "This color is already in the product's color list.", "warning");
       return;
     }
-    setNewProd({
-      ...newProd,
+    applyOptions({
       colors: [...currentColors, { name: customColorName.trim(), hex: customColorHex }],
     });
     setCustomColorName("");
@@ -201,8 +197,7 @@ const AdminProducts = ({
 
   const handleRemoveColor = (index) => {
     const currentColors = Array.isArray(newProd.colors) ? [...newProd.colors] : [];
-    setNewProd({
-      ...newProd,
+    applyOptions({
       colors: currentColors.filter((_, i) => i !== index),
     });
   };
@@ -266,14 +261,13 @@ const AdminProducts = ({
   };
 
   const handleSoldOut = async (prod) => {
-    const isSoldOut =
-      prod.status === "Sold Out" || prod.stock === 0 || !!prod.soldOutAt;
+    const isSoldOut = productFullySoldOut(prod);
 
     const result = await Swal.fire({
       title: isSoldOut ? "Restock Product?" : "Mark as Sold Out?",
       text: isSoldOut
-        ? "This will make the product active again."
-        : "This will mark it as Sold Out and hide it from the shop after 3 days.",
+        ? "This will make the product active again. Set quantities on Edit if needed."
+        : "This will set every color/size quantity to 0.",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#0A0A0A",
@@ -286,13 +280,14 @@ const AdminProducts = ({
         await updateProduct(prod._id || prod.id, {
           soldOutAt: null,
           status: "Active",
-          stock: Math.max(1, prod.stock),
         });
       } else {
+        const variants = (prod.variants || []).map((row) => ({ ...row, stock: 0 }));
         await updateProduct(prod._id || prod.id, {
           soldOutAt: new Date().toISOString(),
           status: "Sold Out",
           stock: 0,
+          variants,
         });
       }
     }
@@ -302,11 +297,19 @@ const AdminProducts = ({
     e.preventDefault();
     const priceVal = parseFloat(newProd.price) || 0;
     const discPercent = parseFloat(newProd.discountPercentage) || 0;
-    const stockVal = parseInt(newProd.stock) || 0;
     const calculatedDiscountPrice =
       discPercent > 0 && priceVal > 0
         ? parseFloat((priceVal * (1 - discPercent / 100)).toFixed(2))
         : null;
+    const colors = Array.isArray(newProd.colors) ? newProd.colors : [];
+    const sizes = Array.isArray(newProd.sizes) ? newProd.sizes : [];
+    const useMatrix = colors.length > 0 || sizes.length > 0;
+    const variants = useMatrix
+      ? buildVariantGrid(colors, sizes, newProd.variants)
+      : [];
+    const stockVal = useMatrix
+      ? variants.reduce((sum, row) => sum + (Number(row.stock) || 0), 0)
+      : parseInt(newProd.stock, 10) || 0;
 
     const finalProdData = {
       ...newProd,
@@ -314,10 +317,13 @@ const AdminProducts = ({
       discountPercentage: discPercent,
       discountPrice: calculatedDiscountPrice,
       stock: stockVal,
-      sizes: Array.isArray(newProd.sizes) ? newProd.sizes : [],
-      colors: Array.isArray(newProd.colors) ? newProd.colors : [],
+      sizes,
+      colors,
+      variants,
       sku: newProd.sku?.trim() || "",
       image: newProd.images[0] || "/welamalogo.png",
+      status: stockVal > 0 ? "Active" : "Sold Out",
+      soldOutAt: stockVal > 0 ? null : new Date().toISOString(),
     };
 
     console.log("Submitting Product Data:", finalProdData);
@@ -512,8 +518,17 @@ const AdminProducts = ({
                                   aria-selected={selected}
                                   className={`product-collection-option ${selected ? "is-on" : ""}`}
                                   onClick={() => {
-                                    setNewProd({ ...newProd, category: label });
                                     setCollectionQuery("");
+                                    if (isClothingCategory(label)) {
+                                      applyOptions({
+                                        category: label,
+                                        sizes: newProd.sizes?.length ? newProd.sizes : [...CLOTHING_SIZES],
+                                      });
+                                    } else if (/bag/i.test(label)) {
+                                      applyOptions({ category: label, sizes: [] });
+                                    } else {
+                                      applyOptions({ category: label });
+                                    }
                                   }}
                                 >
                                   <span>{label}</span>
@@ -524,6 +539,7 @@ const AdminProducts = ({
                           })()}
                         </div>
                       </div>
+                      {!(newProd.colors?.length || newProd.sizes?.length) && (
                       <div className="product-field">
                         <label htmlFor="product-stock">Stock</label>
                         <input
@@ -538,10 +554,14 @@ const AdminProducts = ({
                           }
                         />
                       </div>
+                      )}
                     </div>
 
                     <div className="product-field">
                       <label>Available sizes</label>
+                      <p className="variant-stock-hint" style={{ margin: "0 0 0.5rem" }}>
+                        Dresses, shirts and two-piece use sizes. Put 0 on a size to sell out only that size.
+                      </p>
                       <div className="admin-size-chip-row">
                         {["XS", "S", "M", "L", "XL", "XXL"].map((s) => (
                           <button
@@ -552,17 +572,10 @@ const AdminProducts = ({
                               const currentSizes = Array.isArray(newProd.sizes)
                                 ? [...newProd.sizes]
                                 : [];
-                              if (currentSizes.includes(s)) {
-                                setNewProd({
-                                  ...newProd,
-                                  sizes: currentSizes.filter((x) => x !== s),
-                                });
-                              } else {
-                                setNewProd({
-                                  ...newProd,
-                                  sizes: [...currentSizes, s],
-                                });
-                              }
+                              const nextSizes = currentSizes.includes(s)
+                                ? currentSizes.filter((x) => x !== s)
+                                : [...currentSizes, s];
+                              applyOptions({ sizes: nextSizes });
                             }}
                           >
                             {s}
@@ -635,6 +648,74 @@ const AdminProducts = ({
                         </button>
                       </div>
                     </div>
+
+                    {(newProd.colors?.length > 0 || newProd.sizes?.length > 0) && (
+                      <div className="product-field">
+                        <div className="product-field-head">
+                          <label>Quantity by color / size</label>
+                          <span>Total {totalStock({ variants: newProd.variants })}</span>
+                        </div>
+                        <p className="variant-stock-hint">
+                          Enter how many pieces you have for each color and size. Sold out applies only to that option — a dress with no Medium can still sell Large.
+                        </p>
+                        {newProd.sizes?.length > 0 && newProd.colors?.length > 0 ? (
+                          <div className="variant-stock-scroll">
+                            <table className="variant-stock-table">
+                              <thead>
+                                <tr>
+                                  <th>Color</th>
+                                  {newProd.sizes.map((s) => (
+                                    <th key={s}>{s}</th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {newProd.colors.map((c, idx) => {
+                                  const name = colorName(c);
+                                  return (
+                                    <tr key={`${name}-${idx}`}>
+                                      <td>{name}</td>
+                                      {newProd.sizes.map((s) => {
+                                        const row = (newProd.variants || []).find(
+                                          (v) => colorName(v.color) === name && String(v.size || "") === s
+                                        );
+                                        return (
+                                          <td key={s}>
+                                            <input
+                                              className="variant-qty-input"
+                                              type="number"
+                                              min="0"
+                                              value={row?.stock ?? 0}
+                                              onChange={(e) => setVariantQty(name, s, e.target.value)}
+                                              aria-label={`${name} ${s} quantity`}
+                                            />
+                                          </td>
+                                        );
+                                      })}
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        ) : (
+                          <div className="variant-stock-list">
+                            {(newProd.variants || []).map((row, idx) => (
+                              <label key={`${row.color}-${row.size}-${idx}`} className="variant-stock-row">
+                                <span>{[row.color, row.size].filter(Boolean).join(" · ") || "Stock"}</span>
+                                <input
+                                  className="variant-qty-input"
+                                  type="number"
+                                  min="0"
+                                  value={row.stock ?? 0}
+                                  onChange={(e) => setVariantQty(row.color, row.size, e.target.value)}
+                                />
+                              </label>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     <div className="admin-price-grid">
                       <div className="product-field">
@@ -836,15 +917,13 @@ const AdminProducts = ({
                       data-label="Stock"
                       style={{
                         fontWeight: 700,
-                        color: prod.stock <= 3 ? "#ef4444" : "inherit",
+                        color: totalStock(prod) <= 3 ? "#ef4444" : "inherit",
                       }}
                     >
-                      {prod.stock}
+                      {totalStock(prod)}
                     </td>
                     <td data-label="Status">
-                      {prod.status === "Sold Out" ||
-                        prod.stock === 0 ||
-                        !!prod.soldOutAt ? (
+                      {productFullySoldOut(prod) ? (
                         <span
                           className="badge"
                           style={{
@@ -876,9 +955,7 @@ const AdminProducts = ({
                         <button
                           onClick={() => handleSoldOut(prod)}
                           title={
-                            prod.status === "Sold Out" ||
-                              prod.stock === 0 ||
-                              !!prod.soldOutAt
+                            productFullySoldOut(prod)
                               ? "Restock"
                               : "Mark Sold Out"
                           }

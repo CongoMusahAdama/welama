@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Quote } from "lucide-react";
 import Hero from "../components/home/Hero";
 import ProductCard from "../components/products/ProductCard";
+import { productFullySoldOut } from "../utils/productStock";
 
 const HomePage = ({ products = [], categories = [], settings }) => {
   const [activeCategory, setActiveCategory] = useState("all");
@@ -35,10 +36,7 @@ const HomePage = ({ products = [], categories = [], settings }) => {
   const filteredFeatured = products
     .filter((product) => {
       // Hide if sold out > 3 days ago
-      const isSoldOut =
-        product.status === "Sold Out" ||
-        product.stock === 0 ||
-        !!product.soldOutAt;
+      const isSoldOut = productFullySoldOut(product);
       if (isSoldOut && product.soldOutAt) {
         const soldDate = new Date(product.soldOutAt);
         const daysSoldOut = (new Date() - soldDate) / (1000 * 60 * 60 * 24);

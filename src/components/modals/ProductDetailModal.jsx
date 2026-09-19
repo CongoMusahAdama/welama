@@ -6,6 +6,7 @@ import ProductCard from "../products/ProductCard";
 import { waLink, getFullImageUrl } from "../../utils/whatsapp";
 import { Cedis, formatCedis } from "../../utils/currency";
 import { galleryThumbLabel, productGalleryImages } from "../../utils/productImages";
+import { colorAvailable, colorName, firstAvailableColor, firstAvailableSize, productFullySoldOut, sizeAvailable, variantStock } from "../../utils/productStock";
 
 const ProductDetailModal = () => {
   const { selectedProduct, closeProduct, products } = useModal();
@@ -19,19 +20,9 @@ const ProductDetailModal = () => {
   useEffect(() => {
     if (selectedProduct) {
       setQty(1);
-      const availableSizes = selectedProduct.sizes || [];
-      if (availableSizes.length > 0) {
-        setSize(availableSizes[0]);
-      } else {
-        setSize("");
-      }
-      const availableColors = selectedProduct.colors || [];
-      if (availableColors.length > 0) {
-        const first = availableColors[0];
-        setColor(typeof first === "object" ? first.name : first);
-      } else {
-        setColor("");
-      }
+      const firstColor = firstAvailableColor(selectedProduct);
+      setColor(firstColor);
+      setSize(firstAvailableSize(selectedProduct, firstColor));
       setActiveImage(productGalleryImages(selectedProduct)[0] || "");
     }
   }, [selectedProduct]);
@@ -39,10 +30,8 @@ const ProductDetailModal = () => {
   if (!selectedProduct) return null;
 
   const handleAdd = () => {
-    const qtyNum = parseInt(qty) || 1;
-    for (let i = 0; i < qtyNum; i++) {
-      addToCart(selectedProduct, size, color);
-    }
+    if (selectionSoldOut) return;
+    addToCart(selectedProduct, size, color, Math.min(parseInt(qty, 10) || 1, remaining));
 
     setJustAdded(true);
     setTimeout(() => {
@@ -59,9 +48,11 @@ const ProductDetailModal = () => {
     badge,
     sizes,
     colors,
-    stock,
     category,
   } = selectedProduct;
+  const remaining = variantStock(selectedProduct, color, size);
+  const selectionSoldOut = remaining <= 0;
+  const isFullySoldOut = productFullySoldOut(selectedProduct);
   const galleryImages = productGalleryImages(selectedProduct);
   const image = galleryImages.includes(activeImage) ? activeImage : galleryImages[0];
 
@@ -149,19 +140,27 @@ const ProductDetailModal = () => {
               <div className="modal-sizes-container">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                   <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b' }}>Select Color</span>
-                  {color && <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0A0A0A' }}>{color}</span>}
+                  {color && <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0A0A0A' }}>{color}{!colorAvailable(selectedProduct, color, size) ? " — sold out" : ""}</span>}
                 </div>
                 <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
                   {colors.map((c, i) => {
                     const cName = typeof c === "object" ? c.name : c;
                     const cHex = typeof c === "object" ? c.hex : c;
                     const isSelected = color === cName;
+                    const available = colorAvailable(selectedProduct, cName, size);
                     return (
                       <button
                         key={i}
                         type="button"
-                        onClick={() => setColor(cName)}
-                        title={cName}
+                        onClick={() => {
+                          if (!available) return;
+                          setColor(cName);
+                          setSize(firstAvailableSize(selectedProduct, cName));
+                          setQty(1);
+                        }}
+                        title={available ? cName : `${cName} — sold out`}
+                        disabled={!available}
+                        className={!available ? "is-sold" : ""}
                         style={{
                           display: 'inline-flex',
                           alignItems: 'center',
@@ -170,7 +169,8 @@ const ProductDetailModal = () => {
                           borderRadius: '20px',
                           border: isSelected ? '2px solid #0A0A0A' : '1px solid #e2e8f0',
                           background: isSelected ? '#f8fafc' : '#ffffff',
-                          cursor: 'pointer',
+                          cursor: available ? 'pointer' : 'not-allowed',
+                          opacity: available ? 1 : 0.4,
                           boxShadow: isSelected ? '0 0 0 2px rgba(10,10,10,0.1)' : 'none',
                           transition: 'all 0.15s ease',
                         }}
@@ -186,7 +186,7 @@ const ProductDetailModal = () => {
                           }}
                         />
                         <span style={{ fontSize: '0.75rem', fontWeight: isSelected ? 700 : 500, color: '#0A0A0A' }}>
-                          {cName}
+                          {cName}{!available ? " (sold out)" : ""}
                         </span>
                       </button>
                     );
@@ -195,9 +195,14 @@ const ProductDetailModal = () => {
               </div>
             )}
 
-            {typeof stock === "number" && stock > 0 && stock <= 5 && (
+            {remaining > 0 && remaining <= 5 && (
               <p style={{ fontSize: '0.8rem', color: '#ef4444', fontWeight: 700, marginBottom: '1rem' }}>
-                Only {stock} left in stock
+                Only {remaining} left{color || size ? ` for this ${[color, size].filter(Boolean).join(" / ")}` : ""}
+              </p>
+            )}
+            {selectionSoldOut && !isFullySoldOut && (
+              <p style={{ fontSize: '0.8rem', color: '#ef4444', fontWeight: 700, marginBottom: '1rem' }}>
+                {[color, size].filter(Boolean).join(" / ") || "This option"} is sold out — pick another color or size.
               </p>
             )}
 
@@ -205,16 +210,25 @@ const ProductDetailModal = () => {
               <div className="modal-sizes-container">
                 <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '0.5rem' }}>Select Size</span>
                 <div className="modal-size-row">
-                  {sizes.map((s, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      className={`size-chip-premium ${size === s ? "active" : ""}`}
-                      onClick={() => setSize(s)}
-                    >
-                      {s}
-                    </button>
-                  ))}
+                  {sizes.map((s, idx) => {
+                    const available = sizeAvailable(selectedProduct, s, color);
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        className={`size-chip-premium ${size === s ? "active" : ""} ${!available ? "is-sold" : ""}`}
+                        disabled={!available}
+                        title={available ? s : `${s} — sold out`}
+                        onClick={() => {
+                          if (!available) return;
+                          setSize(s);
+                          setQty(1);
+                        }}
+                      >
+                        {s}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -230,8 +244,9 @@ const ProductDetailModal = () => {
                 </button>
                 <span className="modal-qty-num">{qty}</span>
                 <button
-                  onClick={() => setQty(qty + 1)}
+                  onClick={() => setQty(Math.min(Math.max(1, remaining), qty + 1))}
                   className="modal-qty-btn"
+                  disabled={selectionSoldOut || qty >= remaining}
                 >
                   <Plus size={18} />
                 </button>
@@ -242,6 +257,8 @@ const ProductDetailModal = () => {
                 <button
                   className={`modal-add-btn ${justAdded ? "success" : ""}`}
                   onClick={handleAdd}
+                  disabled={selectionSoldOut}
+                  style={{ opacity: selectionSoldOut ? 0.5 : 1, cursor: selectionSoldOut ? "not-allowed" : "pointer" }}
                 >
                   {justAdded ? (
                     <>
@@ -249,7 +266,7 @@ const ProductDetailModal = () => {
                     </>
                   ) : (
                     <>
-                      <ShoppingBag size={20} /> Add to Cart — <span style={{ color: "var(--yellow-accent)", fontWeight: "800" }}>{badge || "WELAMA"}</span>
+                      <ShoppingBag size={20} /> {selectionSoldOut ? "Sold Out" : <>Add to Cart — <span style={{ color: "var(--yellow-accent)", fontWeight: "800" }}>{badge || "WELAMA"}</span></>}
                     </>
                   )}
                 </button>

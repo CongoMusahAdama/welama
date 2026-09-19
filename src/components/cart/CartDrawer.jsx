@@ -4,6 +4,7 @@ import { ShoppingBag, X, Send, Minus, Plus, Trash2, CheckCircle } from "lucide-r
 import { useCart } from "../../context/CartContext";
 import { waLink, getFullImageUrl } from "../../utils/whatsapp";
 import { Cedis, formatCedis } from "../../utils/currency";
+import { variantStock } from "../../utils/productStock";
 
 const CartDrawer = () => {
   const {
@@ -90,7 +91,9 @@ const CartDrawer = () => {
                   Quick Social Checkout — <strong>No Account Needed!</strong>
                 </span>
               </div>
-              {cartItems.map((item) => (
+              {cartItems.map((item) => {
+                const available = variantStock(item, item.selectedColor, item.selectedSize);
+                return (
                 <div key={item.cartId} className="cart-item">
                   <img
                     src={item.image}
@@ -125,6 +128,7 @@ const CartDrawer = () => {
                       <button
                         className="qty-btn-sm"
                         onClick={() => updateQty(item.cartId, 1)}
+                        disabled={item.qty >= available}
                       >
                         <Plus size={12} />
                       </button>
@@ -142,7 +146,8 @@ const CartDrawer = () => {
                     </button>
                   </div>
                 </div>
-              ))}
+              );
+              })}
             </>
           )}
         </div>

@@ -12,6 +12,7 @@ import {
   Search,
 } from "lucide-react";
 import { Cedis, formatCedis } from "../../utils/currency";
+import { productFullySoldOut, totalStock } from "../../utils/productStock";
 
 const welcomeFirstName = (user) => {
   const raw = String(user?.name || "").trim();
@@ -191,8 +192,9 @@ const DashboardOverview = ({ products = [], orders = [], user, settings }) => {
     let lowStock = 0;
     let soldOut = 0;
     for (const p of products) {
-      if (p.stock === 0 || p.status === "Sold Out") soldOut += 1;
-      else if (typeof p.stock === "number" && p.stock > 0 && p.stock <= 5) lowStock += 1;
+      const remaining = totalStock(p);
+      if (productFullySoldOut(p)) soldOut += 1;
+      else if (remaining > 0 && remaining <= 5) lowStock += 1;
     }
 
     return {
@@ -271,8 +273,8 @@ const DashboardOverview = ({ products = [], orders = [], user, settings }) => {
   const currentOrders = filteredOrders.slice((page - 1) * itemsPerPage, page * itemsPerPage);
   const currentProducts = filteredProducts.slice((page - 1) * itemsPerPage, page * itemsPerPage);
   const lowStockItems = products
-    .filter((p) => typeof p.stock === "number" && p.stock <= 5)
-    .sort((a, b) => (a.stock || 0) - (b.stock || 0))
+    .filter((p) => totalStock(p) <= 5)
+    .sort((a, b) => totalStock(a) - totalStock(b))
     .slice(0, 6);
 
   const firstName = welcomeFirstName(user);
@@ -459,8 +461,8 @@ const DashboardOverview = ({ products = [], orders = [], user, settings }) => {
                   </tr>
                 )}
                 {currentProducts.map((product, index) => {
-                  const stock = typeof product.stock === "number" ? product.stock : "—";
-                  const soldOut = product.stock === 0 || product.status === "Sold Out";
+                  const stock = totalStock(product);
+                  const soldOut = productFullySoldOut(product);
                   return (
                     <tr key={product._id || product.id}>
                       <td>{(page - 1) * itemsPerPage + index + 1}</td>
@@ -574,7 +576,7 @@ const DashboardOverview = ({ products = [], orders = [], user, settings }) => {
                     {lowStockItems.map((p) => (
                       <li key={p._id || p.id}>
                         <span>{p.name}</span>
-                        <b className={p.stock === 0 ? "is-out" : ""}>{p.stock === 0 ? "Out" : p.stock}</b>
+                        <b className={totalStock(p) === 0 ? "is-out" : ""}>{totalStock(p) === 0 ? "Out" : totalStock(p)}</b>
                       </li>
                     ))}
                   </ul>

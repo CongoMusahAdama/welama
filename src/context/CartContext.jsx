@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import Toast from "../components/ui/Toast";
 import CartDrawer from "../components/cart/CartDrawer";
 import { getVisibleCartIcon } from "../utils/cartTarget";
+import { colorName, variantStock } from "../utils/productStock";
 
 const CartContext = createContext(null);
 
@@ -27,24 +28,30 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = (product, selectedSize, selectedColor, qtyToAdd = 1) => {
     const addQty = Math.max(1, Number(qtyToAdd) || 1);
+    const color = colorName(selectedColor);
+    const available = variantStock(product, color, selectedSize);
+    if (available <= 0) return;
     setCartItems((prev) => {
       const parts = [product._id || product.id];
       if (selectedSize) parts.push(selectedSize);
-      if (selectedColor) parts.push(typeof selectedColor === "object" ? selectedColor.name : selectedColor);
+      if (color) parts.push(color);
       const cartId = parts.join("-");
       const existing = prev.find((i) => i.cartId === cartId);
-      if (existing)
+      if (existing) {
+        const nextQty = Math.min(available, existing.qty + addQty);
+        if (nextQty === existing.qty) return prev;
         return prev.map((i) =>
-          i.cartId === cartId ? { ...i, qty: i.qty + addQty } : i,
+          i.cartId === cartId ? { ...i, qty: nextQty } : i,
         );
+      }
       return [
         ...prev,
         {
           ...product,
           cartId,
           selectedSize: selectedSize || "",
-          selectedColor: selectedColor ? (typeof selectedColor === "object" ? selectedColor.name : selectedColor) : "",
-          qty: addQty,
+          selectedColor: color,
+          qty: Math.min(available, addQty),
         },
       ];
     });
@@ -81,9 +88,12 @@ export const CartProvider = ({ children }) => {
 
   const updateQty = (cartId, delta) => {
     setCartItems((prev) =>
-      prev.map((i) =>
-        i.cartId === cartId ? { ...i, qty: Math.max(1, i.qty + delta) } : i,
-      ),
+      prev.map((i) => {
+        if (i.cartId !== cartId) return i;
+        const available = variantStock(i, i.selectedColor, i.selectedSize);
+        const next = Math.max(1, i.qty + delta);
+        return { ...i, qty: Math.min(available || 1, next) };
+      }),
     );
   };
 

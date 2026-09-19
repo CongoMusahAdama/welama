@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { Cedis } from "../../utils/currency";
+import { productFullySoldOut, totalStock } from "../../utils/productStock";
 
 const ProductCard = ({
   id,
@@ -17,10 +18,13 @@ const ProductCard = ({
   soldOutAt,
   sku,
   colors,
+  variants,
   index = 0,
 }) => {
   const resolvedId = _id || id;
-  const isSoldOut = status === "Sold Out" || stock === 0 || !!soldOutAt;
+  const productStock = { status, stock, soldOutAt, variants };
+  const remaining = totalStock(productStock);
+  const isSoldOut = productFullySoldOut(productStock);
   const { cartItems } = useCart();
   const navigate = useNavigate();
   const cartItem = cartItems.find((i) => (i._id || i.id) === resolvedId);
@@ -40,6 +44,7 @@ const ProductCard = ({
       image: resolvedImage, 
       sku,
       colors,
+      variants,
       stock,
       status,
       soldOutAt,
@@ -138,8 +143,8 @@ const ProductCard = ({
           </div>
         )}
 
-        {!isSoldOut && typeof stock === "number" && stock > 0 && stock <= 5 && (
-          <p className="product-stock-hint">Only {stock} left in stock</p>
+        {!isSoldOut && remaining > 0 && remaining <= 5 && (
+          <p className="product-stock-hint">Only {remaining} left in stock</p>
         )}
       </div>
     </div>

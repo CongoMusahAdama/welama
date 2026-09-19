@@ -1,6 +1,8 @@
 // Fallback catalog shown when the live backend has no products yet.
 // Once real products exist in the database, those take over automatically.
-export const SAMPLE_PRODUCTS = [
+import { buildVariantGrid } from "../utils/productStock";
+
+const RAW_SAMPLE_PRODUCTS = [
   {
     id: "sample-welama-1",
     _id: "sample-welama-1",
@@ -264,3 +266,18 @@ export const SAMPLE_PRODUCTS = [
     sku: "WLM-DRS009",
   },
 ];
+
+export const SAMPLE_PRODUCTS = RAW_SAMPLE_PRODUCTS.map((product) => {
+  if (!product.sizes?.length && !product.colors?.length) return product;
+  let variants = buildVariantGrid(product.colors, product.sizes, [], product.stock);
+  if (product.id === "sample-dress-1") {
+    variants = variants.map((row) => (row.size === "S" ? { ...row, stock: 0 } : row));
+  }
+  if (product.id === "sample-welama-1") {
+    variants = variants.map((row) =>
+      row.color === "Midnight Black" && row.size === "M" ? { ...row, stock: 0 } : row
+    );
+  }
+  const stock = variants.reduce((sum, row) => sum + (Number(row.stock) || 0), 0);
+  return { ...product, variants, stock };
+});

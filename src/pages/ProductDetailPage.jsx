@@ -9,6 +9,7 @@ import { waLink, getFullImageUrl, displayStorePhone } from "../utils/whatsapp";
 import { catalogProductId } from "../utils/productId";
 import { Cedis, formatCedis } from "../utils/currency";
 import { galleryThumbLabel, productGalleryImages } from "../utils/productImages";
+import { colorAvailable, colorName, firstAvailableColor, firstAvailableSize, productFullySoldOut, sizeAvailable, variantStock } from "../utils/productStock";
 import Seo from "../components/seo/Seo";
 import { SITE_NAME, SITE_URL, absoluteUrl } from "../utils/site";
 
@@ -32,11 +33,11 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
     window.scrollTo(0, 0);
     if (product) {
       setQty(1);
-      setSize(product.sizes?.[0] || "");
-      const firstColor = product.colors?.[0];
-      setColor(firstColor ? (typeof firstColor === "object" ? firstColor.name : firstColor) : "");
+      const firstColor = firstAvailableColor(product);
+      setColor(firstColor);
+      setSize(firstAvailableSize(product, firstColor));
     }
-  }, [id]);
+  }, [id, product?._id || product?.id]);
 
   const galleryImages = product ? productGalleryImages(product) : [];
   const galleryKey = galleryImages.join("|");
@@ -66,8 +67,10 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
     );
   }
 
-  const { name, price, discountPrice, badge, sizes, colors, stock, sku, category, description } = product;
-  const isSoldOut = product.status === "Sold Out" || stock === 0 || !!product.soldOutAt;
+  const { name, price, discountPrice, badge, sizes, colors, sku, category, description } = product;
+  const isFullySoldOut = productFullySoldOut(product);
+  const remaining = variantStock(product, color, size);
+  const selectionSoldOut = remaining <= 0;
   const currentPrice = discountPrice || price;
   const resolvedImage = galleryImages.includes(activeImage) ? activeImage : galleryImages[0];
   const productUrl = `/product/${id}`;
@@ -86,7 +89,7 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
       url: `${SITE_URL}${productUrl}`,
       priceCurrency: "GHS",
       price: String(currentPrice || price || 0),
-      availability: isSoldOut
+      availability: isFullySoldOut
         ? "https://schema.org/OutOfStock"
         : "https://schema.org/InStock",
       seller: { "@type": "Organization", name: SITE_NAME },
@@ -94,7 +97,8 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
   };
 
   const handleAddToCart = () => {
-    addToCart(product, size, color, qty);
+    if (selectionSoldOut) return;
+    addToCart(product, size, color, Math.min(qty, remaining));
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 1500);
   };
@@ -282,8 +286,8 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
 
             <div className="product-detail-main-image">
               <img src={resolvedImage} alt={`${name} — WELAMA`} />
-              {badge && !isSoldOut && <div className="product-detail-badge">{badge}</div>}
-              {isSoldOut && (
+              {badge && !isFullySoldOut && <div className="product-detail-badge">{badge}</div>}
+              {isFullySoldOut && (
                 <div className="product-detail-badge" style={{ background: "#ef4444", color: "white" }}>
                   SOLD OUT
                 </div>
@@ -342,13 +346,20 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
                 {colors.map((c, i) => {
                   const cName = typeof c === "object" ? c.name : c;
                   const cHex = typeof c === "object" ? c.hex : c;
+                  const available = colorAvailable(product, cName, size);
                   return (
                     <button
                       key={i}
                       type="button"
-                      onClick={() => setColor(cName)}
-                      title={cName}
-                      className={`product-detail-swatch ${color === cName ? "active" : ""}`}
+                      onClick={() => {
+                        if (!available) return;
+                        setColor(cName);
+                        setSize(firstAvailableSize(product, cName));
+                        setQty(1);
+                      }}
+                      title={available ? cName : `${cName} — sold out`}
+                      disabled={!available}
+                      className={`product-detail-swatch ${color === cName ? "active" : ""} ${!available ? "is-sold" : ""}`}
                       style={{ backgroundColor: cHex }}
                     />
                   );
@@ -357,9 +368,14 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
             </div>
           )}
 
-          {!isSoldOut && typeof stock === "number" && stock > 0 && stock <= 5 && (
+          {!isFullySoldOut && remaining > 0 && remaining <= 5 && (
             <p className="product-stock-hint" style={{ fontSize: "0.85rem" }}>
-              Only {stock} left in stock
+              Only {remaining} left{color || size ? ` for this ${[color, size].filter(Boolean).join(" / ")}` : " in stock"}
+            </p>
+          )}
+          {selectionSoldOut && !isFullySoldOut && (
+            <p className="product-stock-hint" style={{ fontSize: "0.85rem", color: "#ef4444" }}>
+              {[color, size].filter(Boolean).join(" / ") || "This option"} is sold out — pick another color or size.
             </p>
           )}
 
@@ -367,22 +383,31 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
             <div className="product-detail-option-group">
               <span className="product-detail-option-label">Select Size</span>
               <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
-                {sizes.map((s, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    className={`size-chip-premium ${size === s ? "active" : ""}`}
-                    onClick={() => setSize(s)}
-                    style={{
-                      cursor: "pointer",
-                      border: size === s ? "1px solid #0A0A0A" : "1px solid #e2e8f0",
-                      background: size === s ? "#0A0A0A" : "#f8fafc",
-                      color: size === s ? "white" : "#0A0A0A",
-                    }}
-                  >
-                    {s}
-                  </button>
-                ))}
+                {sizes.map((s, idx) => {
+                  const available = sizeAvailable(product, s, color);
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      className={`size-chip-premium ${size === s ? "active" : ""} ${!available ? "is-sold" : ""}`}
+                      onClick={() => {
+                        if (!available) return;
+                        setSize(s);
+                        setQty(1);
+                      }}
+                      disabled={!available}
+                      title={available ? s : `${s} — sold out`}
+                      style={{
+                        cursor: available ? "pointer" : "not-allowed",
+                        border: size === s ? "1px solid #0A0A0A" : "1px solid #e2e8f0",
+                        background: size === s ? "#0A0A0A" : "#f8fafc",
+                        color: size === s ? "white" : "#0A0A0A",
+                      }}
+                    >
+                      {s}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -394,7 +419,11 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
                 <Minus size={18} />
               </button>
               <span className="product-detail-qty-num">{qty}</span>
-              <button onClick={() => setQty(qty + 1)} className="product-detail-qty-btn">
+              <button
+                onClick={() => setQty(Math.min(Math.max(1, remaining), qty + 1))}
+                className="product-detail-qty-btn"
+                disabled={selectionSoldOut || qty >= remaining}
+              >
                 <Plus size={18} />
               </button>
             </div>
@@ -402,9 +431,9 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
 
           <button
             className="cta-button-premium desktop-add-to-cart"
-            disabled={isSoldOut}
+            disabled={selectionSoldOut}
             onClick={handleAddToCart}
-            style={{ width: "60%", minWidth: "220px", justifyContent: "center", opacity: isSoldOut ? 0.5 : 1, cursor: isSoldOut ? "not-allowed" : "pointer", marginBottom: "1.75rem" }}
+            style={{ width: "60%", minWidth: "220px", justifyContent: "center", opacity: selectionSoldOut ? 0.5 : 1, cursor: selectionSoldOut ? "not-allowed" : "pointer", marginBottom: "1.75rem" }}
           >
             {justAdded ? (
               <>
@@ -412,12 +441,12 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
               </>
             ) : (
               <>
-                <ShoppingBag size={18} /> <span>{isSoldOut ? "Sold Out" : "Add to Cart"}</span>
+                <ShoppingBag size={18} /> <span>{selectionSoldOut ? "Sold Out" : "Add to Cart"}</span>
               </>
             )}
           </button>
 
-          {!isSoldOut && (
+          {!isFullySoldOut && !selectionSoldOut && (
             <div className="order-details-inline">
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.4rem" }}>
                 <h3 className="serif" style={{ fontSize: "1rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em" }}>
@@ -666,11 +695,11 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
         </div>
         <button
           className="app-pdp-add"
-          disabled={isSoldOut}
+          disabled={selectionSoldOut}
           onClick={handleAddToCart}
         >
           {justAdded ? <CheckCircle size={18} /> : <ShoppingBag size={18} />}
-          <span>{isSoldOut ? "Sold Out" : justAdded ? "Added" : "Add to Cart"}</span>
+          <span>{selectionSoldOut ? "Sold Out" : justAdded ? "Added" : "Add to Cart"}</span>
         </button>
       </div>
     </div>

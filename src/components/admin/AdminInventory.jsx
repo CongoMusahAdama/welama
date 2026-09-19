@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Search } from "lucide-react";
+import { hasVariants, productFullySoldOut, totalStock } from "../../utils/productStock";
 
 const AdminInventory = ({ products }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -59,12 +60,25 @@ const AdminInventory = ({ products }) => {
               </tr>
             </thead>
             <tbody>
-              {currentItems.map((p) => (
+              {currentItems.map((p) => {
+                const remaining = totalStock(p);
+                const soldOut = productFullySoldOut(p);
+                return (
                 <tr key={p._id || p.id}>
                   <td data-label="Product">
                     <div style={{ fontWeight: 700 }}>{p.name}</div>
+                    {hasVariants(p) && (
+                      <div style={{ fontSize: "0.72rem", color: "#64748b", marginTop: "0.35rem", display: "grid", gap: "0.15rem" }}>
+                        {p.variants.map((row, idx) => (
+                          <span key={`${row.color}-${row.size}-${idx}`}>
+                            {[row.color, row.size].filter(Boolean).join(" / ") || "Default"}: {Number(row.stock) || 0}
+                            {(Number(row.stock) || 0) <= 0 ? " (sold out)" : ""}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </td>
-                  <td data-label="Available Stock">{p.stock} units</td>
+                  <td data-label="Available Stock">{remaining} units</td>
                   <td data-label="Safety Level">
                     <div
                       style={{
@@ -79,22 +93,25 @@ const AdminInventory = ({ products }) => {
                     >
                       <div
                         style={{
-                          width: `${Math.min(100, (p.stock / 20) * 100)}%`,
+                          width: `${Math.min(100, (remaining / 20) * 100)}%`,
                           height: "100%",
-                          background: p.stock <= 3 ? "#ef4444" : "#0A0A0A",
+                          background: remaining <= 3 ? "#ef4444" : "#0A0A0A",
                         }}
                       ></div>
                     </div>
                   </td>
                   <td data-label="Status">
-                    {p.stock <= 3 ? (
+                    {soldOut ? (
+                      <span className="badge badge-cancelled">Sold Out</span>
+                    ) : remaining <= 3 ? (
                       <span className="badge badge-unpaid">Low Stock</span>
                     ) : (
                       <span className="badge badge-paid">Healthy</span>
                     )}
                   </td>
                 </tr>
-              ))}
+              );
+              })}
             </tbody>
           </table>
         </div>

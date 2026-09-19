@@ -56,6 +56,11 @@ const ProductSchema = new mongoose.Schema({
         type: Date,
         default: null
     },
+    variants: [{
+        color: { type: String, default: '', trim: true },
+        size: { type: String, default: '', trim: true },
+        stock: { type: Number, default: 0, min: 0 }
+    }],
     comesWithPouch: {
         type: Boolean,
         default: false
