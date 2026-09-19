@@ -8,7 +8,7 @@ import { apiRequest } from "../utils/api";
 import { waLink, getFullImageUrl, displayStorePhone } from "../utils/whatsapp";
 import { catalogProductId } from "../utils/productId";
 import { Cedis, formatCedis } from "../utils/currency";
-import { galleryThumbLabel, productGalleryImages } from "../utils/productImages";
+import { galleryThumbLabel, imageForColor, productGalleryImages } from "../utils/productImages";
 import { colorAvailable, colorName, firstAvailableColor, firstAvailableSize, productFullySoldOut, sizeAvailable, variantStock } from "../utils/productStock";
 import Seo from "../components/seo/Seo";
 import { SITE_NAME, SITE_URL, absoluteUrl } from "../utils/site";
@@ -40,11 +40,12 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
   }, [id, product?._id || product?.id]);
 
   const galleryImages = product ? productGalleryImages(product) : [];
-  const galleryKey = galleryImages.join("|");
 
   useEffect(() => {
-    if (galleryImages[0]) setActiveImage(galleryImages[0]);
-  }, [id, galleryKey]);
+    if (!product) return;
+    const next = imageForColor(product, color || firstAvailableColor(product));
+    if (next) setActiveImage(next);
+  }, [id, product?._id || product?.id, color]);
 
   if (!products.length) {
     return (
@@ -72,7 +73,9 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
   const remaining = variantStock(product, color, size);
   const selectionSoldOut = remaining <= 0;
   const currentPrice = discountPrice || price;
-  const resolvedImage = galleryImages.includes(activeImage) ? activeImage : galleryImages[0];
+  const resolvedImage = galleryImages.includes(activeImage)
+    ? activeImage
+    : imageForColor(product, color) || galleryImages[0];
   const productUrl = `/product/${id}`;
   const productImage = absoluteUrl(resolvedImage);
   const productJsonLd = {
@@ -285,7 +288,7 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
             </div>
 
             <div className="product-detail-main-image">
-              <img src={resolvedImage} alt={`${name} — WELAMA`} />
+              <img key={resolvedImage} src={resolvedImage} alt={`${name}${color ? ` — ${color}` : ""} — WELAMA`} />
               {badge && !isFullySoldOut && <div className="product-detail-badge">{badge}</div>}
               {isFullySoldOut && (
                 <div className="product-detail-badge" style={{ background: "#ef4444", color: "white" }}>
@@ -352,13 +355,13 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
                       key={i}
                       type="button"
                       onClick={() => {
-                        if (!available) return;
                         setColor(cName);
                         setSize(firstAvailableSize(product, cName));
                         setQty(1);
+                        const next = imageForColor(product, cName);
+                        if (next) setActiveImage(next);
                       }}
                       title={available ? cName : `${cName} — sold out`}
-                      disabled={!available}
                       className={`product-detail-swatch ${color === cName ? "active" : ""} ${!available ? "is-sold" : ""}`}
                       style={{ backgroundColor: cHex }}
                     />

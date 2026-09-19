@@ -5,7 +5,7 @@ import { useCart } from "../../context/CartContext";
 import ProductCard from "../products/ProductCard";
 import { waLink, getFullImageUrl } from "../../utils/whatsapp";
 import { Cedis, formatCedis } from "../../utils/currency";
-import { galleryThumbLabel, productGalleryImages } from "../../utils/productImages";
+import { galleryThumbLabel, imageForColor, productGalleryImages } from "../../utils/productImages";
 import { colorAvailable, colorName, firstAvailableColor, firstAvailableSize, productFullySoldOut, sizeAvailable, variantStock } from "../../utils/productStock";
 
 const ProductDetailModal = () => {
@@ -23,7 +23,7 @@ const ProductDetailModal = () => {
       const firstColor = firstAvailableColor(selectedProduct);
       setColor(firstColor);
       setSize(firstAvailableSize(selectedProduct, firstColor));
-      setActiveImage(productGalleryImages(selectedProduct)[0] || "");
+      setActiveImage(imageForColor(selectedProduct, firstColor));
     }
   }, [selectedProduct]);
 
@@ -54,7 +54,9 @@ const ProductDetailModal = () => {
   const selectionSoldOut = remaining <= 0;
   const isFullySoldOut = productFullySoldOut(selectedProduct);
   const galleryImages = productGalleryImages(selectedProduct);
-  const image = galleryImages.includes(activeImage) ? activeImage : galleryImages[0];
+  const image = galleryImages.includes(activeImage)
+    ? activeImage
+    : imageForColor(selectedProduct, color) || galleryImages[0];
 
   const finalDiscountPrice =
     discountPrice ||
@@ -83,7 +85,7 @@ const ProductDetailModal = () => {
 
         <div className="modal-scroll-area">
           <div className="modal-image-container">
-            <img src={image} alt={name} />
+            <img key={image} src={image} alt={name} />
             {badge && <div className="modal-badge">{badge}</div>}
             {galleryImages.length > 1 && (
               <div className="product-detail-thumbs modal-thumbs" role="tablist" aria-label="Product photos">
@@ -153,13 +155,13 @@ const ProductDetailModal = () => {
                         key={i}
                         type="button"
                         onClick={() => {
-                          if (!available) return;
                           setColor(cName);
                           setSize(firstAvailableSize(selectedProduct, cName));
                           setQty(1);
+                          const next = imageForColor(selectedProduct, cName);
+                          if (next) setActiveImage(next);
                         }}
                         title={available ? cName : `${cName} — sold out`}
-                        disabled={!available}
                         className={!available ? "is-sold" : ""}
                         style={{
                           display: 'inline-flex',

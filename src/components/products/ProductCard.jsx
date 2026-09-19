@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { Cedis } from "../../utils/currency";
 import { productFullySoldOut, totalStock } from "../../utils/productStock";
+import { imageForColor } from "../../utils/productImages";
 
 const ProductCard = ({
   id,
@@ -13,6 +14,7 @@ const ProductCard = ({
   discountPrice,
   badge,
   image,
+  images,
   status,
   stock,
   soldOutAt,
@@ -29,9 +31,12 @@ const ProductCard = ({
   const navigate = useNavigate();
   const cartItem = cartItems.find((i) => (i._id || i.id) === resolvedId);
   const inCart = !!cartItem;
-  const resolvedImage =
+  const coverImage =
     image && !image.startsWith("blob:") ? image : "/welamalogo.png";
+  const [previewImage, setPreviewImage] = useState("");
+  const resolvedImage = previewImage || coverImage;
   const currentPrice = discountPrice || price;
+  const productLook = { image, images, colors };
 
   const addToRecentlyViewed = () => {
     const productObj = { 
@@ -119,7 +124,7 @@ const ProductCard = ({
             <span>In Cart</span>
           </div>
         )}
-        <img src={resolvedImage} alt={name} className="product-main-image" />
+        <img key={resolvedImage} src={resolvedImage} alt={name} className="product-main-image" />
         <img
           src={resolvedImage}
           alt={name}
@@ -138,6 +143,15 @@ const ProductCard = ({
                 className="product-color-swatch"
                 title={typeof c === "object" ? c.name : c}
                 style={{ backgroundColor: typeof c === "object" ? c.hex : c }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const next = imageForColor(productLook, c);
+                  if (next) setPreviewImage(next);
+                }}
+                onMouseEnter={() => {
+                  const next = imageForColor(productLook, c);
+                  if (next) setPreviewImage(next);
+                }}
               />
             ))}
           </div>

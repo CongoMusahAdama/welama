@@ -231,10 +231,15 @@ const AdminProducts = ({
       const data = await res.json();
 
       if (res.ok && data.success) {
-        setNewProd((prev) => ({
-          ...prev,
-          images: [...prev.images, ...data.urls],
-        }));
+        setNewProd((prev) => {
+          const images = [...prev.images, ...data.urls];
+          const colors = (prev.colors || []).map((c, i) => {
+            const obj = typeof c === "object" && c ? { ...c } : { name: String(c || ""), hex: "#0A0A0A" };
+            if (!obj.image && images[i]) obj.image = images[i];
+            return obj;
+          });
+          return { ...prev, images, colors };
+        });
       } else {
         Swal.fire(
           "Media Error",
@@ -301,7 +306,14 @@ const AdminProducts = ({
       discPercent > 0 && priceVal > 0
         ? parseFloat((priceVal * (1 - discPercent / 100)).toFixed(2))
         : null;
-    const colors = Array.isArray(newProd.colors) ? newProd.colors : [];
+    const colors = (Array.isArray(newProd.colors) ? newProd.colors : []).map((c, i) => {
+      const obj = typeof c === "object" && c ? { ...c } : { name: String(c || ""), hex: "#0A0A0A" };
+      return {
+        name: colorName(obj),
+        hex: obj.hex || "#0A0A0A",
+        image: obj.image || newProd.images[i] || "",
+      };
+    });
     const sizes = Array.isArray(newProd.sizes) ? newProd.sizes : [];
     const useMatrix = colors.length > 0 || sizes.length > 0;
     const variants = useMatrix
@@ -589,18 +601,47 @@ const AdminProducts = ({
                         <label>Colors</label>
                         <span>{newProd.colors?.length || 0} selected</span>
                       </div>
+                      <p className="variant-stock-hint">
+                        Upload a photo of each colour, then tap that photo under the colour so the shop switches to it.
+                      </p>
                       {newProd.colors && newProd.colors.length > 0 && (
                         <div className="product-color-tags">
                           {newProd.colors.map((c, idx) => {
-                            const colorName = typeof c === "object" ? c.name : c;
+                            const swatchName = typeof c === "object" ? c.name : c;
                             const colorHex = typeof c === "object" ? c.hex : "#0A0A0A";
+                            const paired = typeof c === "object" ? c.image : "";
                             return (
-                              <div key={idx} className="product-color-chip">
+                              <div key={idx} className="product-color-chip-wrap">
+                              <div className="product-color-chip">
                                 <span className="product-swatch" style={{ backgroundColor: colorHex }} />
-                                <span>{colorName}</span>
+                                <span>{swatchName}</span>
                                 <button type="button" onClick={() => handleRemoveColor(idx)} aria-label="Remove color">
                                   <X size={14} />
                                 </button>
+                              </div>
+                              {newProd.images.length > 0 && (
+                                <div className="color-photo-picks">
+                                  {newProd.images.map((img, imgIdx) => (
+                                    <button
+                                      key={`${img}-${imgIdx}`}
+                                      type="button"
+                                      className={`color-photo-pick ${paired === img ? "is-on" : ""}`}
+                                      title={`Show this photo for ${swatchName}`}
+                                      onClick={() => {
+                                        applyOptions({
+                                          colors: (newProd.colors || []).map((row, i) => {
+                                            const obj = typeof row === "object" && row ? { ...row } : { name: String(row || ""), hex: "#0A0A0A" };
+                                            if (i !== idx) return obj;
+                                            return { ...obj, image: obj.image === img ? "" : img };
+                                          }),
+                                        });
+                                      }}
+                                    >
+                                      <img src={img} alt="" />
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
                               </div>
                             );
                           })}
