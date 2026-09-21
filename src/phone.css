@@ -1,0 +1,68 @@
+/* Last-load phone lock: keep the shop on a real phone layout even if
+   a browser reports a wide "desktop" viewport. */
+html.is-phone .desktop-only,
+html.is-phone .icon-link.desktop-only,
+html.is-phone a.desktop-only,
+html.is-phone button.desktop-only,
+html.is-phone .flex.desktop-only {
+  display: none !important;
+}
+
+html.is-phone .mobile-only {
+  display: block !important;
+}
+
+html.is-phone .mobile-only.flex,
+html.is-phone .icon-link.mobile-only {
+  display: flex !important;
+}
+
+html.is-phone .mobile-menu-btn {
+  display: flex !important;
+}
+
+html.is-phone,
+html.is-phone body,
+html.is-phone #root {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow-x: clip !important;
+}
+
+html.is-phone .container {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding-left: 1.15rem;
+  padding-right: 1.15rem;
+}
+
+html.is-phone .shop-layout,
+html.is-phone .product-detail-layout,
+html.is-phone .checkout-grid,
+html.is-phone .footer-grid,
+html.is-phone .about-story-grid,
+html.is-phone .collections-main-grid {
+  grid-template-columns: 1fr !important;
+}
+
+html.is-phone .shop-layout {
+  display: block !important;
+}
+
+html.is-phone form.nav-search-bar,
+html.is-phone .nav-search-category {
+  min-width: 0 !important;
+  width: auto !important;
+  max-width: 100% !important;
+}
+
+html.is-phone .product-detail-gallery {
+  position: relative !important;
+  top: auto !important;
+}
+
+html.is-phone .product-detail-main-image {
+  width: 100% !important;
+  max-width: 100% !important;
+}

@@ -10,18 +10,35 @@ const generateUniqueSku = async () => {
     return sku;
 };
 
+let catalogCache = { at: 0, payload: null };
+const CATALOG_TTL_MS = 20_000;
+
+const invalidateCatalogCache = () => {
+    catalogCache = { at: 0, payload: null };
+};
+
+const sendCatalog = (res, payload) => {
+    res.set("Cache-Control", "public, max-age=20, stale-while-revalidate=120");
+    return res.status(200).json(payload);
+};
+
 // @desc    Get all products
 // @route   GET /api/products
 // @access  Public
 exports.getProducts = async (req, res) => {
     try {
-        const products = await Product.find().sort({ createdAt: -1 }).lean();
+        if (catalogCache.payload && Date.now() - catalogCache.at < CATALOG_TTL_MS) {
+            return sendCatalog(res, catalogCache.payload);
+        }
 
-        res.status(200).json({
+        const products = await Product.find().sort({ createdAt: -1 }).lean();
+        const payload = {
             success: true,
             count: products.length,
             data: products
-        });
+        };
+        catalogCache = { at: Date.now(), payload };
+        return sendCatalog(res, payload);
     } catch (error) {
         console.error('Error fetching products:', error);
         res.status(500).json({ success: false, message: error.message });
@@ -47,6 +64,7 @@ exports.getProduct = async (req, res) => {
 exports.createProduct = async (req, res) => {
     try {
         const product = await Product.create(req.body);
+        invalidateCatalogCache();
         res.status(201).json({ success: true, data: product });
     } catch (error) {
         console.error('CREATE PRODUCT ERROR:', error);
@@ -65,7 +83,7 @@ exports.updateProduct = async (req, res) => {
         });
 
         if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
-
+        invalidateCatalogCache();
         res.status(200).json({ success: true, data: product });
     } catch (error) {
         console.error('UPDATE PRODUCT ERROR:', error);
@@ -81,7 +99,7 @@ exports.deleteProduct = async (req, res) => {
         const product = await Product.findByIdAndDelete(req.params.id);
         
         if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
-
+        invalidateCatalogCache();
         res.status(200).json({ success: true, message: 'Product removed' });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Server Error' });

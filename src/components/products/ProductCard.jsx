@@ -5,6 +5,7 @@ import { useCart } from "../../context/CartContext";
 import { Cedis } from "../../utils/currency";
 import { productFullySoldOut, totalStock } from "../../utils/productStock";
 import { imageForColor } from "../../utils/productImages";
+import { optimizedImage } from "../../utils/cloudinary";
 
 const ProductCard = ({
   id,
@@ -124,11 +125,21 @@ const ProductCard = ({
             <span>In Cart</span>
           </div>
         )}
-        <img key={resolvedImage} src={resolvedImage} alt={name} className="product-main-image" />
         <img
-          src={resolvedImage}
+          key={resolvedImage}
+          src={optimizedImage(resolvedImage, index < 4 ? 900 : 640)}
           alt={name}
+          className="product-main-image"
+          loading={index < 4 ? "eager" : "lazy"}
+          decoding="async"
+          fetchPriority={index < 2 ? "high" : "auto"}
+        />
+        <img
+          src={optimizedImage(resolvedImage, 640)}
+          alt=""
           className="product-hover-image"
+          loading="lazy"
+          decoding="async"
         />
         {!isSoldOut && <span className="product-view-tag">View</span>}
       </div>

@@ -4,6 +4,7 @@ import { AnimatePresence } from "framer-motion";
 import "./App.css";
 import "./mobile.css";
 import "./Dashboard.css";
+import "./phone.css";
 import Swal from "sweetalert2";
 
 // --- UTILS & CONTEXT ---
@@ -94,71 +95,78 @@ const App = () => {
     }
   };
 
+  const readCachedProducts = () => {
+    for (const store of [window.localStorage, window.sessionStorage]) {
+      try {
+        const parsed = JSON.parse(store.getItem("welama_products") || "[]");
+        if (Array.isArray(parsed) && parsed.length) return liveCatalog(parsed);
+      } catch {
+        /* ignore */
+      }
+    }
+    return [];
+  };
+
+  const writeCachedProducts = (list) => {
+    const json = JSON.stringify(list);
+    try {
+      localStorage.setItem("welama_products", json);
+    } catch {
+      /* quota */
+    }
+    try {
+      sessionStorage.setItem("welama_products", json);
+    } catch {
+      /* quota */
+    }
+  };
+
   // Initial Data Fetching
   useEffect(() => {
     let cancelled = false;
 
-    try {
-      const cached = sessionStorage.getItem("welama_products");
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed) && parsed.length) {
-          setProducts(liveCatalog(parsed));
-        }
-      }
-    } catch {
-      /* ignore bad cache */
-    }
+    const cached = readCachedProducts();
+    if (cached.length) setProducts(cached);
 
-    const applyCatalog = (catRes, prodRes, setRes) => {
-      if (cancelled) return;
-
-      if (setRes?.success && setRes.data) {
-        setSettings(setRes.data);
-      }
-
+    const applyLiveProducts = (prodRes) => {
+      if (cancelled) return [];
       const liveProducts =
         prodRes?.success && Array.isArray(prodRes.data)
           ? liveCatalog(prodRes.data)
           : null;
-
       if (liveProducts) {
         setProducts(liveProducts);
-        try {
-          sessionStorage.setItem("welama_products", JSON.stringify(liveProducts));
-        } catch {
-          /* quota / private mode */
-        }
-      } else {
-        setProducts((prev) => liveCatalog(prev));
+        writeCachedProducts(liveProducts);
+        return liveProducts;
       }
-
-      const catalogProducts = liveProducts || [];
-      setCategories(
-        mergeCategories(
-          catRes?.success ? catRes.data : [],
-          catalogProducts.map((p) => p.category),
-          DEFAULT_CATEGORIES,
-        ),
-      );
+      setProducts((prev) => liveCatalog(prev));
+      return liveCatalog(cached);
     };
 
     const initApp = async () => {
-      try {
-        const [catRes, prodRes, setRes] = await Promise.all([
-          apiRequest("/categories", "GET", null, 25000),
-          apiRequest("/products", "GET", null, 25000),
-          apiRequest("/settings", "GET", null, 25000),
-        ]);
-        applyCatalog(catRes, prodRes, setRes);
+      const prodPromise = apiRequest("/products", "GET", null, 8000);
+      const catPromise = apiRequest("/categories", "GET", null, 8000);
+      const setPromise = apiRequest("/settings", "GET", null, 8000);
+      const authPromise = apiRequest("/auth/me", "GET", null, 2500);
 
-        const verifyRes = await apiRequest("/auth/me", "GET", null, 2500);
+      prodPromise
+        .then((prodRes) => applyLiveProducts(prodRes))
+        .catch(() => {
+          if (!cancelled) setProducts((prev) => liveCatalog(prev));
+        });
+
+      try {
+        const [catRes, prodRes, setRes] = await Promise.all([catPromise, prodPromise, setPromise]);
         if (cancelled) return;
-        if (verifyRes.success) {
-          setUser(verifyRes.data);
-          const ordRes = await apiRequest("/orders", "GET", null, 4000);
-          if (!cancelled && ordRes.success) setOrders(ordRes.data);
-        }
+        if (setRes?.success && setRes.data) setSettings(setRes.data);
+        const liveProducts = applyLiveProducts(prodRes);
+        setCategories(
+          mergeCategories(
+            catRes?.success ? catRes.data : [],
+            liveProducts.map((p) => p.category),
+            DEFAULT_CATEGORIES,
+          ),
+        );
       } catch (error) {
         console.error("Failed to initialize catalog:", error);
         if (!cancelled) {
@@ -167,6 +175,18 @@ const App = () => {
             prev.length ? prev : mergeCategories([], DEFAULT_CATEGORIES),
           );
         }
+      }
+
+      try {
+        const verifyRes = await authPromise;
+        if (cancelled) return;
+        if (verifyRes.success) {
+          setUser(verifyRes.data);
+          const ordRes = await apiRequest("/orders", "GET", null, 4000);
+          if (!cancelled && ordRes.success) setOrders(ordRes.data);
+        }
+      } catch {
+        /* guest */
       } finally {
         if (!cancelled) setAuthChecked(true);
       }

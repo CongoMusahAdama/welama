@@ -1251,7 +1251,7 @@ span.nav-cart-text {
   }
 }
 
-@media (max-width: 1200px) {
+@media (min-width: 768px) and (max-width: 1200px) {
   .hero-split-photo {
     object-position: 60% 16%;
   }
@@ -7057,6 +7057,7 @@ body {
   padding-right: clamp(1rem, 2vw, 2rem);
 }
 
+@media (min-width: 768px) {
 /* HEADER / NAVBAR */
 .main-nav-row {
   height: auto;
@@ -7231,10 +7232,12 @@ form.nav-search-bar {
   width: clamp(270px, 85vw, 380px);
 }
 
+}
+
 /* ── BREAKPOINTS ── */
 
 /* Zoom 125%+ (viewport narrows as if medium screen) */
-@media (max-width: 1200px) {
+@media (min-width: 768px) and (max-width: 1200px) {
   .shop-layout {
     grid-template-columns: clamp(150px, 18%, 240px) 1fr;
     gap: 2rem;
@@ -7251,7 +7254,7 @@ form.nav-search-bar {
 }
 
 /* Zoom 150%+ */
-@media (max-width: 960px) {
+@media (min-width: 768px) and (max-width: 960px) {
   .product-detail-layout {
     grid-template-columns: 1fr;
     max-width: none;

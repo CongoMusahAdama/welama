@@ -6,9 +6,12 @@
   <link rel="icon" type="image/png" href="/icons/icon-192.png" />
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
   <link rel="manifest" href="/manifest.webmanifest" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, viewport-fit=cover" />
   <title>WELAMA | Women's Clothing &amp; Bags in Ghana</title>
   <link rel="canonical" href="https://welama-gh.shop/" />
+  <link rel="preconnect" href="https://welama.onrender.com" />
+  <link rel="preconnect" href="https://res.cloudinary.com" />
+  <link rel="dns-prefetch" href="https://welama.onrender.com" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -70,6 +73,26 @@
         }
       ]
     }
+  </script>
+  <script>
+    (function () {
+      var content = "width=device-width, initial-scale=1, minimum-scale=1, viewport-fit=cover";
+      var meta = document.querySelector('meta[name="viewport"]');
+      if (!meta) {
+        meta = document.createElement("meta");
+        meta.setAttribute("name", "viewport");
+        document.head.insertBefore(meta, document.head.firstChild);
+      }
+      meta.setAttribute("content", content);
+      var apply = function () {
+        var phone = window.matchMedia(
+          "(max-width: 767px), ((hover: none) and (pointer: coarse) and (max-width: 1024px))"
+        ).matches;
+        document.documentElement.classList.toggle("is-phone", phone);
+      };
+      apply();
+      window.addEventListener("resize", apply);
+    })();
   </script>
 </head>
 
