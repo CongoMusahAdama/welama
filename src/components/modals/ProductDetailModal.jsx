@@ -3,6 +3,7 @@ import { X, Minus, Plus, ShoppingBag, MessageCircle, Instagram, CheckCircle } fr
 import { useModal } from "../../context/ModalContext";
 import { useCart } from "../../context/CartContext";
 import ProductCard from "../products/ProductCard";
+import ProductDescription from "../products/ProductDescription";
 import { waLink, getFullImageUrl } from "../../utils/whatsapp";
 import { Cedis, formatCedis } from "../../utils/currency";
 import { galleryThumbLabel, imageForColor, productGalleryImages } from "../../utils/productImages";
@@ -49,6 +50,7 @@ const ProductDetailModal = () => {
     sizes,
     colors,
     category,
+    description,
   } = selectedProduct;
   const remaining = variantStock(selectedProduct, color, size);
   const selectionSoldOut = remaining <= 0;
@@ -234,6 +236,8 @@ const ProductDetailModal = () => {
                 </div>
               </div>
             )}
+
+            <ProductDescription text={description} />
 
             <div className="modal-qty-selector">
               <span>Quantity</span>

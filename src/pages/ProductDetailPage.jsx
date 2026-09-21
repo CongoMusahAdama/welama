@@ -4,6 +4,7 @@ import { Minus, Plus, ShoppingBag, MessageCircle, CheckCircle, ChevronLeft, Shop
 import Swal from "sweetalert2";
 import { useCart } from "../context/CartContext";
 import ProductCard from "../components/products/ProductCard";
+import ProductDescription from "../components/products/ProductDescription";
 import { apiRequest } from "../utils/api";
 import { waLink, getFullImageUrl, displayStorePhone } from "../utils/whatsapp";
 import { catalogProductId } from "../utils/productId";
@@ -332,12 +333,6 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
               </div>
               <a className="app-pdp-contact" href={`tel:${displayStorePhone(settings?.contactPhone)}`}>Call</a>
             </div>
-            {description && (
-              <div className="app-pdp-desc">
-                <h3>Description</h3>
-                <p>{description}</p>
-              </div>
-            )}
           </div>
 
           {colors && colors.length > 0 && (
@@ -414,6 +409,8 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
               </div>
             </div>
           )}
+
+          <ProductDescription text={description} />
 
           <div className="product-detail-option-group">
             <span className="product-detail-option-label">Quantity</span>

@@ -5004,15 +5004,18 @@
     border-radius: 999px;
   }
 
-  .app-pdp-desc h3 {
-    font-size: 0.92rem;
-    margin-bottom: 0.3rem;
+  .product-detail-description {
+    margin: 0.4rem 0 1.35rem;
+    padding-top: 1rem;
   }
 
-  .app-pdp-desc p {
-    color: #666;
-    font-size: 0.88rem;
-    line-height: 1.5;
+  .product-detail-description h3 {
+    font-size: 0.78rem;
+  }
+
+  .product-detail-description p {
+    font-size: 0.92rem;
+    color: #444;
   }
 
   .product-detail-option-label {
