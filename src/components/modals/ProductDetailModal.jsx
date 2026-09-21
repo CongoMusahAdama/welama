@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { X, Minus, Plus, ShoppingBag, MessageCircle, Instagram, CheckCircle } from "lucide-react";
+import { X, Minus, Plus, ShoppingBag, CheckCircle } from "lucide-react";
 import { useModal } from "../../context/ModalContext";
 import { useCart } from "../../context/CartContext";
 import ProductCard from "../products/ProductCard";
 import ProductDescription from "../products/ProductDescription";
-import { waLink, getFullImageUrl } from "../../utils/whatsapp";
-import { Cedis, formatCedis } from "../../utils/currency";
+import { Cedis } from "../../utils/currency";
 import { galleryThumbLabel, imageForColor, productGalleryImages } from "../../utils/productImages";
 import { colorAvailable, colorName, firstAvailableColor, firstAvailableSize, productFullySoldOut, sizeAvailable, variantStock } from "../../utils/productStock";
 
@@ -276,32 +275,6 @@ const ProductDetailModal = () => {
                     </>
                   )}
                 </button>
-
-                <div className="modal-social-grid">
-                  <a
-                    href={waLink(`Hi WELAMA! I'm interested in ordering:
-🛍️ *Product:* ${name}${selectedProduct.sku ? ` (ID: ${selectedProduct.sku})` : ''}${color ? `\n🎨 *Color:* ${color}` : ''}
-📏 *Size:* ${size || 'Standard'}
-🔢 *Quantity:* ${qty}
-💰 *Price:* ${formatCedis(finalDiscountPrice || price)} each
-🖼️ *Image:* ${getFullImageUrl(image)}
-
-Can you help me?`)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="modal-social-btn wa"
-                  >
-                    <MessageCircle size={20} /> WhatsApp
-                  </a>
-                  <a
-                    href="https://www.instagram.com/shop.welama"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="modal-social-btn ig"
-                  >
-                    <Instagram size={20} /> Instagram
-                  </a>
-                </div>
               </div>
           </div>
 

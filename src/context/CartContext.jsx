@@ -14,8 +14,17 @@ if (typeof window !== "undefined") {
   }, { passive: true });
 }
 
+const CART_KEY = "welama_cart";
+
 export const CartProvider = ({ children }) => {
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, setCartItems] = useState(() => {
+    try {
+      const parsed = JSON.parse(sessionStorage.getItem(CART_KEY) || "[]");
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [toast, setToast] = useState(null);
   const [flyItem, setFlyItem] = useState(null);
@@ -98,6 +107,14 @@ export const CartProvider = ({ children }) => {
   };
 
   const clearCart = () => setCartItems([]);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(CART_KEY, JSON.stringify(cartItems));
+    } catch {
+      /* quota / private mode */
+    }
+  }, [cartItems]);
 
   const cartCount = cartItems.reduce((sum, i) => sum + i.qty, 0);
   const cartTotal = cartItems.reduce(

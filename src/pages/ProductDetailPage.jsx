@@ -1,20 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { Minus, Plus, ShoppingBag, MessageCircle, CheckCircle, ChevronLeft, ShoppingCart, PackageSearch } from "lucide-react";
-import Swal from "sweetalert2";
+import { Minus, Plus, ShoppingBag, CheckCircle, ChevronLeft, ShoppingCart, PackageSearch } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import ProductCard from "../components/products/ProductCard";
 import ProductDescription from "../components/products/ProductDescription";
-import { apiRequest } from "../utils/api";
-import { waLink, getFullImageUrl, displayStorePhone } from "../utils/whatsapp";
-import { catalogProductId } from "../utils/productId";
-import { Cedis, formatCedis } from "../utils/currency";
+import { displayStorePhone } from "../utils/whatsapp";
+import { Cedis } from "../utils/currency";
 import { galleryThumbLabel, imageForColor, productGalleryImages } from "../utils/productImages";
 import { colorAvailable, colorName, firstAvailableColor, firstAvailableSize, productFullySoldOut, sizeAvailable, variantStock } from "../utils/productStock";
 import Seo from "../components/seo/Seo";
 import { SITE_NAME, SITE_URL, absoluteUrl } from "../utils/site";
 
-const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
+const ProductDetailPage = ({ products = [], settings = {} }) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart, cartCount, setIsCartOpen, cartPulse } = useCart();
@@ -25,9 +22,6 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
   const [size, setSize] = useState("");
   const [color, setColor] = useState("");
   const [justAdded, setJustAdded] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState("whatsapp"); // 'whatsapp' | 'paystack'
-  const [orderForm, setOrderForm] = useState({ customer: "", phone: "", smsPhone: "", email: "", location: "", country: "Ghana", deliveryMethod: "Home Delivery", street: "", city: "", region: "" });
   const [activeImage, setActiveImage] = useState("");
 
   useEffect(() => {
@@ -107,126 +101,10 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
     setTimeout(() => setJustAdded(false), 1500);
   };
 
-  const handleOrderViaWhatsApp = async (e) => {
-    e.preventDefault();
-    if (!orderForm.customer.trim() || !orderForm.phone.trim() || !orderForm.smsPhone.trim()) {
-      Swal.fire("Almost there", "Please fill in your name, WhatsApp number and SMS number first.", "info");
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    const itemName = `${name}${color ? ` (${color})` : ""}`;
-    const total = currentPrice * qty;
-
-    const orderData = {
-      customer: orderForm.customer,
-      phone: orderForm.phone,
-      smsPhone: orderForm.smsPhone,
-      location: [orderForm.street, orderForm.city, orderForm.region, orderForm.country || "Ghana"].filter(Boolean).join(", "),
-      items: [{ productId: catalogProductId(product._id || product.id), name: itemName, image: resolvedImage, category, qty, size: size || "Standard", color: color || "" }],
-      total,
-      paymentMethod: "Direct WhatsApp Order",
-      status: "Pending",
-    };
-
-    const res = await addOrder(orderData);
-    setIsSubmitting(false);
-
-    if (res?.success) {
-      const order = res.data;
-      const deliveryLine = orderForm.deliveryMethod === "Pickup"
-        ? "🏪 Pickup"
-        : `🏠 Home Delivery\n📍 ${[orderForm.street, orderForm.city, orderForm.region, orderForm.country || "Ghana"].filter(Boolean).join(", ")}`;
-      const imgUrl = getFullImageUrl(resolvedImage);
-      const whatsappMessage = `Hi WELAMA! I'd like to order:\n\n🛍️ *${name}*${sku ? ` (SKU: ${sku})` : ""}${color ? `\n🎨 Color: ${color}` : ""}\n📏 Size: ${size || "Standard"}\n🔢 Quantity: ${qty}\n💰 Total: ${formatCedis(total)}\n🖼️ Image: ${imgUrl}\n\n*Order ID:* ${order.orderId}\n👤 Name: ${orderForm.customer}\n📞 WhatsApp: ${orderForm.phone}\n📱 SMS Number: ${orderForm.smsPhone}\n${deliveryLine}\n\nPlease confirm availability. Thank you! 🙏`;
-
-      window.open(waLink(whatsappMessage), "_blank");
-      setOrderForm({ customer: "", phone: "", smsPhone: "", location: "", country: "Ghana", deliveryMethod: "Home Delivery", street: "", city: "", region: "" });
-
-      const trackingUrl = `/track?orderId=${encodeURIComponent(order.orderId)}`;
-
-      Swal.fire({
-        title: "Order Placed Successfully! 🎉",
-        html: `
-          <div style="font-family: inherit; padding: 0.5rem 0;">
-            <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 1rem;">
-              Thank you, <strong>${orderForm.customer}</strong>! Your order has been registered.
-            </p>
-            <div style="background: #f8fafc; border: 2px dashed #0A0A0A; border-radius: 14px; padding: 1rem; margin-bottom: 1.25rem;">
-              <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #64748b; font-weight: 700;">Your Order ID</div>
-              <div style="font-size: 1.6rem; font-weight: 900; color: #0A0A0A; letter-spacing: 1px; margin-top: 4px;">${order.orderId}</div>
-            </div>
-            <p style="font-size: 0.85rem; color: #475569; margin-bottom: 0.5rem;">
-              📱 We sent an <strong>SMS with your Order ID & tracking link</strong> to <strong>${orderForm.smsPhone}</strong>.
-            </p>
-          </div>
-        `,
-        icon: "success",
-        confirmButtonColor: "#0A0A0A",
-        confirmButtonText: "Track My Order 🚀",
-        showCancelButton: true,
-        cancelButtonText: "Close",
-        cancelButtonColor: "#64748b",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          navigate(trackingUrl);
-        }
-      });
-    } else {
-      Swal.fire("Error", res?.message || "Could not submit your order. Please try again.", "error");
-    }
-  };
-
-  const handlePaystack = async (e) => {
-    e.preventDefault();
-    if (!orderForm.customer.trim() || !orderForm.phone.trim() || !orderForm.smsPhone.trim() || !orderForm.email.trim()) {
-      Swal.fire("Almost there", "Please fill in your name, WhatsApp number, SMS number, and email before paying.", "info");
-      return;
-    }
-    if (settings.paystackEnabled === false) {
-      Swal.fire("Paystack unavailable", "Online card payments are turned off right now. Please order via WhatsApp.", "info");
-      return;
-    }
-
-    const total = currentPrice * qty;
-    const itemName = `${name}${color ? ` (${color})` : ""}`;
-    setIsSubmitting(true);
-
-    const orderData = {
-      customer: orderForm.customer,
-      phone: orderForm.phone,
-      smsPhone: orderForm.smsPhone,
-      location: [orderForm.street, orderForm.city, orderForm.region, orderForm.country || "Ghana"].filter(Boolean).join(", "),
-      items: [{ productId: catalogProductId(product._id || product.id), name: itemName, image: resolvedImage, category, qty, size: size || "Standard", color: color || "" }],
-      total,
-      paymentMethod: "Paystack (Online)",
-      payment: "Unpaid",
-      status: "Processing",
-    };
-
-    const orderRes = await addOrder(orderData);
-    if (!orderRes?.success || !orderRes.data?.orderId) {
-      setIsSubmitting(false);
-      Swal.fire("Error", orderRes?.message || "Could not create your order. Please try again.", "error");
-      return;
-    }
-
-    const paystackRes = await apiRequest("/payment/paystack/initialize", "POST", {
-      orderId: orderRes.data.orderId,
-      amount: total,
-      customerEmail: orderForm.email,
-      customerName: orderForm.customer,
-      customerPhone: orderForm.phone,
-    }, 28000);
-
-    if (paystackRes.success && paystackRes.data?.authorization_url) {
-      window.location.href = paystackRes.data.authorization_url;
-      return;
-    }
-
-    setIsSubmitting(false);
-    Swal.fire("Payment Notice", paystackRes.message || "Could not start Paystack checkout.", "warning");
+  const handleBuyNow = () => {
+    if (selectionSoldOut) return;
+    addToCart(product, size, color, Math.min(qty, remaining));
+    setTimeout(() => navigate("/checkout"), 0);
   };
 
   const related = products
@@ -451,228 +329,18 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
           </button>
 
           {!isFullySoldOut && !selectionSoldOut && (
-            <div className="order-details-inline">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.4rem" }}>
-                <h3 className="serif" style={{ fontSize: "1rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                  Delivery / Pickup
-                </h3>
-              </div>
-              <p style={{ color: "var(--teal-primary)", fontSize: "0.78rem", marginBottom: "1rem" }}>
-                Fill in your details below and choose how you'd like to pay.
+            <div className="order-details-inline" style={{ marginBottom: "1.75rem" }}>
+              <button
+                type="button"
+                className="cta-button-premium"
+                onClick={handleBuyNow}
+                style={{ width: "60%", minWidth: "220px", justifyContent: "center", background: "#111", borderColor: "#111" }}
+              >
+                Pay now — card or MoMo
+              </button>
+              <p style={{ margin: "0.65rem 0 0", color: "#64748b", fontSize: "0.82rem" }}>
+                Card and mobile money, secured by Paystack.
               </p>
-
-              {/* ── PAYMENT METHOD TOGGLE ── */}
-              <div style={{ display: "flex", borderRadius: "8px", overflow: "hidden", border: "2px solid #e2e8f0", marginBottom: "1.5rem" }}>
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod("whatsapp")}
-                  style={{
-                    flex: 1, padding: "0.75rem 1rem", fontWeight: 700, fontSize: "0.75rem",
-                    textTransform: "uppercase", letterSpacing: "0.05em", border: "none", cursor: "pointer",
-                    background: paymentMethod === "whatsapp" ? "#25D366" : "#f8fafc",
-                    color: paymentMethod === "whatsapp" ? "white" : "#666",
-                    transition: "all 0.2s",
-                    display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem"
-                  }}
-                >
-                  <span>💬</span> WhatsApp Order
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod("paystack")}
-                  style={{
-                    flex: 1, padding: "0.75rem 1rem", fontWeight: 700, fontSize: "0.75rem",
-                    textTransform: "uppercase", letterSpacing: "0.05em", border: "none", cursor: "pointer",
-                    background: paymentMethod === "paystack" ? "#0BA4DB" : "#f8fafc",
-                    color: paymentMethod === "paystack" ? "white" : "#666",
-                    transition: "all 0.2s",
-                    display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem"
-                  }}
-                >
-                  <span>💳</span> Pay with Paystack
-                </button>
-              </div>
-
-              <form onSubmit={paymentMethod === "paystack" ? handlePaystack : handleOrderViaWhatsApp} className="review-form order-form">
-                <div className="order-form-row">
-                  <div className="review-form-group" style={{ marginBottom: 0 }}>
-                    <label>Full Name</label>
-                    <input
-                      type="text"
-                      required
-                      value={orderForm.customer}
-                      onChange={(e) => setOrderForm({ ...orderForm, customer: e.target.value })}
-                      placeholder="e.g. Ama Serwaa"
-                    />
-                  </div>
-
-                  <div className="review-form-group" style={{ marginBottom: 0 }}>
-                    <label>Phone (WhatsApp)</label>
-                    <input
-                      type="tel"
-                      required
-                      value={orderForm.phone}
-                      onChange={(e) => setOrderForm({ ...orderForm, phone: e.target.value })}
-                      placeholder="e.g. 0244374433"
-                    />
-                  </div>
-                </div>
-
-                <div className="order-form-row">
-                  <div className="review-form-group" style={{ marginBottom: 0 }}>
-                    <label style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                      📱 SMS Number
-                      <span style={{ fontSize: "0.65rem", background: "#dcfce7", color: "#15803d", padding: "2px 6px", borderRadius: "4px", fontWeight: 700 }}>TRACKING</span>
-                    </label>
-                    <input
-                      type="tel"
-                      required
-                      value={orderForm.smsPhone}
-                      onChange={(e) => setOrderForm({ ...orderForm, smsPhone: e.target.value })}
-                      placeholder="e.g. 0244123456"
-                    />
-                  </div>
-
-                  <div className="review-form-group" style={{ marginBottom: 0 }}>
-                    <label>Country</label>
-                    <select
-                      value={orderForm.country || "Ghana"}
-                      onChange={(e) => setOrderForm({ ...orderForm, country: e.target.value })}
-                      style={{ width: "100%", padding: "0.8rem 1rem", border: "1px solid rgba(0, 0, 0, 0.12)", borderRadius: "8px", fontSize: "0.95rem", background: "var(--white)", color: "#1a1a1a", cursor: "pointer" }}
-                    >
-                      <option>Ghana</option>
-                      <option>Nigeria</option>
-                      <option>Togo</option>
-                      <option>Ivory Coast</option>
-                      <option>Other</option>
-                    </select>
-                  </div>
-                </div>
-                <p style={{ fontSize: "0.72rem", color: "#666", margin: "-0.6rem 0 0" }}>
-                  We'll send you an SMS with your tracking link when your order is confirmed.
-                </p>
-
-                {/* Email — only shown for Paystack */}
-                {paymentMethod === "paystack" && (
-                  <div className="review-form-group">
-                    <label style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                      📧 Email Address
-                      <span style={{ fontSize: "0.65rem", background: "#e0f2fe", color: "#0369a1", padding: "2px 6px", borderRadius: "4px", fontWeight: 700 }}>REQUIRED FOR PAYSTACK</span>
-                    </label>
-                    <input
-                      type="email"
-                      required={paymentMethod === "paystack"}
-                      value={orderForm.email}
-                      onChange={(e) => setOrderForm({ ...orderForm, email: e.target.value })}
-                      placeholder="e.g. ama@gmail.com"
-                    />
-                  </div>
-                )}
-
-                <div className="review-form-group">
-                  <label>How do you want to receive your order?</label>
-                  <div style={{ display: "flex", gap: "0", borderRadius: "6px", overflow: "hidden", border: "1px solid #e2e8f0" }}>
-                    <button
-                      type="button"
-                      onClick={() => setOrderForm({ ...orderForm, deliveryMethod: "Home Delivery" })}
-                      style={{
-                        flex: 1, padding: "0.7rem 1rem", fontWeight: 700, fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", border: "none", cursor: "pointer",
-                        background: (!orderForm.deliveryMethod || orderForm.deliveryMethod === "Home Delivery") ? "#0A0A0A" : "#f8fafc",
-                        color: (!orderForm.deliveryMethod || orderForm.deliveryMethod === "Home Delivery") ? "white" : "#666",
-                        transition: "all 0.2s"
-                      }}
-                    >
-                      Home Delivery
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setOrderForm({ ...orderForm, deliveryMethod: "Pickup" })}
-                      style={{
-                        flex: 1, padding: "0.7rem 1rem", fontWeight: 700, fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", border: "none", cursor: "pointer",
-                        background: orderForm.deliveryMethod === "Pickup" ? "#0A0A0A" : "#f8fafc",
-                        color: orderForm.deliveryMethod === "Pickup" ? "white" : "#666",
-                        transition: "all 0.2s"
-                      }}
-                    >
-                      Pickup
-                    </button>
-                  </div>
-                </div>
-
-                {(!orderForm.deliveryMethod || orderForm.deliveryMethod === "Home Delivery") && (
-                  <>
-                    <div className="review-form-group">
-                      <label>Street / Area</label>
-                      <input
-                        type="text"
-                        required
-                        value={orderForm.street || ""}
-                        onChange={(e) => setOrderForm({ ...orderForm, street: e.target.value })}
-                        placeholder="e.g. 5 Adenta Road"
-                      />
-                    </div>
-                    <div className="order-form-row">
-                      <div className="review-form-group" style={{ marginBottom: 0 }}>
-                        <label>City</label>
-                        <input
-                          type="text"
-                          required
-                          value={orderForm.city || ""}
-                          onChange={(e) => setOrderForm({ ...orderForm, city: e.target.value })}
-                          placeholder="e.g. Accra"
-                        />
-                      </div>
-                      <div className="review-form-group" style={{ marginBottom: 0 }}>
-                        <label>Region / State</label>
-                        <input
-                          type="text"
-                          value={orderForm.region || ""}
-                          onChange={(e) => setOrderForm({ ...orderForm, region: e.target.value })}
-                          placeholder="e.g. Greater Accra"
-                        />
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {/* ── SUBMIT BUTTONS ── */}
-                {paymentMethod === "whatsapp" ? (
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    style={{
-                      width: "100%", display: "flex", alignItems: "center", justifyContent: "center",
-                      gap: "0.6rem", marginTop: "1.25rem", padding: "0.95rem",
-                      background: isSubmitting ? "#aaa" : "#25D366",
-                      color: "white", border: "none", borderRadius: "8px", fontWeight: 700,
-                      fontSize: "0.9rem", textTransform: "uppercase", letterSpacing: "0.08em",
-                      cursor: isSubmitting ? "not-allowed" : "pointer",
-                      boxShadow: isSubmitting ? "none" : "0 4px 15px rgba(37, 211, 102, 0.35)",
-                      transition: "all 0.2s",
-                    }}
-                  >
-                    <MessageCircle size={18} /> <span>{isSubmitting ? "Preparing..." : "Send Order On WhatsApp"}</span>
-                  </button>
-                ) : (
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    style={{
-                      width: "100%", display: "flex", alignItems: "center", justifyContent: "center",
-                      gap: "0.6rem", marginTop: "1.25rem", padding: "0.95rem",
-                      background: isSubmitting ? "#aaa" : "#0BA4DB",
-                      color: "white", border: "none", borderRadius: "8px", fontWeight: 700,
-                      fontSize: "0.9rem", textTransform: "uppercase", letterSpacing: "0.08em",
-                      cursor: isSubmitting ? "not-allowed" : "pointer",
-                      boxShadow: isSubmitting ? "none" : "0 4px 20px rgba(11,164,219,0.35)",
-                      transition: "all 0.2s",
-                    }}
-                  >
-                    <span>💳</span>
-                    <span>{isSubmitting ? "Processing..." : <>Pay <Cedis value={(discountPrice || price) * qty} /> with Paystack</>}</span>
-                  </button>
-                )}
-              </form>
             </div>
           )}
 

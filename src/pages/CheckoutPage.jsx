@@ -1,35 +1,46 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { CreditCard, MessageCircle } from "lucide-react";
+import React, { useMemo, useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 import confetti from "canvas-confetti";
 import { useCart } from "../context/CartContext";
 import { apiRequest } from "../utils/api";
-import { waLink, getFullImageUrl } from "../utils/whatsapp";
 import { catalogProductId } from "../utils/productId";
 import { Cedis, formatCedis } from "../utils/currency";
+import { GHANA_REGIONS, deliveryFeeFor } from "../utils/delivery";
 
 const CheckoutPage = ({ addOrder }) => {
   const { cartItems, cartTotal, clearCart } = useCart();
-  const navigate = useNavigate();
   const location = useLocation();
-  const deliveryFee = 25;
-  const totalWithDelivery = cartTotal + deliveryFee;
 
-  const [paymentMethod, setPaymentMethod] = useState("whatsapp"); // "whatsapp" | "paystack"
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     customer: "",
     phone: "",
-    smsPhone: "",
     email: "",
     street: "",
     city: "",
     region: "",
+    notes: "",
     deliveryMethod: "Home Delivery",
   });
 
-  // Check for Paystack redirect callback on page load
+  const isPickup = formData.deliveryMethod === "Pickup";
+  const deliveryFee = deliveryFeeFor(formData.deliveryMethod, formData.region);
+  const deliveryReady = isPickup || deliveryFee != null;
+  const payableTotal = cartTotal + (deliveryReady ? deliveryFee : 0);
+
+  const itemLines = useMemo(
+    () =>
+      cartItems.map((item) => {
+        const spec = [item.selectedSize, item.selectedColor].filter(Boolean).join(" · ");
+        return {
+          ...item,
+          line: spec ? `${item.name} · ${spec}` : item.name,
+        };
+      }),
+    [cartItems],
+  );
+
   useEffect(() => {
     window.scrollTo(0, 0);
 
@@ -43,36 +54,29 @@ const CheckoutPage = ({ addOrder }) => {
         setIsSubmitting(true);
         try {
           const refToVerify = reference || `MOCK_${mockOrderId}`;
-          const res = await apiRequest(`/payment/paystack/verify/${encodeURIComponent(refToVerify)}?orderId=${encodeURIComponent(mockOrderId || '')}&mock=${isMock || ''}`, "GET", null, 28000);
+          const res = await apiRequest(`/payment/paystack/verify/${encodeURIComponent(refToVerify)}?orderId=${encodeURIComponent(mockOrderId || "")}&mock=${isMock || ""}`, "GET", null, 28000);
           if (res.success) {
             clearCart();
             confetti({
               particleCount: 180,
               spread: 80,
               origin: { y: 0.6 },
-              colors: ["#0A0A0A", "#C9A227", "#ffffff"]
+              colors: ["#0A0A0A", "#C9A227", "#ffffff"],
             });
 
             const order = res.data;
-            const orderId = order?.orderId || mockOrderId || 'VS-SUCCESS';
+            const orderId = order?.orderId || mockOrderId || "VS-SUCCESS";
             const trackUrl = `/track?orderId=${encodeURIComponent(orderId)}`;
 
             Swal.fire({
-              title: "💳 Payment Successful!",
+              title: "Payment Successful!",
               html: `
                 <div style="text-align: center; font-family: inherit;">
-                  <p style="font-size: 1rem; color: #16a34a; font-weight: 700; margin-bottom: 0.5rem;">
-                    Paystack Transaction Verified!
-                  </p>
                   <p style="margin-bottom: 1rem; font-size: 0.95rem;">Order <b>#${orderId}</b> has been paid and confirmed.</p>
-                  <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 1.5rem;">An mNotify SMS confirmation has been dispatched with your live tracking details.</p>
+                  <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 1.5rem;">We sent an SMS with your tracking details.</p>
                   <div style="display: flex; flex-direction: column; gap: 0.75rem; align-items: center;">
-                    <a href="${trackUrl}" style="background: #0A0A0A; color: white; text-decoration: none; border-radius: 12px; padding: 0.9rem 1.75rem; font-weight: 700; font-size: 0.9rem; width: 100%; max-width: 280px; text-align: center;">
-                      📦 Track Your Package
-                    </a>
-                    <a href="/shop" style="background: #f8fafc; color: #334155; border: 1px solid #e2e8f0; text-decoration: none; border-radius: 12px; padding: 0.8rem 1.75rem; font-weight: 700; font-size: 0.85rem; width: 100%; max-width: 280px; text-align: center;">
-                      Continue Shopping
-                    </a>
+                    <a href="${trackUrl}" style="background: #0A0A0A; color: white; text-decoration: none; border-radius: 12px; padding: 0.9rem 1.75rem; font-weight: 700; font-size: 0.9rem; width: 100%; max-width: 280px; text-align: center;">Track your package</a>
+                    <a href="/shop" style="background: #f8fafc; color: #334155; border: 1px solid #e2e8f0; text-decoration: none; border-radius: 12px; padding: 0.8rem 1.75rem; font-weight: 700; font-size: 0.85rem; width: 100%; max-width: 280px; text-align: center;">Continue shopping</a>
                   </div>
                 </div>
               `,
@@ -92,29 +96,31 @@ const CheckoutPage = ({ addOrder }) => {
     }
   }, [location.search]);
 
+  const setField = (key) => (e) => setFormData((prev) => ({ ...prev, [key]: e.target.value }));
+
   const handleOrderSubmission = async (e) => {
     e?.preventDefault?.();
-    const deliveryLocation = formData.deliveryMethod === "Pickup"
-      ? "Pickup"
-      : [formData.street, formData.city, formData.region].filter(Boolean).join(", ");
-    if (!formData.customer.trim() || !formData.phone.trim()) {
-      Swal.fire("Missing details", "Please fill in your name and WhatsApp number.", "warning");
+    if (!formData.customer.trim() || !formData.phone.trim() || !formData.email.trim()) {
+      Swal.fire("Missing details", "Please fill in your name, email, and phone number.", "warning");
       return;
     }
-    if (formData.deliveryMethod !== "Pickup" && (!formData.street.trim() || !formData.city.trim())) {
-      Swal.fire("Missing details", "Please add your street and city so we know where to deliver.", "warning");
+    if (!isPickup && (!formData.street.trim() || !formData.city.trim() || !formData.region)) {
+      Swal.fire("Missing details", "Please add your address, town, and region so we can price delivery.", "warning");
       return;
     }
-    if (paymentMethod === "paystack" && !formData.email) {
-      Swal.fire("Email required", "Paystack needs your email to send a receipt.", "warning");
-      return;
-    }
+
+    const deliveryLocation = isPickup
+      ? "Collect in store"
+      : [formData.street, formData.city, formData.region, formData.notes && `Notes: ${formData.notes}`]
+          .filter(Boolean)
+          .join(", ");
+
     setIsSubmitting(true);
 
     const orderData = {
       customer: formData.customer,
       phone: formData.phone,
-      smsPhone: formData.smsPhone || formData.phone,
+      smsPhone: formData.phone,
       email: formData.email,
       location: deliveryLocation,
       items: cartItems.map((i) => ({
@@ -126,305 +132,205 @@ const CheckoutPage = ({ addOrder }) => {
         size: i.selectedSize || i.size || "Standard",
         color: i.selectedColor || "",
       })),
-      total: totalWithDelivery,
+      total: payableTotal,
       paymentScreenshot: null,
-      paymentMethod: paymentMethod === "paystack" ? "Paystack (Online)" : "Direct WhatsApp Order",
-      payment: paymentMethod === "paystack" ? "Unpaid" : "Unpaid",
+      paymentMethod: "Paystack (Card or MoMo)",
+      payment: "Unpaid",
       status: "Processing",
     };
 
-    // WhatsApp order — same flow as product details
-    if (paymentMethod === "whatsapp") {
-      const res = await addOrder({ ...orderData, paymentMethod: "Direct WhatsApp Order" });
-      setIsSubmitting(false);
-      if (res.success) {
-        const order = res.data;
-        const itemsList = cartItems
-          .map((i) => {
-            const spec = [i.selectedSize && `Size: ${i.selectedSize}`, i.selectedColor && `Color: ${i.selectedColor}`].filter(Boolean).join(", ");
-            const imgUrl = getFullImageUrl(i.image);
-            return `• *${i.name}*${spec ? ` (${spec})` : ""} x${i.qty}\n  🖼️ Image: ${imgUrl}`;
-          })
-          .join("\n\n");
-        const whatsappMessage =
-          `Hi WELAMA! I'd like to order:\n\n${itemsList}\n\n💰 Total: ${formatCedis(totalWithDelivery, 2)}\n\n*Order ID:* ${order.orderId}\n👤 Name: ${formData.customer}\n📞 WhatsApp: ${formData.phone}\n📍 ${deliveryLocation}\n\nPlease confirm availability. Thank you! 🙏`;
-        window.open(waLink(whatsappMessage), "_blank");
-        clearCart();
-        const trackingUrl = `/track?orderId=${encodeURIComponent(order.orderId)}`;
-
-        Swal.fire({
-          title: "Order Placed Successfully! 🎉",
-          html: `
-            <div style="font-family: inherit; padding: 0.5rem 0;">
-              <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 1rem;">
-                Thank you, <strong>${formData.customer}</strong>! We've received your order.
-              </p>
-              <div style="background: #f8fafc; border: 2px dashed #0A0A0A; border-radius: 14px; padding: 1rem; margin-bottom: 1.25rem;">
-                <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #64748b; font-weight: 700;">Your Order ID</div>
-                <div style="font-size: 1.6rem; font-weight: 900; color: #0A0A0A; letter-spacing: 1px; margin-top: 4px;">${order.orderId}</div>
-              </div>
-              <p style="font-size: 0.85rem; color: #475569; margin-bottom: 0.5rem;">
-                📱 We sent an <strong>SMS with your Order ID & tracking link</strong> to <strong>${formData.smsPhone || formData.phone}</strong>.
-              </p>
-            </div>
-          `,
-          icon: "success",
-          confirmButtonColor: "#0A0A0A",
-          confirmButtonText: "Track My Order 🚀",
-          showCancelButton: true,
-          cancelButtonText: "Return Home",
-          cancelButtonColor: "#64748b",
-        }).then((result) => {
-          if (result.isConfirmed) {
-            navigate(trackingUrl);
-          } else {
-            navigate("/");
-          }
-        });
-      } else {
-        Swal.fire("Error", res.message || "Could not place order", "error");
+    try {
+      const orderRes = await addOrder(orderData);
+      if (!orderRes.success) {
+        Swal.fire("Error", orderRes.message || "Could not place order", "error");
+        setIsSubmitting(false);
+        return;
       }
-      return;
-    }
 
-    // If Paystack selected, initialize transaction first
-    if (paymentMethod === "paystack") {
-      try {
-        // Save pending order first
-        const orderRes = await addOrder(orderData);
-        if (!orderRes.success) {
-          Swal.fire("Error", orderRes.message || "Could not place order", "error");
-          setIsSubmitting(false);
-          return;
-        }
+      const paystackRes = await apiRequest("/payment/paystack/initialize", "POST", {
+        orderId: orderRes.data.orderId,
+        amount: payableTotal,
+        customerEmail: formData.email,
+        customerName: formData.customer,
+        customerPhone: formData.phone,
+      }, 28000);
 
-        const paystackRes = await apiRequest("/payment/paystack/initialize", "POST", {
-          orderId: orderRes.data.orderId,
-          amount: totalWithDelivery,
-          customerEmail: formData.email,
-          customerName: formData.customer,
-          customerPhone: formData.phone,
-        }, 28000);
-
-        if (paystackRes.success && paystackRes.data?.authorization_url) {
-          // Redirect to Paystack Checkout URL
-          window.location.href = paystackRes.data.authorization_url;
-          return;
-        } else {
-          Swal.fire("Payment Notice", paystackRes.message || "Could not start Paystack checkout.", "warning");
-        }
-      } catch (err) {
-        console.error(err);
-        Swal.fire("Payment Error", "Failed to communicate with Paystack server.", "error");
+      if (paystackRes.success && paystackRes.data?.authorization_url) {
+        window.location.href = paystackRes.data.authorization_url;
+        return;
       }
-      setIsSubmitting(false);
+      Swal.fire("Payment Notice", paystackRes.message || "Could not start Paystack checkout.", "warning");
+    } catch (err) {
+      console.error(err);
+      Swal.fire("Payment Error", "Failed to communicate with Paystack server.", "error");
     }
+    setIsSubmitting(false);
   };
 
   return (
-    <div className="checkout-page section-padding container" style={{ minHeight: "80vh" }}>
-      <div className="checkout-grid">
-        <div className="checkout-main-content">
-          <form className="form-section glass shadowed checkout-deliver-form" onSubmit={handleOrderSubmission}>
-            <h3 className="serif checkout-deliver-title">Where should we deliver?</h3>
-            <p className="checkout-deliver-copy">
-              Fill in your details below and choose how you would like to pay.
-            </p>
+    <div className="co-page">
+      <form className="co-wrap" onSubmit={handleOrderSubmission}>
+        <section className="co-section">
+          <h2>Contact</h2>
 
-            <div className="checkout-pay-toggle">
-              <button
-                type="button"
-                onClick={() => setPaymentMethod("whatsapp")}
-                className={`checkout-pay-btn ${paymentMethod === "whatsapp" ? "is-whatsapp" : ""}`}
-              >
-                <MessageCircle size={16} /> WhatsApp Order
-              </button>
-              <button
-                type="button"
-                onClick={() => setPaymentMethod("paystack")}
-                className={`checkout-pay-btn ${paymentMethod === "paystack" ? "is-paystack" : ""}`}
-              >
-                <CreditCard size={16} /> Pay with Paystack
-              </button>
-            </div>
+          <label className="co-field">
+            <span>Full name</span>
+            <input
+              type="text"
+              required
+              autoComplete="name"
+              value={formData.customer}
+              onChange={setField("customer")}
+            />
+          </label>
 
-            <div className="checkout-form-grid">
-              <div className="form-group-premium checkout-field-full">
-                <label>Full Name</label>
-                <input
-                  type="text"
-                  required
-                  autoComplete="name"
-                  placeholder="Ama Serwaa"
-                  value={formData.customer}
-                  onChange={(e) => setFormData({ ...formData, customer: e.target.value })}
-                />
-              </div>
-              <div className="form-group-premium">
-                <label>WhatsApp number</label>
-                <input
-                  type="tel"
-                  required
-                  autoComplete="tel"
-                  inputMode="tel"
-                  placeholder="0244374433"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                />
-              </div>
-              <div className="form-group-premium">
-                <label>SMS number</label>
-                <input
-                  type="tel"
-                  autoComplete="tel"
-                  inputMode="tel"
-                  placeholder="Same as WhatsApp if empty"
-                  value={formData.smsPhone}
-                  onChange={(e) => setFormData({ ...formData, smsPhone: e.target.value })}
-                />
-              </div>
-              {paymentMethod === "paystack" && (
-                <div className="form-group-premium checkout-field-full">
-                  <label>Email address</label>
-                  <input
-                    type="email"
-                    required
-                    autoComplete="email"
-                    inputMode="email"
-                    placeholder="ama@gmail.com"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  />
-                </div>
-              )}
-              <div className="form-group-premium checkout-field-full">
-                <label>How should we send it?</label>
-                <div className="checkout-deliver-toggle">
-                  <button
-                    type="button"
-                    className={!formData.deliveryMethod || formData.deliveryMethod === "Home Delivery" ? "is-active" : ""}
-                    onClick={() => setFormData({ ...formData, deliveryMethod: "Home Delivery" })}
-                  >
-                    Home delivery
-                  </button>
-                  <button
-                    type="button"
-                    className={formData.deliveryMethod === "Pickup" ? "is-active" : ""}
-                    onClick={() => setFormData({ ...formData, deliveryMethod: "Pickup" })}
-                  >
-                    Pickup
-                  </button>
-                </div>
-              </div>
-              {formData.deliveryMethod !== "Pickup" && (
-                <>
-                  <div className="form-group-premium checkout-field-full">
-                    <label>Street / area</label>
-                    <input
-                      type="text"
-                      required
-                      autoComplete="street-address"
-                      placeholder="5 Adenta Road, near Total"
-                      value={formData.street}
-                      onChange={(e) => setFormData({ ...formData, street: e.target.value })}
-                    />
-                  </div>
-                  <div className="form-group-premium">
-                    <label>City</label>
-                    <input
-                      type="text"
-                      required
-                      autoComplete="address-level2"
-                      placeholder="Accra"
-                      value={formData.city}
-                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    />
-                  </div>
-                  <div className="form-group-premium">
-                    <label>Region</label>
-                    <input
-                      type="text"
-                      autoComplete="address-level1"
-                      placeholder="Greater Accra"
-                      value={formData.region}
-                      onChange={(e) => setFormData({ ...formData, region: e.target.value })}
-                    />
-                  </div>
-                </>
-              )}
-            </div>
+          <label className="co-field">
+            <span>Email</span>
+            <input
+              type="email"
+              required
+              autoComplete="email"
+              inputMode="email"
+              value={formData.email}
+              onChange={setField("email")}
+            />
+            <small>Your receipt goes here.</small>
+          </label>
 
-            {paymentMethod === "whatsapp" ? (
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="cta-button-premium"
-                style={{
-                  width: "100%", justifyContent: "center", borderRadius: "8px",
-                  background: isSubmitting ? "#aaa" : "#25D366",
-                  borderColor: isSubmitting ? "#aaa" : "#25D366",
-                  color: "#fff",
-                  marginTop: "0.5rem",
-                }}
-              >
-                <MessageCircle size={18} />
-                {isSubmitting ? "Preparing..." : "Send Order On WhatsApp"}
-              </button>
-            ) : (
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="cta-button-premium"
-                style={{
-                  width: "100%", justifyContent: "center", borderRadius: "8px",
-                  background: isSubmitting ? "#aaa" : "#0BA4DB",
-                  borderColor: isSubmitting ? "#aaa" : "#0BA4DB",
-                  color: "#fff",
-                  marginTop: "0.5rem",
-                }}
-              >
-                <CreditCard size={18} />
-                {isSubmitting ? "Processing..." : <>Pay <Cedis value={totalWithDelivery} decimals={2} /> with Paystack</>}
-              </button>
-            )}
-          </form>
-        </div>
+          <label className="co-field">
+            <span>Phone</span>
+            <input
+              type="tel"
+              required
+              autoComplete="tel"
+              inputMode="tel"
+              placeholder="024 123 4567"
+              value={formData.phone}
+              onChange={setField("phone")}
+            />
+            <small>We text delivery updates here. Use the same number for MoMo.</small>
+          </label>
+        </section>
 
-        <div className="summary-column">
-           <div className="glass shadowed" style={{ padding: "2rem", borderRadius: "24px" }}>
-              <h4 className="serif" style={{ fontSize: "1.2rem", marginBottom: "1.5rem", borderBottom: "1px solid #f1f5f9", paddingBottom: "1rem" }}>Order Summary</h4>
-              <div style={{ maxHeight: "300px", overflowY: "auto", marginBottom: "1.5rem" }}>
-                {cartItems.map(item => (
-                  <div key={item.cartId} className="flex gap-4" style={{ marginBottom: "1rem" }}>
-                     <img src={item.image} style={{ width: "50px", height: "50px", objectFit: "cover", borderRadius: "8px" }} />
-                     <div style={{ flex: 1 }}>
-                        <p style={{ fontSize: "0.85rem", fontWeight: 700, margin: 0 }}>{item.name}</p>
-                        <p style={{ fontSize: "0.75rem", color: "#64748b" }}>
-                          Qty: {item.qty} • {item.selectedSize || "Standard"}
-                          {item.selectedColor ? ` • ${item.selectedColor}` : ""}
-                        </p>
-                     </div>
-                     <p style={{ fontSize: "0.85rem", fontWeight: 700 }}><Cedis value={item.price * item.qty} decimals={2} /></p>
-                  </div>
+        <section className="co-section">
+          <h2>How would you like it?</h2>
+          <div className="co-choice-list">
+            <button
+              type="button"
+              className={`co-choice ${!isPickup ? "is-active" : ""}`}
+              onClick={() => setFormData((prev) => ({ ...prev, deliveryMethod: "Home Delivery" }))}
+            >
+              <strong>Deliver to me</strong>
+              <span>Priced by region</span>
+            </button>
+            <button
+              type="button"
+              className={`co-choice ${isPickup ? "is-active" : ""}`}
+              onClick={() => setFormData((prev) => ({ ...prev, deliveryMethod: "Pickup", region: "" }))}
+            >
+              <strong>Collect in store</strong>
+              <span>Free</span>
+            </button>
+          </div>
+        </section>
+
+        {!isPickup && (
+          <section className="co-section">
+            <h2>Delivery address</h2>
+
+            <label className="co-field">
+              <span>Address</span>
+              <textarea
+                required
+                rows={3}
+                autoComplete="street-address"
+                value={formData.street}
+                onChange={setField("street")}
+              />
+              <small>Street, house number, and any landmark that helps.</small>
+            </label>
+
+            <label className="co-field">
+              <span>Town or city</span>
+              <input
+                type="text"
+                required
+                autoComplete="address-level2"
+                value={formData.city}
+                onChange={setField("city")}
+              />
+            </label>
+
+            <label className="co-field">
+              <span>Region</span>
+              <select
+                required
+                value={formData.region}
+                onChange={setField("region")}
+              >
+                <option value="">Choose your region</option>
+                {GHANA_REGIONS.map((region) => (
+                  <option key={region.name} value={region.name}>
+                    {region.name}
+                  </option>
                 ))}
+              </select>
+              <small>Sets your delivery cost.</small>
+            </label>
+
+            <label className="co-field">
+              <span>Delivery notes</span>
+              <textarea
+                rows={3}
+                value={formData.notes}
+                onChange={setField("notes")}
+              />
+              <small>Optional — anything the courier should know.</small>
+            </label>
+          </section>
+        )}
+
+        <section className="co-section">
+          <h2>How it reaches you</h2>
+          <div className="co-reach">
+            {isPickup
+              ? "Collect in store — no delivery fee."
+              : deliveryReady
+                ? `${formData.region} delivery is ${formatCedis(deliveryFee)}.`
+                : "Choose your region above and we'll show the delivery cost."}
+          </div>
+        </section>
+
+        <section className="co-order">
+          <h2>Your order</h2>
+          {itemLines.length === 0 ? (
+            <p className="co-empty">Your bag is empty.</p>
+          ) : (
+            itemLines.map((item) => (
+              <div key={item.cartId} className="co-line">
+                <span>{item.line}{item.qty > 1 ? ` ×${item.qty}` : ""}</span>
+                <strong><Cedis value={item.price * item.qty} /></strong>
               </div>
-              <div style={{ borderTop: "2px solid #0A0A0A", paddingTop: "1.5rem" }}>
-                <div className="flex justify-between" style={{ marginBottom: "0.8rem", fontSize: "0.9rem" }}>
-                   <span>Subtotal</span>
-                   <span><Cedis value={cartTotal} decimals={2} /></span>
-                </div>
-                <div className="flex justify-between" style={{ marginBottom: "1.5rem", fontSize: "0.9rem" }}>
-                   <span>Delivery</span>
-                   <span style={{ color: "#0A0A0A", fontWeight: 700 }}><Cedis value={deliveryFee} decimals={2} /></span>
-                </div>
-                <div className="flex justify-between" style={{ fontSize: "1.2rem", fontWeight: 800, color: "#0A0A0A" }}>
-                   <span>Total</span>
-                   <span><Cedis value={totalWithDelivery} decimals={2} /></span>
-                </div>
-              </div>
-           </div>
-        </div>
-      </div>
+            ))
+          )}
+          <div className="co-line">
+            <span>Subtotal</span>
+            <span><Cedis value={cartTotal} /></span>
+          </div>
+          <div className="co-line">
+            <span>Delivery</span>
+            <span>{deliveryReady ? (deliveryFee ? <Cedis value={deliveryFee} /> : "Free") : "—"}</span>
+          </div>
+          <div className="co-line co-total">
+            <span>Total</span>
+            <strong><Cedis value={payableTotal} /></strong>
+          </div>
+          <button type="submit" className="co-pay" disabled={isSubmitting || !cartItems.length}>
+            {isSubmitting ? "Processing..." : "Pay now"}
+          </button>
+          <p className="co-secure">Card and mobile money, secured by Paystack.</p>
+        </section>
+      </form>
     </div>
   );
 };

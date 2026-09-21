@@ -2,18 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { X } from "lucide-react";
 import { apiRequest } from "../utils/api";
-import { SAMPLE_PRODUCTS } from "../data/sampleProducts";
 
 const FALLBACK_SRC = "/welamalogo.png";
-
-const LOCAL_GALLERY = SAMPLE_PRODUCTS.map((product) => ({
-  _id: `gallery-${product._id}`,
-  heading: product.name,
-  description: product.description || "",
-  mediaUrl: product.image,
-  mediaType: "image",
-  category: product.category,
-}));
 
 const usableUrl = (url) =>
   typeof url === "string" &&
@@ -24,7 +14,7 @@ const usableUrl = (url) =>
 const GalleryPage = () => {
   const [searchParams] = useSearchParams();
   const [activeCategory, setActiveCategory] = useState(searchParams.get("category") || "All");
-  const [items, setItems] = useState(LOCAL_GALLERY);
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeItem, setActiveItem] = useState(null);
   const gridRef = useRef(null);
@@ -45,7 +35,7 @@ const GalleryPage = () => {
       const remote = (data?.success ? data.data || [] : []).filter((item) =>
         usableUrl(item.mediaUrl)
       );
-      setItems(remote.length ? remote : LOCAL_GALLERY);
+      setItems(remote);
       setLoading(false);
     };
     load();

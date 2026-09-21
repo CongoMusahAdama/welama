@@ -1,25 +1,23 @@
 import React, { useState, useEffect } from "react";
 import ProductCard from "./ProductCard";
-import { SAMPLE_PRODUCTS } from "../../data/sampleProducts";
+import { isBuilderCatalogItem } from "../../utils/catalog";
 
 const RecentlyViewed = () => {
   const [recent, setRecent] = useState([]);
 
   useEffect(() => {
     const loadRecent = () => {
-      const data = JSON.parse(localStorage.getItem("recentlyViewed") || "[]");
-      if (data.length > 0) {
-        setRecent(data);
-      } else {
-        // Fallback demo products if user hasn't browsed items yet
-        setRecent(SAMPLE_PRODUCTS.slice(0, 4));
-      }
+      const data = JSON.parse(localStorage.getItem("recentlyViewed") || "[]")
+        .filter((item) => !isBuilderCatalogItem(item));
+      setRecent(data);
     };
 
     loadRecent();
     window.addEventListener("click", loadRecent);
     return () => window.removeEventListener("click", loadRecent);
   }, []);
+
+  if (!recent.length) return null;
 
   return (
     <section className="section-padding recent-products-section">

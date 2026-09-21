@@ -5489,6 +5489,189 @@ div.shop-toolbar {
 /* =============================================
    CHECKOUT PAGE STYLES
    ============================================= */
+.co-page {
+  min-height: 70vh;
+  padding: calc(var(--site-header-offset) + 0.5rem) 1.15rem 4.5rem;
+  background: #fff;
+}
+
+.co-wrap {
+  width: min(560px, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 2.15rem;
+}
+
+.co-section h2,
+.co-order h2 {
+  margin: 0 0 1rem;
+  font-family: inherit;
+  font-size: 1.35rem;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  color: #111;
+}
+
+.co-field {
+  display: grid;
+  gap: 0.4rem;
+  margin-bottom: 1.05rem;
+}
+
+.co-field span {
+  font-size: 0.92rem;
+  color: #3f3f46;
+}
+
+.co-field input,
+.co-field textarea,
+.co-field select {
+  width: 100%;
+  border: 1px solid #e5e7eb !important;
+  background: #fff !important;
+  border-radius: 14px !important;
+  padding: 0.95rem 1.05rem !important;
+  font-size: 1rem;
+  color: #111 !important;
+  outline: none;
+  font-family: inherit;
+  box-sizing: border-box;
+  box-shadow: none !important;
+}
+
+.co-field textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
+.co-field select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #111 50%),
+    linear-gradient(135deg, #111 50%, transparent 50%);
+  background-position: calc(100% - 18px) calc(50% - 3px), calc(100% - 12px) calc(50% - 3px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 2.4rem;
+}
+
+.co-field input:focus,
+.co-field textarea:focus,
+.co-field select:focus {
+  border-color: #00c3f7 !important;
+  box-shadow: 0 0 0 3px rgba(0, 195, 247, 0.18) !important;
+}
+
+.co-field small {
+  color: #8b8b86;
+  font-size: 0.82rem;
+}
+
+.co-choice-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.co-choice {
+  width: 100%;
+  text-align: left;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  cursor: pointer;
+  display: grid;
+  gap: 0.15rem;
+}
+
+.co-choice strong {
+  font-size: 1rem;
+  color: #111;
+}
+
+.co-choice span {
+  font-size: 0.85rem;
+  color: #8b8b86;
+}
+
+.co-choice.is-active {
+  border-color: #00c3f7;
+  box-shadow: 0 0 0 1px #00c3f7;
+  background: #f4fbfe;
+}
+
+.co-reach {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 1.05rem 1.1rem;
+  color: #6b6b66;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.co-order {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 1.35rem 1.2rem 1.2rem;
+}
+
+.co-empty {
+  color: #8b8b86;
+  margin: 0 0 1rem;
+}
+
+.co-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 0;
+  border-top: 1px solid #eef0f3;
+  font-size: 0.95rem;
+  color: #3f3f46;
+}
+
+.co-line:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.co-total {
+  font-size: 1.05rem;
+  color: #111;
+  font-weight: 700;
+}
+
+.co-pay {
+  width: 100%;
+  margin-top: 1.1rem;
+  min-height: 54px;
+  border: 0;
+  border-radius: 999px;
+  background: #00c3f7;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.co-pay:hover:not(:disabled) {
+  background: #00b0df;
+}
+
+.co-pay:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.co-secure {
+  margin: 0.75rem 0 0;
+  text-align: center;
+  color: #8b8b86;
+  font-size: 0.82rem;
+}
+
+
 .checkout-header {
   margin-bottom: 3rem;
 }

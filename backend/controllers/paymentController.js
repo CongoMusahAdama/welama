@@ -65,13 +65,16 @@ exports.initializePaystack = async (req, res) => {
             currency: 'GHS',
             reference: `WELAMA${Date.now()}`,
             callback_url: callbackUrl,
+            channels: ['card', 'mobile_money'],
             metadata: {
                 orderId,
                 customerName,
                 customerPhone,
+                cancel_action: callbackUrl,
                 custom_fields: [
+                    { display_name: "Pay with", variable_name: "pay_with", value: "Card or Mobile Money (MoMo)" },
                     { display_name: "Customer Name", variable_name: "customer_name", value: customerName },
-                    { display_name: "Phone Number", variable_name: "phone_number", value: customerPhone },
+                    { display_name: "Phone / MoMo number", variable_name: "phone_number", value: customerPhone },
                     { display_name: "Order ID", variable_name: "order_id", value: orderId }
                 ]
             }

@@ -12,8 +12,8 @@ import { CartProvider } from "./context/CartContext";
 import { ModalProvider } from "./context/ModalContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { MobileMenuProvider } from "./context/MobileMenuContext";
-import { SAMPLE_PRODUCTS } from "./data/sampleProducts";
 import { DEFAULT_CATEGORIES, mergeCategories } from "./utils/categories";
+import { liveCatalog } from "./utils/catalog";
 import { colorName, hasVariants, normalizeSize } from "./utils/productStock";
 
 // --- COMPONENTS ---
@@ -103,7 +103,7 @@ const App = () => {
       if (cached) {
         const parsed = JSON.parse(cached);
         if (Array.isArray(parsed) && parsed.length) {
-          setProducts(parsed);
+          setProducts(liveCatalog(parsed));
         }
       }
     } catch {
@@ -118,8 +118,8 @@ const App = () => {
       }
 
       const liveProducts =
-        prodRes?.success && Array.isArray(prodRes.data) && prodRes.data.length > 0
-          ? prodRes.data
+        prodRes?.success && Array.isArray(prodRes.data)
+          ? liveCatalog(prodRes.data)
           : null;
 
       if (liveProducts) {
@@ -130,17 +130,10 @@ const App = () => {
           /* quota / private mode */
         }
       } else {
-        setProducts((prev) => {
-          if (prev.length) return prev;
-          return import.meta.env.PROD ? prev : SAMPLE_PRODUCTS;
-        });
+        setProducts((prev) => liveCatalog(prev));
       }
 
-      const catalogProducts = liveProducts?.length
-        ? liveProducts
-        : import.meta.env.PROD
-          ? []
-          : SAMPLE_PRODUCTS;
+      const catalogProducts = liveProducts || [];
       setCategories(
         mergeCategories(
           catRes?.success ? catRes.data : [],
@@ -169,9 +162,9 @@ const App = () => {
       } catch (error) {
         console.error("Failed to initialize catalog:", error);
         if (!cancelled) {
-          setProducts((prev) => (prev.length ? prev : SAMPLE_PRODUCTS));
+          setProducts((prev) => liveCatalog(prev));
           setCategories((prev) =>
-            prev.length ? prev : mergeCategories(SAMPLE_PRODUCTS.map((p) => p.category), DEFAULT_CATEGORIES),
+            prev.length ? prev : mergeCategories([], DEFAULT_CATEGORIES),
           );
         }
       } finally {
