@@ -340,7 +340,7 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
               <span className="product-detail-option-label">
                 Color{color ? `: ${color}` : ""}
               </span>
-              <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
+              <div className="product-detail-color-row">
                 {colors.map((c, i) => {
                   const cName = typeof c === "object" ? c.name : c;
                   const cHex = typeof c === "object" ? c.hex : c;
@@ -357,9 +357,11 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
                         if (next) setActiveImage(next);
                       }}
                       title={available ? cName : `${cName} — sold out`}
-                      className={`product-detail-swatch ${color === cName ? "active" : ""} ${!available ? "is-sold" : ""}`}
-                      style={{ backgroundColor: cHex }}
-                    />
+                      className={`product-detail-color-chip ${color === cName ? "active" : ""} ${!available ? "is-sold" : ""}`}
+                    >
+                      <span className="product-detail-swatch" style={{ backgroundColor: cHex }} />
+                      <span className="product-detail-color-name">{cName}{!available ? " (sold out)" : ""}</span>
+                    </button>
                   );
                 })}
               </div>
@@ -379,7 +381,9 @@ const ProductDetailPage = ({ products = [], addOrder, settings = {} }) => {
 
           {sizes && sizes.length > 0 && (
             <div className="product-detail-option-group">
-              <span className="product-detail-option-label">Select Size</span>
+              <span className="product-detail-option-label">
+                Size{size ? `: ${size}` : ""}
+              </span>
               <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
                 {sizes.map((s, idx) => {
                   const available = sizeAvailable(product, s, color);

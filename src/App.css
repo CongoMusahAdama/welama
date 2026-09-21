@@ -6566,10 +6566,10 @@ div.shop-toolbar {
 }
 
 .product-detail-thumb span {
-  font-size: 0.62rem;
-  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
   font-weight: 700;
-  color: #888;
+  color: #444;
   padding-bottom: 0.35rem;
 }
 
@@ -6634,53 +6634,95 @@ div.shop-toolbar {
 }
 
 .product-detail-description {
-  margin: 0.25rem 0 1.5rem;
-  padding: 1.1rem 0 0;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  display: block !important;
+  margin: 0.35rem 0 1.6rem;
+  padding: 1.15rem 1.2rem;
+  border: 1px solid #e8edf3;
+  border-radius: 14px;
+  background: #f8fafc;
 }
 
 .product-detail-description h3 {
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: 0.82rem;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--gray-medium);
-  margin: 0 0 0.6rem;
+  color: #0a0a0a;
+  margin: 0 0 0.7rem;
 }
 
 .product-detail-description p {
-  color: #475569;
-  font-size: 0.95rem;
-  line-height: 1.65;
+  color: #1f2937;
+  font-size: 1rem;
+  line-height: 1.7;
   white-space: pre-wrap;
-  margin: 0 0 0.65rem;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  margin: 0 0 0.75rem;
 }
 
 .product-detail-description p:last-child {
   margin-bottom: 0;
 }
 
+.product-detail-info {
+  min-width: 0;
+  color: #111;
+}
+
 .product-detail-option-group {
-  margin-bottom: 1rem;
+  margin-bottom: 1.15rem;
 }
 
 .product-detail-option-label {
-  display: block;
-  font-size: 0.75rem;
-  font-weight: 700;
+  display: block !important;
+  font-size: 0.86rem;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--gray-medium);
-  margin-bottom: 0.4rem;
+  letter-spacing: 0.06em;
+  color: #111;
+  margin-bottom: 0.55rem;
+}
+
+.product-detail-color-row {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.product-detail-color-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.75rem 0.4rem 0.4rem;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  cursor: pointer;
+  color: #111;
+}
+
+.product-detail-color-chip.active {
+  border-color: #0a0a0a;
+  box-shadow: 0 0 0 2px rgba(10, 10, 10, 0.12);
+}
+
+.product-detail-color-chip.is-sold {
+  opacity: 0.55;
+}
+
+.product-detail-color-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.2;
 }
 
 .product-detail-swatch {
-  width: 32px;
-  height: 32px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  border: 2px solid transparent;
-  cursor: pointer;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  flex: 0 0 auto;
 }
 
 .product-detail-swatch.active {
