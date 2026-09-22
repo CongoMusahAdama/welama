@@ -5,8 +5,8 @@ import confetti from "canvas-confetti";
 import { useCart } from "../context/CartContext";
 import { apiRequest } from "../utils/api";
 import { catalogProductId } from "../utils/productId";
-import { Cedis, formatCedis } from "../utils/currency";
-import { GHANA_REGIONS, deliveryFeeFor } from "../utils/delivery";
+import { Cedis } from "../utils/currency";
+import { GHANA_REGIONS } from "../utils/delivery";
 import { sellingPrice } from "../utils/sellingPrice";
 
 const CheckoutPage = ({ addOrder }) => {
@@ -26,9 +26,7 @@ const CheckoutPage = ({ addOrder }) => {
   });
 
   const isPickup = formData.deliveryMethod === "Pickup";
-  const deliveryFee = deliveryFeeFor(formData.deliveryMethod, formData.region);
-  const deliveryReady = isPickup || deliveryFee != null;
-  const payableTotal = cartTotal + (deliveryReady ? deliveryFee : 0);
+  const payableTotal = cartTotal;
 
   const itemLines = useMemo(
     () =>
@@ -134,7 +132,7 @@ const CheckoutPage = ({ addOrder }) => {
         color: i.selectedColor || "",
         price: sellingPrice(i),
       })),
-      deliveryFee: deliveryReady ? deliveryFee : 0,
+      deliveryFee: 0,
       total: payableTotal,
       paymentScreenshot: null,
       paymentMethod: "Paystack (Card or MoMo)",
@@ -224,7 +222,7 @@ const CheckoutPage = ({ addOrder }) => {
               onClick={() => setFormData((prev) => ({ ...prev, deliveryMethod: "Home Delivery" }))}
             >
               <strong>Deliver to me</strong>
-              <span>Priced by region</span>
+              <span>Deliver to me</span>
             </button>
             <button
               type="button"
@@ -273,12 +271,12 @@ const CheckoutPage = ({ addOrder }) => {
               >
                 <option value="">Choose your region</option>
                 {GHANA_REGIONS.map((region) => (
-                  <option key={region.name} value={region.name}>
-                    {region.name}
+                  <option key={region} value={region}>
+                    {region}
                   </option>
                 ))}
               </select>
-              <small>Sets your delivery cost.</small>
+              <small>Helps us send it to the right place.</small>
             </label>
 
             <label className="co-field">
@@ -297,10 +295,10 @@ const CheckoutPage = ({ addOrder }) => {
           <h2>How it reaches you</h2>
           <div className="co-reach">
             {isPickup
-              ? "Collect in store — no delivery fee."
-              : deliveryReady
-                ? `${formData.region} delivery is ${formatCedis(deliveryFee)}.`
-                : "Choose your region above and we'll show the delivery cost."}
+              ? "Collect in store."
+              : formData.region
+                ? `We'll send it to ${formData.region}.`
+                : "Choose your region above so we know where to send it."}
           </div>
         </section>
 
@@ -319,10 +317,6 @@ const CheckoutPage = ({ addOrder }) => {
           <div className="co-line">
             <span>Subtotal</span>
             <span><Cedis value={cartTotal} /></span>
-          </div>
-          <div className="co-line">
-            <span>Delivery</span>
-            <span>{deliveryReady ? (deliveryFee ? <Cedis value={deliveryFee} /> : "Free") : "—"}</span>
           </div>
           <div className="co-line co-total">
             <span>Total</span>

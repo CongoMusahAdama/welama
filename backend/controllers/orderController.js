@@ -90,8 +90,8 @@ exports.createOrder = async (req, res) => {
                     0
                 );
                 const deliveryFee = Math.max(0, Number(payload.deliveryFee) || 0);
-                payload.deliveryFee = deliveryFee;
-                payload.total = itemsTotal + deliveryFee;
+                payload.deliveryFee = 0;
+                payload.total = itemsTotal;
             }
             if (!['Pending', 'Processing'].includes(payload.status)) {
                 payload.status = 'Pending';

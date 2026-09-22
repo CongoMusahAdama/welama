@@ -37,11 +37,7 @@ const ReceiptModal = ({ order, onClose, settings, products = [] }) => {
     const qty = Math.max(1, Number(item.qty) || 1);
     return { ...item, unit, qty, lineTotal: unit * qty };
   });
-  const itemsSubtotal = pricedItems.reduce((sum, item) => sum + item.lineTotal, 0);
-  const deliveryFee = Number(order.deliveryFee);
-  const resolvedDelivery = Number.isFinite(deliveryFee) && deliveryFee >= 0
-    ? deliveryFee
-    : Math.max(0, Number(order.total) - itemsSubtotal);
+  const resolvedDelivery = Number(order.deliveryFee) > 0 ? Number(order.deliveryFee) : 0;
 
   const handleDownloadAndShare = async () => {
     setIsGenerating(true);
