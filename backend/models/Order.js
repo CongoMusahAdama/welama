@@ -35,12 +35,18 @@ const OrderSchema = new mongoose.Schema({
             category: { type: String, default: 'Luxury' },
             qty: { type: Number, required: true, default: 1, min: 1 },
             size: { type: String, default: 'M' },
-            color: { type: String, default: '' }
+            color: { type: String, default: '' },
+            price: { type: Number, default: 0, min: 0 }
         }
     ],
     total: {
         type: Number,
         required: true,
+        default: 0,
+        min: 0
+    },
+    deliveryFee: {
+        type: Number,
         default: 0,
         min: 0
     },

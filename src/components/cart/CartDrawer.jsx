@@ -4,6 +4,7 @@ import { ShoppingBag, X, Minus, Plus, Trash2, CheckCircle } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { Cedis } from "../../utils/currency";
 import { variantStock } from "../../utils/productStock";
+import { sellingPrice } from "../../utils/sellingPrice";
 
 const CartDrawer = () => {
   const {
@@ -89,7 +90,7 @@ const CartDrawer = () => {
                       )}
                     </div>
                     <p className="cart-item-price">
-                      <Cedis value={item.price} decimals={2} />
+                      <Cedis value={sellingPrice(item)} decimals={2} />
                     </p>
                     <div className="cart-item-controls">
                       <button
@@ -110,7 +111,7 @@ const CartDrawer = () => {
                   </div>
                   <div className="cart-item-right">
                     <p className="cart-item-subtotal">
-                      <Cedis value={parseFloat(item.price) * item.qty} decimals={2} />
+                      <Cedis value={sellingPrice(item) * item.qty} decimals={2} />
                     </p>
                     <button
                       className="cart-remove-btn"

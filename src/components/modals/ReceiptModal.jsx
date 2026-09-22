@@ -3,6 +3,7 @@ import { Download } from "lucide-react";
 import html2pdf from "html2pdf.js";
 import Swal from "sweetalert2";
 import { Cedis } from "../../utils/currency";
+import { sellingPrice } from "../../utils/sellingPrice";
 
 const resolveItemImage = (item, products = []) => {
   if (item?.image && !String(item.image).startsWith("blob:")) return item.image;
@@ -22,6 +23,25 @@ const ReceiptModal = ({ order, onClose, settings, products = [] }) => {
   const tagline = settings?.tagline || "The Essence of Luxury";
 
   if (!order) return null;
+
+  const items = order.items || [];
+  const pricedItems = items.map((item) => {
+    const catalog = products.find((p) => {
+      const pid = item.productId?._id || item.productId;
+      return String(p._id || p.id) === String(pid) || String(p.name || "").toLowerCase() === String(item.name || "").toLowerCase();
+    });
+    const unit = sellingPrice({
+      price: item.price || catalog?.price,
+      discountPrice: catalog?.discountPrice,
+    });
+    const qty = Math.max(1, Number(item.qty) || 1);
+    return { ...item, unit, qty, lineTotal: unit * qty };
+  });
+  const itemsSubtotal = pricedItems.reduce((sum, item) => sum + item.lineTotal, 0);
+  const deliveryFee = Number(order.deliveryFee);
+  const resolvedDelivery = Number.isFinite(deliveryFee) && deliveryFee >= 0
+    ? deliveryFee
+    : Math.max(0, Number(order.total) - itemsSubtotal);
 
   const handleDownloadAndShare = async () => {
     setIsGenerating(true);
@@ -201,14 +221,13 @@ const ReceiptModal = ({ order, onClose, settings, products = [] }) => {
                   <span>Price</span>
                 </div>
               </div>
-              {(order.items || []).map((item, idx) => {
+              {pricedItems.map((item, idx) => {
                 const itemSpec = [
                   item.size && `Size: ${item.size}`,
                   item.color && `Color: ${item.color}`
                 ].filter(Boolean).join(" • ");
 
                 const photo = resolveItemImage(item, products);
-                const lineTotal = Number(item.price || order.total / (order.items?.length || 1));
 
                 return (
                   <div
@@ -248,11 +267,26 @@ const ReceiptModal = ({ order, onClose, settings, products = [] }) => {
                     </div>
                     <div style={{ display: "flex", gap: "1.5rem", alignItems: "center", flexShrink: 0 }}>
                       <span>x{item.qty}</span>
-                      <span><Cedis value={lineTotal} decimals={2} /></span>
+                      <span><Cedis value={item.lineTotal} decimals={2} /></span>
                     </div>
                   </div>
                 );
               })}
+              {resolvedDelivery > 0 && (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginTop: "0.35rem",
+                    fontWeight: 600,
+                    color: "#334155",
+                  }}
+                >
+                  <span>Delivery</span>
+                  <span><Cedis value={resolvedDelivery} decimals={2} /></span>
+                </div>
+              )}
             </div>
 
             <div

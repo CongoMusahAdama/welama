@@ -3,6 +3,7 @@ import Toast from "../components/ui/Toast";
 import CartDrawer from "../components/cart/CartDrawer";
 import { getVisibleCartIcon } from "../utils/cartTarget";
 import { colorName, variantStock } from "../utils/productStock";
+import { sellingPrice } from "../utils/sellingPrice";
 
 const CartContext = createContext(null);
 
@@ -60,6 +61,7 @@ export const CartProvider = ({ children }) => {
           cartId,
           selectedSize: selectedSize || "",
           selectedColor: color,
+          price: sellingPrice(product),
           qty: Math.min(available, addQty),
         },
       ];
@@ -118,7 +120,7 @@ export const CartProvider = ({ children }) => {
 
   const cartCount = cartItems.reduce((sum, i) => sum + i.qty, 0);
   const cartTotal = cartItems.reduce(
-    (sum, i) => sum + parseFloat(i.price) * i.qty,
+    (sum, i) => sum + sellingPrice(i) * i.qty,
     0,
   );
 

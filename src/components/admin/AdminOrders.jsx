@@ -18,6 +18,7 @@ import Swal from "sweetalert2";
 import ReceiptModal from "../modals/ReceiptModal";
 import { Cedis } from "../../utils/currency";
 import { catalogProductId } from "../../utils/productId";
+import { sellingPrice } from "../../utils/sellingPrice";
 
 const AdminOrders = ({ 
   orders, 
@@ -70,13 +71,14 @@ const AdminOrders = ({
       customer: newOrder.customer,
       phone: newOrder.phone,
       location: newOrder.location,
+      total: sellingPrice(prod) * newOrder.qty,
       items: [{
         name: newOrder.productName,
         qty: parseInt(newOrder.qty),
         productId: catalogProductId(prod._id || prod.id),
         image: prod.image || "",
+        price: sellingPrice(prod),
       }],
-      total: prod.price * newOrder.qty,
       payment: newOrder.payment,
       status: "Processing",
     });

@@ -7,6 +7,7 @@ import { apiRequest } from "../utils/api";
 import { catalogProductId } from "../utils/productId";
 import { Cedis, formatCedis } from "../utils/currency";
 import { GHANA_REGIONS, deliveryFeeFor } from "../utils/delivery";
+import { sellingPrice } from "../utils/sellingPrice";
 
 const CheckoutPage = ({ addOrder }) => {
   const { cartItems, cartTotal, clearCart } = useCart();
@@ -131,7 +132,9 @@ const CheckoutPage = ({ addOrder }) => {
         qty: i.qty,
         size: i.selectedSize || i.size || "Standard",
         color: i.selectedColor || "",
+        price: sellingPrice(i),
       })),
+      deliveryFee: deliveryReady ? deliveryFee : 0,
       total: payableTotal,
       paymentScreenshot: null,
       paymentMethod: "Paystack (Card or MoMo)",
@@ -149,7 +152,7 @@ const CheckoutPage = ({ addOrder }) => {
 
       const paystackRes = await apiRequest("/payment/paystack/initialize", "POST", {
         orderId: orderRes.data.orderId,
-        amount: payableTotal,
+        amount: orderRes.data.total ?? payableTotal,
         customerEmail: formData.email,
         customerName: formData.customer,
         customerPhone: formData.phone,
@@ -309,7 +312,7 @@ const CheckoutPage = ({ addOrder }) => {
             itemLines.map((item) => (
               <div key={item.cartId} className="co-line">
                 <span>{item.line}{item.qty > 1 ? ` ×${item.qty}` : ""}</span>
-                <strong><Cedis value={item.price * item.qty} /></strong>
+                <strong><Cedis value={sellingPrice(item) * item.qty} /></strong>
               </div>
             ))
           )}

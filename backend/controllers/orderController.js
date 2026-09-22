@@ -1,11 +1,35 @@
 const crypto = require('crypto');
 const mongoose = require('mongoose');
 const Order = require('../models/Order');
+const Product = require('../models/Product');
 const { sendOrderConfirmationSMS, sendOrderStatusUpdateSMS, sendPaymentReceivedSMS, sendAdminNewOrderSMS } = require('../utils/smsService');
 const { withTransaction, isDuplicateKey } = require('../utils/withTransaction');
 const { decrementStock, restoreStock } = require('../utils/inventory');
 
 const isMongoId = (value) => /^[a-fA-F0-9]{24}$/.test(String(value || ''));
+
+const unitPrice = (product, fallback) => {
+    const list = Number(product?.price);
+    const sale = Number(product?.discountPrice);
+    if (Number.isFinite(sale) && sale > 0 && (!Number.isFinite(list) || sale <= list)) return sale;
+    if (Number.isFinite(list) && list > 0) return list;
+    const fb = Number(fallback);
+    return Number.isFinite(fb) && fb > 0 ? fb : 0;
+};
+
+const stampItemPrices = async (items = []) => {
+    const ids = items.map((item) => item.productId).filter(isMongoId);
+    const found = ids.length ? await Product.find({ _id: { $in: ids } }).lean() : [];
+    const byId = Object.fromEntries(found.map((product) => [String(product._id), product]));
+    return items.map((item) => {
+        const product = item.productId ? byId[String(item.productId)] : null;
+        return {
+            ...item,
+            productId: isMongoId(item.productId) ? item.productId : null,
+            price: unitPrice(product, item.price)
+        };
+    });
+};
 
 const generateOrderId = () => {
     const stamp = Date.now().toString(36).toUpperCase();
@@ -60,10 +84,14 @@ exports.createOrder = async (req, res) => {
             };
             delete payload.paystackReference;
             if (Array.isArray(payload.items)) {
-                payload.items = payload.items.map((item) => ({
-                    ...item,
-                    productId: isMongoId(item.productId) ? item.productId : null
-                }));
+                payload.items = await stampItemPrices(payload.items);
+                const itemsTotal = payload.items.reduce(
+                    (sum, item) => sum + (Number(item.price) || 0) * (Number(item.qty) || 1),
+                    0
+                );
+                const deliveryFee = Math.max(0, Number(payload.deliveryFee) || 0);
+                payload.deliveryFee = deliveryFee;
+                payload.total = itemsTotal + deliveryFee;
             }
             if (!['Pending', 'Processing'].includes(payload.status)) {
                 payload.status = 'Pending';
