@@ -1,6 +1,6 @@
 export const DEFAULT_CATEGORIES = ["Shirts", "Dresses", "Two-piece", "Bags"];
 
-export const CLOTHING_SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
+export const CLOTHING_SIZES = ["UK 8", "UK 10", "UK 12", "UK 14", "UK 16", "UK 18"];
 
 export const isClothingCategory = (value) => {
   const label = categoryLabel(value).toLowerCase();

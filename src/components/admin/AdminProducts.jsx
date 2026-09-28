@@ -575,7 +575,7 @@ const AdminProducts = ({
                         Dresses, shirts and two-piece use sizes. Put 0 on a size to sell out only that size.
                       </p>
                       <div className="admin-size-chip-row">
-                        {["XS", "S", "M", "L", "XL", "XXL"].map((s) => (
+                        {["UK 8", "UK 10", "UK 12", "UK 14", "UK 16", "UK 18"].map((s) => (
                           <button
                             key={s}
                             type="button"
