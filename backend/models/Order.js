@@ -34,7 +34,7 @@ const OrderSchema = new mongoose.Schema({
             image: { type: String, default: '' },
             category: { type: String, default: 'Luxury' },
             qty: { type: Number, required: true, default: 1, min: 1 },
-            size: { type: String, default: 'M' },
+            size: { type: String, default: 'UK 10' },
             color: { type: String, default: '' },
             price: { type: Number, default: 0, min: 0 }
         }

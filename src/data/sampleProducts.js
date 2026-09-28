@@ -11,7 +11,7 @@ const RAW_SAMPLE_PRODUCTS = [
     price: 520,
     image: "/WELAMA.png",
     badge: "NEW ARRIVAL",
-    sizes: ["XS", "S", "M", "L", "XL", "XXL"],
+    sizes: ["UK 8", "UK 10", "UK 12", "UK 14", "UK 16", "UK 18"],
     colors: [
       { name: "Royal Gold", hex: "#D4AF37" },
       { name: "Midnight Black", hex: "#0A0A0A" },
@@ -30,7 +30,7 @@ const RAW_SAMPLE_PRODUCTS = [
     price: 480,
     image: "/WELAMA1.png",
     badge: "FEATURED",
-    sizes: ["S", "M", "L", "XL", "XXL"],
+    sizes: ["UK 8", "UK 10", "UK 12", "UK 14", "UK 16", "UK 18"],
     colors: [
       { name: "Emerald Luxe", hex: "#1B5E20" },
       { name: "Onyx Black", hex: "#0A0A0A" },
@@ -49,7 +49,7 @@ const RAW_SAMPLE_PRODUCTS = [
     price: 450,
     image: "/WALAMA2.png",
     badge: "EXCLUSIVE",
-    sizes: ["XS", "S", "M", "L", "XL"],
+    sizes: ["UK 8", "UK 10", "UK 12", "UK 14", "UK 16", "UK 18"],
     colors: [
       { name: "Earthy Terracotta", hex: "#C77B5D" },
       { name: "Warm Camel", hex: "#B08050" },
@@ -149,7 +149,7 @@ const RAW_SAMPLE_PRODUCTS = [
     category: "Dresses",
     price: 320,
     image: "/cloth.png",
-    sizes: ["S", "M", "L", "XL"],
+    sizes: ["UK 8", "UK 10", "UK 12", "UK 14", "UK 16", "UK 18"],
     colors: [{ name: "Emerald Swirl", hex: "#1B5E20" }],
     stock: 10,
     status: "Active",
@@ -162,7 +162,7 @@ const RAW_SAMPLE_PRODUCTS = [
     category: "Dresses",
     price: 280,
     image: "/cloth1.png",
-    sizes: ["S", "M", "L", "XL"],
+    sizes: ["UK 8", "UK 10", "UK 12", "UK 14", "UK 16", "UK 18"],
     colors: [{ name: "Black & White", hex: "#111111" }],
     stock: 9,
     status: "Active",
@@ -175,7 +175,7 @@ const RAW_SAMPLE_PRODUCTS = [
     category: "Dresses",
     price: 300,
     image: "/cloth3.png",
-    sizes: ["S", "M", "L", "XL"],
+    sizes: ["UK 8", "UK 10", "UK 12", "UK 14", "UK 16", "UK 18"],
     colors: [{ name: "Cobalt Bloom", hex: "#1E3A8A" }],
     stock: 8,
     status: "Active",
@@ -188,7 +188,7 @@ const RAW_SAMPLE_PRODUCTS = [
     category: "Dresses",
     price: 300,
     image: "/cloth4.png",
-    sizes: ["S", "M", "L", "XL"],
+    sizes: ["UK 8", "UK 10", "UK 12", "UK 14", "UK 16", "UK 18"],
     colors: [{ name: "Marigold", hex: "#E5A21A" }],
     stock: 8,
     status: "Active",
@@ -201,7 +201,7 @@ const RAW_SAMPLE_PRODUCTS = [
     category: "Dresses",
     price: 310,
     image: "/cloth5.png",
-    sizes: ["S", "M", "L", "XL"],
+    sizes: ["UK 8", "UK 10", "UK 12", "UK 14", "UK 16", "UK 18"],
     colors: [{ name: "Noir Bloom", hex: "#111111" }],
     stock: 8,
     status: "Active",
@@ -214,7 +214,7 @@ const RAW_SAMPLE_PRODUCTS = [
     category: "Dresses",
     price: 260,
     image: "/cloth6.png",
-    sizes: ["S", "M", "L", "XL"],
+    sizes: ["UK 8", "UK 10", "UK 12", "UK 14", "UK 16", "UK 18"],
     colors: [
       { name: "Cocoa", hex: "#6F4E37" },
       { name: "Black", hex: "#0A0A0A" },
@@ -230,7 +230,7 @@ const RAW_SAMPLE_PRODUCTS = [
     category: "Dresses",
     price: 270,
     image: "/cloth7.png",
-    sizes: ["S", "M", "L", "XL"],
+    sizes: ["UK 8", "UK 10", "UK 12", "UK 14", "UK 16", "UK 18"],
     colors: [{ name: "Meadow Green", hex: "#588157" }],
     stock: 9,
     status: "Active",
@@ -243,7 +243,7 @@ const RAW_SAMPLE_PRODUCTS = [
     category: "Dresses",
     price: 310,
     image: "/cloth8.png",
-    sizes: ["S", "M", "L", "XL"],
+    sizes: ["UK 8", "UK 10", "UK 12", "UK 14", "UK 16", "UK 18"],
     colors: [{ name: "Sage Green", hex: "#3A5A40" }],
     stock: 4,
     status: "Active",
@@ -256,7 +256,7 @@ const RAW_SAMPLE_PRODUCTS = [
     category: "Dresses",
     price: 280,
     image: "/cloth9.png",
-    sizes: ["S", "M", "L", "XL"],
+    sizes: ["UK 8", "UK 10", "UK 12", "UK 14", "UK 16", "UK 18"],
     colors: [
       { name: "Terracotta", hex: "#C77B5D" },
       { name: "Sage Green", hex: "#3A5A40" },
@@ -271,11 +271,11 @@ export const SAMPLE_PRODUCTS = RAW_SAMPLE_PRODUCTS.map((product) => {
   if (!product.sizes?.length && !product.colors?.length) return product;
   let variants = buildVariantGrid(product.colors, product.sizes, [], product.stock);
   if (product.id === "sample-dress-1") {
-    variants = variants.map((row) => (row.size === "S" ? { ...row, stock: 0 } : row));
+    variants = variants.map((row) => (row.size === "UK 8" ? { ...row, stock: 0 } : row));
   }
   if (product.id === "sample-welama-1") {
     variants = variants.map((row) =>
-      row.color === "Midnight Black" && row.size === "M" ? { ...row, stock: 0 } : row
+      row.color === "Midnight Black" && row.size === "UK 10" ? { ...row, stock: 0 } : row
     );
   }
   const stock = variants.reduce((sum, row) => sum + (Number(row.stock) || 0), 0);
